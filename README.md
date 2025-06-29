@@ -1,35 +1,36 @@
 # 🔍 GitHub Repository Analyzer
 
 > **Intelligent Q&A System for GitHub Repositories**  
-> Built with modern AI, beautiful UI, and powerful analysis capabilities
+> Built with Agno AI framework, MCP servers, and beautiful Streamlit UI
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red.svg)](https://streamlit.io)
+[![Agno](https://img.shields.io/badge/Agno-0.1.0+-green.svg)](https://github.com/agno-ai/agno)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Development-orange.svg)]()
 
 ## ✨ Features
 
-### 🧠 **Smart AI Analysis**
+### 🧠 **Smart AI Analysis with Agno**
 - **Natural Language Q&A** - Ask questions in plain English
 - **Multi-Model Support** - OpenAI GPT-4, Claude-3, and more
 - **Context-Aware Responses** - Understands repository context
 - **Intelligent Reasoning** - Multi-step analysis and synthesis
+- **Tool Calling** - Automatic selection of appropriate MCP tools
 
 ### 🔧 **Powerful MCP Servers**
-- **File Content Analysis** - Read and analyze any file
-- **Repository Structure** - Understand project organization
-- **Commit History** - Track changes and evolution
-- **Code Search** - Find functions, classes, and patterns
-- **Issue Tracking** - Monitor bugs and features
-- **Documentation** - Extract and analyze docs
+- **File Content Analysis** - Read and analyze any file with encoding detection
+- **Repository Structure** - Complete directory trees and file organization
+- **Commit History** - Track changes, authors, and evolution patterns
+- **Code Search** - Find functions, classes, and patterns with regex support
+- **Issue Tracking** - Monitor bugs, features, and pull requests
+- **Code Quality Analysis** - Complexity metrics and pattern detection
 
 ### 🎨 **Beautiful Modern UI**
 - **Responsive Design** - Works on desktop, tablet, and mobile
-- **Dark/Light Themes** - Choose your preferred theme
-- **Smooth Animations** - Delightful user experience
+- **Chat Interface** - Natural conversation with the AI agent
 - **Real-time Updates** - Live analysis and results
-- **Interactive Visualizations** - Charts, graphs, and maps
+- **Tool Usage Tracking** - See which tools were used for each response
+- **Advanced Features** - Code analysis, visualizations, and summaries
 
 ### 🚀 **Advanced Features**
 - **Code Quality Analysis** - Complexity, patterns, and metrics
@@ -37,13 +38,13 @@
 - **Smart Summaries** - Auto-generated project overviews
 - **Change Detection** - Track recent updates and trends
 - **Dependency Analysis** - Map project relationships
-- **Documentation Generation** - Auto-create missing docs
+- **Pattern Recognition** - Identify coding patterns and conventions
 
 ## 🏗️ Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Streamlit UI  │    │   AI Agent      │    │   MCP Servers   │
+│   Streamlit UI  │    │   Agno Agent    │    │   MCP Servers   │
 │                 │◄──►│                 │◄──►│                 │
 │ • Chat Interface│    │ • LLM Integration│    │ • File Content  │
 │ • Visualizations│    │ • Tool Calling  │    │ • Repository    │
@@ -57,14 +58,14 @@
 ### 1. **Installation**
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/repo-analyzer.git
-cd repo-analyzer
+git clone https://github.com/your-username/repo-analyzer-2.git
+cd repo-analyzer-2
 
 # Install dependencies
 pip install -r requirements.txt
 
 # Set up environment
-cp .env.example .env
+cp env.example .env
 # Edit .env with your API keys
 ```
 
@@ -79,19 +80,25 @@ ANTHROPIC_API_KEY=your_anthropic_key
 
 ### 3. **Run the Application**
 ```bash
-# Start the application
-streamlit run app/main.py
+# Start the Streamlit application
+streamlit run streamlit_app/main.py
 
 # Open http://localhost:8501 in your browser
+```
+
+### 4. **Basic Usage Example**
+```bash
+# Run the basic usage example
+python examples/basic_usage.py
 ```
 
 ## 🎯 Example Questions
 
 Ask questions like:
-- 🤔 *"What is this repository about?"*
-- 🔍 *"Show me the main entry points"*
-- 📊 *"What are the recent changes?"*
-- 🔐 *"Find all authentication functions"*
+- 🤔 *"What is this repository about and what does it do?"*
+- 🔍 *"Show me the main entry points of this application"*
+- 📊 *"What are the recent changes in the last 10 commits?"*
+- 🔐 *"Find all functions related to authentication"*
 - 📦 *"What dependencies does this project use?"*
 - 🐛 *"Are there any open issues related to performance?"*
 - 💾 *"Explain how the database connection is implemented"*
@@ -100,32 +107,80 @@ Ask questions like:
 ## 📁 Project Structure
 
 ```
-repo-analyzer/
-├── 🎨 app/                    # Main Streamlit application
-│   ├── main.py               # Entry point
-│   ├── components/           # UI components
-│   ├── pages/                # Multi-page interface
-│   ├── themes/               # Custom themes
-│   └── assets/               # Static assets
+repo-analyzer-2/
+├── 🤖 ai_agent/                 # Agno-based AI agent
+│   ├── agent.py                # Main AI agent implementation
+│   └── __init__.py
 │
-├── 🤖 core/                   # Core functionality
-│   ├── agent.py              # AI agent
-│   ├── servers/              # MCP servers
-│   └── utils/                # Utilities
+├── 🔧 mcp_servers/              # MCP server implementations
+│   ├── base_server.py          # Base server with common functionality
+│   ├── file_content_server.py  # File content and metadata
+│   ├── repository_structure_server.py  # Directory trees and structure
+│   ├── commit_history_server.py # Commit history and changes
+│   ├── issues_server.py        # Issues and pull requests
+│   ├── code_search_server.py   # Code search and patterns
+│   ├── start_servers.py        # Server management
+│   └── __init__.py
 │
-├── 🎨 ui/                     # UI components
-│   ├── components/           # Reusable components
-│   ├── themes/               # Theme system
-│   └── animations/           # Animation utilities
+├── 🎨 streamlit_app/            # Streamlit web application
+│   ├── main.py                 # Main application entry point
+│   └── __init__.py
 │
-├── ⚙️ config/                 # Configuration
-│   ├── settings.yaml         # App settings
-│   └── themes.yaml           # Theme definitions
+├── 🎨 ui/                       # UI components
+│   ├── components/             # Reusable UI components
+│   │   ├── repository_selector.py  # Repository selection
+│   │   └── chat_interface.py   # Chat interface
+│   ├── themes/                 # Theme system
+│   └── animations/             # Animation utilities
 │
-├── 🧪 tests/                  # Test suite
-├── 📚 docs/                   # Documentation
-└── 💡 examples/               # Examples
+├── ⚙️ config/                   # Configuration files
+│   ├── settings.yaml           # App settings
+│   └── themes.yaml             # Theme definitions
+│
+├── 💡 examples/                 # Usage examples
+│   └── basic_usage.py          # Basic usage demonstration
+│
+├── 🧪 tests/                    # Test suite
+├── 📚 docs/                     # Documentation
+└── 📄 README.md                 # This file
 ```
+
+## 🔧 MCP Servers
+
+### **File Content Server**
+- Retrieve file contents with encoding detection
+- Get file metadata (size, type, last modified)
+- Search within file content (text and regex)
+- Get file change history
+- List directory contents
+
+### **Repository Structure Server**
+- Get complete directory tree structure
+- Analyze repository organization patterns
+- Find files by type or extension
+- Identify project type based on structure
+- Get directory statistics
+
+### **Commit History Server**
+- Get recent commits with details
+- Analyze commit patterns and trends
+- Search commits by message or author
+- Get commit statistics and metrics
+- Track file change history
+
+### **Issues Server**
+- Get issues and pull requests
+- Search issues by content or labels
+- Analyze issue patterns and trends
+- Get issue comments and details
+- Track issue statistics
+
+### **Code Search Server**
+- Search for code patterns and functions
+- Find function and class definitions
+- Search import statements and dependencies
+- Analyze code patterns and structure
+- Find dependency relationships
 
 ## 🎨 UI Features
 
@@ -135,17 +190,17 @@ repo-analyzer/
 - **Smooth Animations** - Delightful micro-interactions
 - **Accessibility** - WCAG compliant
 
-### **Theme System**
-- **Dark Mode** - Easy on the eyes
-- **Light Mode** - Clean and professional
-- **Custom Themes** - Create your own
-- **Auto-switching** - Follows system preference
+### **Chat Interface**
+- **Real-time Chat** - Instant responses with typing indicators
+- **Message History** - Persistent conversation history
+- **Tool Usage Display** - See which tools were used
+- **Error Handling** - Graceful error messages
 
-### **Interactive Elements**
-- **Real-time Chat** - Instant responses
-- **Live Visualizations** - Dynamic charts and graphs
-- **Smooth Transitions** - Fluid page changes
-- **Loading States** - Clear feedback
+### **Advanced Features**
+- **Code Analysis** - One-click code quality analysis
+- **Repository Visualization** - Interactive dependency graphs
+- **Smart Summaries** - Auto-generated project overviews
+- **Export Results** - Save analysis results
 
 ## 🔧 Configuration
 
@@ -164,39 +219,48 @@ LANGUAGE=en
 DEBUG=false
 ```
 
-### **Custom Themes**
-```yaml
-# config/themes.yaml
-themes:
-  dark:
-    primary: "#1f2937"
-    secondary: "#374151"
-    accent: "#3b82f6"
-    text: "#f9fafb"
-  
-  light:
-    primary: "#ffffff"
-    secondary: "#f3f4f6"
-    accent: "#2563eb"
-    text: "#111827"
+### **MCP Server Configuration**
+```bash
+# MCP Server Settings
+MCP_SERVER_HOST=localhost
+MCP_SERVER_PORT=8000
 ```
 
 ## 🚀 Advanced Usage
 
-### **Custom Analysis**
+### **Programmatic Usage**
 ```python
-from core.agent import RepositoryAgent
+from ai_agent.agent import GitHubRepositoryAgent
 
-agent = RepositoryAgent()
-result = await agent.analyze_repository("owner/repo")
+# Initialize agent
+agent = GitHubRepositoryAgent("openai", "gpt-4")
+
+# Process questions
+response = await agent.process_question(
+    "What is this repository about?", 
+    "microsoft/vscode"
+)
+
+# Get repository overview
+overview = await agent.analyze_repository_overview("microsoft/vscode")
+
+# Find code patterns
+patterns = await agent.find_code_patterns("microsoft/vscode", "functions")
 ```
 
-### **API Integration**
+### **MCP Server Integration**
 ```python
-from core.servers import FileContentServer
+from mcp_servers.start_servers import start_servers, handle_tool_call
 
-server = FileContentServer()
-content = await server.get_file_content("owner/repo", "path/to/file")
+# Start servers
+await start_servers("localhost", 8000)
+
+# Handle tool calls
+result = await handle_tool_call(
+    "file_content", 
+    "get_file_content",
+    {"repository": "microsoft/vscode", "file_path": "README.md"}
+)
 ```
 
 ## 🤝 Contributing
@@ -206,16 +270,16 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 ### **Development Setup**
 ```bash
 # Fork and clone
-git clone https://github.com/your-username/repo-analyzer.git
+git clone https://github.com/your-username/repo-analyzer-2.git
 
 # Install dev dependencies
-pip install -r requirements-dev.txt
+pip install -r requirements.txt
 
 # Run tests
 pytest
 
 # Start development server
-streamlit run app/main.py
+streamlit run streamlit_app/main.py
 ```
 
 ## 📊 Roadmap
@@ -233,6 +297,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
+- **Agno** - For the powerful AI agent framework
 - **Streamlit** - For the amazing web app framework
 - **OpenAI & Anthropic** - For powerful AI models
 - **GitHub** - For the comprehensive API
@@ -244,7 +309,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ by the GitHub Repository Analyzer Team**
 
-[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/your-username/repo-analyzer)
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/your-username/repo-analyzer-2)
 [![Twitter](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/repoanalyzer)
 [![Discord](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/repoanalyzer)
 

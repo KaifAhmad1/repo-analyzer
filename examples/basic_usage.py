@@ -1,155 +1,102 @@
 """
 Basic Usage Example
 
-This script demonstrates basic usage of the GitHub Repository Analyzer.
-Shows how to use MCP servers and AI agent programmatically.
+This example demonstrates how to use the GitHub Repository Analyzer
+with Agno-based AI agent to analyze repositories.
 """
 
 import asyncio
 import os
-from typing import Dict, Any
-
-# TODO: Import required modules
-# from mcp_servers.start_servers import MCPServerManager
-# from ai_agent.agent import GitHubRepositoryAgent
-# from utils.config import load_config
+from ai_agent.agent import GitHubRepositoryAgent
 
 async def main():
     """
-    Main example function demonstrating basic usage.
+    Main example function demonstrating repository analysis.
     """
-    print("🚀 GitHub Repository Analyzer - Basic Usage Example")
+    print("🔍 GitHub Repository Analyzer - Basic Usage Example")
     print("=" * 50)
     
-    # Load configuration
-    config = load_config()
-    print(f"✅ Configuration loaded")
+    # Check for required environment variables
+    if not os.getenv("GITHUB_TOKEN"):
+        print("❌ Error: GITHUB_TOKEN environment variable is required")
+        print("Please set your GitHub token: export GITHUB_TOKEN=your_token")
+        return
     
-    # Initialize MCP server manager
-    server_manager = MCPServerManager()
-    print(f"✅ MCP server manager initialized")
+    if not os.getenv("OPENAI_API_KEY") and not os.getenv("ANTHROPIC_API_KEY"):
+        print("❌ Error: Either OPENAI_API_KEY or ANTHROPIC_API_KEY is required")
+        print("Please set one of them: export OPENAI_API_KEY=your_key")
+        return
     
-    # Start MCP servers
-    print("🔄 Starting MCP servers...")
-    await server_manager.start_all_servers()
-    print(f"✅ MCP servers started")
-    
-    # Initialize AI agent
-    agent = GitHubRepositoryAgent(
-        model_provider=config["llm"]["provider"],
-        model_name=config["llm"]["model"]
-    )
-    print(f"✅ AI agent initialized with {config['llm']['provider']}/{config['llm']['model']}")
+    # Initialize the AI agent
+    print("🤖 Initializing AI Agent...")
+    try:
+        # Use OpenAI if available, otherwise use Anthropic
+        if os.getenv("OPENAI_API_KEY"):
+            agent = GitHubRepositoryAgent("openai", "gpt-4")
+            print("✅ Initialized with OpenAI GPT-4")
+        else:
+            agent = GitHubRepositoryAgent("anthropic", "claude-3-sonnet")
+            print("✅ Initialized with Anthropic Claude-3")
+    except Exception as e:
+        print(f"❌ Error initializing agent: {e}")
+        return
     
     # Example repository to analyze
-    repository = "microsoft/vscode"  # Example repository
+    repository = "microsoft/vscode"
+    print(f"\n📁 Analyzing repository: {repository}")
     
-    # Example questions
+    # Example questions to ask
     example_questions = [
-        "What is this repository about?",
-        "Show me the main entry points",
-        "What are the recent changes?",
-        "Find all authentication functions"
+        "What is this repository about and what does it do?",
+        "Show me the main entry points of this application",
+        "What are the recent changes in the last 10 commits?",
+        "Find all functions related to authentication",
+        "What dependencies does this project use?"
     ]
     
-    print(f"\n📁 Analyzing repository: {repository}")
-    print("-" * 30)
-    
-    # Process example questions
+    # Process each question
     for i, question in enumerate(example_questions, 1):
         print(f"\n❓ Question {i}: {question}")
+        print("-" * 40)
         
         try:
-            # Process question
+            # Process the question
             response = await agent.process_question(question, repository)
             
+            # Display the answer
             print(f"🤖 Answer: {response['answer']}")
-            print(f"🔧 Tools used: {len(response['tool_usage'])}")
-            print(f"🎯 Confidence: {response['confidence']:.2f}")
+            
+            # Display tool usage if any
+            if response.get('tool_usage'):
+                print(f"🔧 Tools used: {len(response['tool_usage'])}")
+                for tool in response['tool_usage']:
+                    print(f"   - {tool.get('tool', 'Unknown')}")
+            
+            print(f"📊 Confidence: {response.get('confidence', 'N/A')}")
             
         except Exception as e:
-            print(f"❌ Error: {e}")
-    
-    # Get conversation history
-    print(f"\n📚 Conversation History:")
-    history = agent.get_conversation_history()
-    for entry in history[-3:]:  # Show last 3 entries
-        print(f"  - {entry['timestamp']}: {entry['question']}")
-    
-    # Get tool usage history
-    print(f"\n🔧 Tool Usage History:")
-    tool_history = agent.get_tool_usage_history()
-    for entry in tool_history[-3:]:  # Show last 3 entries
-        print(f"  - {entry['timestamp']}: {len(entry['tools_used'])} tools used")
-    
-    # Stop servers
-    print(f"\n🔄 Stopping MCP servers...")
-    await server_manager.stop_all_servers()
-    print(f"✅ MCP servers stopped")
-    
-    print(f"\n🎉 Example completed successfully!")
-
-async def analyze_specific_repository(repository: str, questions: list):
-    """
-    Analyze a specific repository with custom questions.
-    
-    Args:
-        repository: Repository name in format 'owner/repo'
-        questions: List of questions to ask
-    """
-    print(f"🔍 Analyzing {repository} with custom questions")
-    
-    # TODO: Implement repository analysis
-    # 1. Initialize components
-    # 2. Process questions
-    # 3. Generate report
-    # 4. Save results
-    
-    pass
-
-async def generate_repository_report(repository: str) -> Dict[str, Any]:
-    """
-    Generate a comprehensive repository report.
-    
-    Args:
-        repository: Repository name in format 'owner/repo'
+            print(f"❌ Error processing question: {e}")
         
-    Returns:
-        Dictionary containing comprehensive report
-    """
-    print(f"📊 Generating comprehensive report for {repository}")
+        print()
     
-    # TODO: Implement comprehensive report generation
-    # 1. Get repository overview
-    # 2. Analyze structure
-    # 3. Analyze code patterns
-    # 4. Analyze commit history
-    # 5. Generate insights
-    # 6. Return structured report
+    # Demonstrate repository overview
+    print("📊 Generating repository overview...")
+    try:
+        overview = await agent.analyze_repository_overview(repository)
+        print(f"📝 Overview: {overview['answer']}")
+    except Exception as e:
+        print(f"❌ Error generating overview: {e}")
     
-    report = {
-        "repository": repository,
-        "overview": "Repository overview coming soon...",
-        "structure": "Structure analysis coming soon...",
-        "code_patterns": "Code pattern analysis coming soon...",
-        "commit_history": "Commit history analysis coming soon...",
-        "insights": "Key insights coming soon...",
-        "recommendations": "Recommendations coming soon..."
-    }
+    # Demonstrate code pattern analysis
+    print("\n🔍 Analyzing code patterns...")
+    try:
+        patterns = await agent.find_code_patterns(repository, "functions")
+        print(f"🔧 Functions found: {patterns['answer']}")
+    except Exception as e:
+        print(f"❌ Error analyzing patterns: {e}")
     
-    return report
+    print("\n✅ Example completed successfully!")
 
 if __name__ == "__main__":
-    # Run basic example
-    asyncio.run(main())
-    
-    # Example: Analyze specific repository
-    # asyncio.run(analyze_specific_repository("facebook/react", [
-    #     "What is the main purpose of this repository?",
-    #     "How is the project structured?",
-    #     "What are the main components?"
-    # ]))
-    
-    # Example: Generate comprehensive report
-    # report = asyncio.run(generate_repository_report("microsoft/vscode"))
-    # print(f"📄 Report generated: {report['repository']}") 
+    # Run the example
+    asyncio.run(main()) 

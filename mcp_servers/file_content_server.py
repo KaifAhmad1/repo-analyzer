@@ -7,12 +7,11 @@ Supports various file types, encoding detection, and content filtering.
 
 import base64
 import mimetypes
+import re
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 
-# TODO: Import required libraries
-# from github import Github
-# from .base_server import BaseMCPServer
+from .base_server import BaseMCPServer
 
 class FileContentServer(BaseMCPServer):
     """
@@ -31,8 +30,6 @@ class FileContentServer(BaseMCPServer):
             name="file_content_server",
             description="Server for retrieving and analyzing file contents from GitHub repositories"
         )
-        # TODO: Initialize GitHub client
-        # self.github_client = Github(os.getenv("GITHUB_TOKEN"))
         
     async def initialize_tools(self) -> List[Dict[str, Any]]:
         """
@@ -116,24 +113,76 @@ class FileContentServer(BaseMCPServer):
         """
         Retrieve file content from GitHub repository.
         """
-        # TODO: Implement file content retrieval
-        # 1. Parse repository name (owner/repo)
-        # 2. Get repository object from GitHub API
-        # 3. Get file content using GitHub API
-        # 4. Handle different file types and encodings
-        # 5. Return structured response with content and metadata
-        pass
+        if not await self.check_rate_limit():
+            return {"error": "Rate limit exceeded"}
+        
+        try:
+            repo = self._get_repository(repository)
+            contents = repo.get_contents(file_path, ref=branch)
+            
+            if contents.type != "file":
+                return {"error": f"Path {file_path} is not a file"}
+            
+            # Get file content
+            content = contents.decoded_content
+            
+            # Detect file type and encoding
+            file_info = self._detect_file_type(file_path, content)
+            
+            # Decode content if it's text
+            if file_info["type"] == "text":
+                if encoding:
+                    text_content = content.decode(encoding)
+                else:
+                    text_content = content.decode(file_info["encoding"])
+            else:
+                text_content = None
+            
+            return {
+                "file_path": file_path,
+                "repository": repository,
+                "branch": branch,
+                "content": text_content,
+                "binary_content": base64.b64encode(content).decode() if file_info["type"] == "binary" else None,
+                "file_info": file_info,
+                "size": len(content),
+                "sha": contents.sha,
+                "url": contents.url
+            }
+            
+        except Exception as e:
+            return await self.handle_error(e, f"get_file_content({repository}, {file_path})")
     
     async def _get_file_metadata(self, repository: str, file_path: str, 
                                 branch: str = "main") -> Dict[str, Any]:
         """
         Get file metadata information.
         """
-        # TODO: Implement file metadata retrieval
-        # 1. Get file object from GitHub API
-        # 2. Extract metadata (size, type, last modified, etc.)
-        # 3. Return structured metadata
-        pass
+        if not await self.check_rate_limit():
+            return {"error": "Rate limit exceeded"}
+        
+        try:
+            repo = self._get_repository(repository)
+            contents = repo.get_contents(file_path, ref=branch)
+            
+            return {
+                "file_path": file_path,
+                "repository": repository,
+                "branch": branch,
+                "name": contents.name,
+                "path": contents.path,
+                "sha": contents.sha,
+                "size": contents.size,
+                "type": contents.type,
+                "url": contents.url,
+                "html_url": contents.html_url,
+                "git_url": contents.git_url,
+                "download_url": contents.download_url,
+                "encoding": contents.encoding
+            }
+            
+        except Exception as e:
+            return await self.handle_error(e, f"get_file_metadata({repository}, {file_path})")
     
     async def _search_file_content(self, repository: str, file_path: str, 
                                   search_pattern: str, case_sensitive: bool = False,
@@ -141,49 +190,204 @@ class FileContentServer(BaseMCPServer):
         """
         Search for patterns within file content.
         """
-        # TODO: Implement file content search
-        # 1. Get file content
-        # 2. Apply search pattern (text or regex)
-        # 3. Return matches with line numbers and context
-        pass
+        # First get the file content
+        content_result = await self._get_file_content(repository, file_path)
+        
+        if "error" in content_result:
+            return content_result
+        
+        content = content_result["content"]
+        if not content:
+            return {"error": "Cannot search in binary files"}
+        
+        try:
+            matches = []
+            lines = content.split('\n')
+            
+            if regex:
+                pattern = re.compile(search_pattern, flags=0 if case_sensitive else re.IGNORECASE)
+            else:
+                if case_sensitive:
+                    pattern = search_pattern
+                else:
+                    pattern = search_pattern.lower()
+                    lines = [line.lower() for line in lines]
+            
+            for line_num, line in enumerate(lines, 1):
+                if regex:
+                    if pattern.search(line):
+                        matches.append({
+                            "line_number": line_num,
+                            "line_content": line,
+                            "match": pattern.search(line).group()
+                        })
+                else:
+                    if pattern in line:
+                        start_pos = line.find(pattern)
+                        matches.append({
+                            "line_number": line_num,
+                            "line_content": line,
+                            "match_start": start_pos,
+                            "match_end": start_pos + len(pattern)
+                        })
+            
+            return {
+                "file_path": file_path,
+                "repository": repository,
+                "search_pattern": search_pattern,
+                "case_sensitive": case_sensitive,
+                "regex": regex,
+                "total_matches": len(matches),
+                "matches": matches
+            }
+            
+        except Exception as e:
+            return await self.handle_error(e, f"search_file_content({repository}, {file_path})")
     
     async def _get_file_history(self, repository: str, file_path: str, 
                                limit: int = 10) -> Dict[str, Any]:
         """
         Get file commit history.
         """
-        # TODO: Implement file history retrieval
-        # 1. Get commit history for the file
-        # 2. Extract relevant information (commit hash, message, date, author)
-        # 3. Return structured history data
-        pass
+        if not await self.check_rate_limit():
+            return {"error": "Rate limit exceeded"}
+        
+        try:
+            repo = self._get_repository(repository)
+            commits = repo.get_commits(path=file_path, per_page=limit)
+            
+            history = []
+            for commit in commits:
+                history.append({
+                    "sha": commit.sha,
+                    "message": commit.commit.message,
+                    "author": {
+                        "name": commit.commit.author.name,
+                        "email": commit.commit.author.email,
+                        "date": commit.commit.author.date.isoformat()
+                    },
+                    "committer": {
+                        "name": commit.commit.committer.name,
+                        "email": commit.commit.committer.email,
+                        "date": commit.commit.committer.date.isoformat()
+                    },
+                    "url": commit.html_url
+                })
+            
+            return {
+                "file_path": file_path,
+                "repository": repository,
+                "total_commits": len(history),
+                "commits": history
+            }
+            
+        except Exception as e:
+            return await self.handle_error(e, f"get_file_history({repository}, {file_path})")
     
     async def _list_directory_files(self, repository: str, directory_path: str,
                                    branch: str = "main", recursive: bool = False) -> Dict[str, Any]:
         """
         List files in a directory.
         """
-        # TODO: Implement directory listing
-        # 1. Get directory contents from GitHub API
-        # 2. Filter files vs directories
-        # 3. Include metadata for each file
-        # 4. Handle recursive listing if requested
-        pass
+        if not await self.check_rate_limit():
+            return {"error": "Rate limit exceeded"}
+        
+        try:
+            repo = self._get_repository(repository)
+            contents = repo.get_contents(directory_path, ref=branch)
+            
+            files = []
+            directories = []
+            
+            for item in contents:
+                if item.type == "file":
+                    files.append({
+                        "name": item.name,
+                        "path": item.path,
+                        "size": item.size,
+                        "sha": item.sha,
+                        "url": item.url,
+                        "html_url": item.html_url,
+                        "download_url": item.download_url
+                    })
+                elif item.type == "dir":
+                    directories.append({
+                        "name": item.name,
+                        "path": item.path,
+                        "sha": item.sha,
+                        "url": item.url,
+                        "html_url": item.html_url
+                    })
+            
+            result = {
+                "directory_path": directory_path,
+                "repository": repository,
+                "branch": branch,
+                "files": files,
+                "directories": directories,
+                "total_files": len(files),
+                "total_directories": len(directories)
+            }
+            
+            # If recursive is True, also get contents of subdirectories
+            if recursive and directories:
+                for directory in directories:
+                    sub_result = await self._list_directory_files(
+                        repository, directory["path"], branch, recursive=True
+                    )
+                    if "error" not in sub_result:
+                        directory["contents"] = sub_result
+            
+            return result
+            
+        except Exception as e:
+            return await self.handle_error(e, f"list_directory_files({repository}, {directory_path})")
     
     def _detect_file_type(self, file_path: str, content: bytes) -> Dict[str, str]:
         """
         Detect file type and encoding.
         """
-        # TODO: Implement file type detection
-        # 1. Use mimetypes to detect file type
-        # 2. Detect encoding (UTF-8, binary, etc.)
-        # 3. Return type and encoding information
-        pass
+        # Get MIME type
+        mime_type, _ = mimetypes.guess_type(file_path)
+        
+        # Check if it's binary
+        is_binary = self._is_binary_file(content)
+        
+        if is_binary:
+            return {
+                "type": "binary",
+                "mime_type": mime_type or "application/octet-stream",
+                "encoding": "binary"
+            }
+        else:
+            # Try to detect text encoding
+            try:
+                content.decode('utf-8')
+                encoding = 'utf-8'
+            except UnicodeDecodeError:
+                try:
+                    content.decode('latin-1')
+                    encoding = 'latin-1'
+                except UnicodeDecodeError:
+                    encoding = 'unknown'
+            
+            return {
+                "type": "text",
+                "mime_type": mime_type or "text/plain",
+                "encoding": encoding
+            }
     
     def _is_binary_file(self, content: bytes) -> bool:
         """
         Check if file content is binary.
         """
-        # TODO: Implement binary file detection
-        # Check for null bytes or other binary indicators
-        pass 
+        # Check for null bytes (common in binary files)
+        if b'\x00' in content:
+            return True
+        
+        # Check if more than 30% of bytes are non-printable
+        non_printable = sum(1 for byte in content if byte < 32 and byte not in [9, 10, 13])
+        if len(content) > 0 and non_printable / len(content) > 0.3:
+            return True
+        
+        return False 
