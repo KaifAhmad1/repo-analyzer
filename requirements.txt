@@ -4,12 +4,17 @@ fastapi>=0.104.0
 uvicorn>=0.24.0
 pydantic>=2.0.0
 
-# 🎨 UI & Styling
+# 🎨 Modern UI & Styling
 streamlit-option-menu>=0.3.6
 streamlit-ace>=0.1.1
 streamlit-aggrid>=0.3.4
+streamlit-extras>=0.3.0
+streamlit-lottie>=0.0.5
+streamlit-echarts>=0.4.0
+streamlit-folium>=0.13.0
 plotly>=5.15.0
 altair>=5.0.0
+bokeh>=3.0.0
 
 # 🤖 AI & LLM Integration
 openai>=1.0.0
@@ -77,8 +82,8 @@ mixpanel>=4.10.0
 aiohttp>=3.8.0
 asyncio-mqtt>=0.16.0
 
-# 🎯 MCP Protocol
-mcp>=1.0.0
+# 🎯 MCP Protocol - Official Anthropic SDK
+mcp[cli]>=1.0.0
 
 # 📱 Mobile & PWA Support
 streamlit-pwa>=0.1.0
@@ -87,4 +92,10 @@ streamlit-pwa>=0.1.0
 requests>=2.31.0
 
 # Configuration
-python-dotenv>=1.0.0 
+python-dotenv>=1.0.0
+
+# 🎨 Additional UI Enhancements
+streamlit-vertical-slider>=0.0.4
+streamlit-custom-notification-box>=0.1.8
+streamlit-timeline>=0.0.2
+streamlit-plotly-events>=0.0.8 

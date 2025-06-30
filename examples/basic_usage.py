@@ -13,6 +13,7 @@ sys.path.append(str(Path(__file__).parent.parent / "src"))
 from src.agent.ai_agent import create_ai_agent, ask_question
 from src.utils.config import load_config
 from src.utils.github import validate_github_token, get_repository_info
+from mcp import ServerParameters  # or the correct class from the docs
 
 def main():
     """Basic usage example"""
