@@ -9,39 +9,30 @@ from typing import Optional
 
 def render_repository_selector() -> Optional[str]:
     """Render repository selector and return selected repository URL"""
-    
+    st.markdown('<div class="custom-card">', unsafe_allow_html=True)
     st.subheader("📁 Select Repository")
-    
-    # Repository URL input
     repo_url = st.text_input(
         "GitHub Repository URL",
         placeholder="https://github.com/username/repository",
         help="Enter the full GitHub repository URL"
     )
-    
     if repo_url:
-        # Validate GitHub URL
         if not is_valid_github_url(repo_url):
-            st.error("❌ Please enter a valid GitHub repository URL")
+            st.markdown('<div class="toast" style="border-left: 6px solid #ef4444;">❌ Please enter a valid GitHub repository URL</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
             return None
-        
-        # Extract repository info
         repo_info = extract_repo_info(repo_url)
         if repo_info:
-            st.success(f"✅ Repository: {repo_info['owner']}/{repo_info['repo']}")
-            
-            # Display repository info
+            st.markdown(f'<div class="toast" style="border-left: 6px solid #10b981;">✅ Repository: {repo_info["owner"]}/{repo_info["repo"]}</div>', unsafe_allow_html=True)
             col1, col2 = st.columns(2)
             with col1:
-                st.metric("Owner", repo_info['owner'])
+                st.metric("👤 Owner", repo_info['owner'])
             with col2:
-                st.metric("Repository", repo_info['repo'])
-            
-            # Set environment variable for MCP servers
+                st.metric("📦 Repository", repo_info['repo'])
             st.session_state.github_repo_url = repo_url
-            
+            st.markdown('</div>', unsafe_allow_html=True)
             return repo_url
-    
+    st.markdown('</div>', unsafe_allow_html=True)
     return None
 
 def is_valid_github_url(url: str) -> bool:

@@ -18,6 +18,10 @@ from src.ui.repository_selector import render_repository_selector
 from src.utils.config import load_config
 from src.utils.github import validate_github_token
 
+# Inject custom CSS for modern styling and animations
+with open(Path(__file__).parent / "src" / "ui" / "styles.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
 def main():
     """Main application entry point"""
     st.set_page_config(

@@ -9,50 +9,47 @@ import time
 
 def render_chat_interface(ai_agent: Dict[str, Any]):
     """Render the main chat interface"""
-    
     st.subheader("💬 Ask Questions About the Repository")
-    
-    # Display conversation history
-    display_conversation_history()
-    
-    # Question input
-    question = st.text_input(
-        "Ask a question about the repository:",
-        placeholder="e.g., What is this repository about? Show me the main entry points...",
-        key="question_input"
-    )
-    
-    # Quick question buttons
-    render_quick_questions()
-    
-    # Process question
-    if st.button("🚀 Ask AI", type="primary") or (question and st.session_state.get("auto_submit", False)):
-        if question:
-            process_question(ai_agent, question)
-            # Clear input
-            st.session_state.question_input = ""
-            st.rerun()
+
+    # Floating action buttons
+    render_fab_buttons()
+
+    # Display conversation history in card
+    with st.container():
+        st.markdown('<div class="custom-card">', unsafe_allow_html=True)
+        display_conversation_history()
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # Question input in card
+    with st.container():
+        st.markdown('<div class="custom-card">', unsafe_allow_html=True)
+        question = st.text_input(
+            "Ask a question about the repository:",
+            placeholder="e.g., What is this repository about? Show me the main entry points...",
+            key="question_input"
+        )
+        render_quick_questions()
+        if st.button("🚀 Ask AI", type="primary") or (question and st.session_state.get("auto_submit", False)):
+            if question:
+                process_question(ai_agent, question)
+                st.session_state.question_input = ""
+                st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
 def display_conversation_history():
-    """Display the conversation history"""
+    """Display the conversation history with chat bubbles and animation"""
     if 'messages' in st.session_state and st.session_state.messages:
-        st.markdown("---")
-        st.subheader("📝 Conversation History")
-        
         for i, message in enumerate(st.session_state.messages):
+            is_user = message["role"] == "user"
+            bubble_class = "user-bubble" if is_user else "ai-bubble"
+            icon = "👤" if is_user else "🤖"
             with st.container():
-                if message["role"] == "user":
-                    st.markdown(f"**👤 You:** {message['content']}")
-                else:
-                    st.markdown(f"**🤖 AI:** {message['content']}")
-                    
-                    # Show tools used if any
-                    if message.get("tools_used"):
-                        with st.expander("🔧 Tools Used"):
-                            for tool in message["tools_used"]:
-                                st.markdown(f"- {tool}")
-                
-                st.markdown("---")
+                st.markdown(f'<div class="chat-bubble {bubble_class}">{icon} {message["content"]}</div>', unsafe_allow_html=True)
+                # Show tools used if any
+                if message.get("tools_used"):
+                    with st.expander("🔧 Tools Used"):
+                        for tool in message["tools_used"]:
+                            st.markdown(f"- {tool}")
 
 def render_quick_questions():
     """Render quick question buttons"""
@@ -84,50 +81,38 @@ def render_quick_questions():
         st.rerun()
 
 def process_question(ai_agent: Dict[str, Any], question: str):
-    """Process a question and get AI response"""
-    
-    # Add user message to history
+    """Process a question and get AI response with animated loader"""
     if 'messages' not in st.session_state:
         st.session_state.messages = []
-    
     st.session_state.messages.append({
         "role": "user",
         "content": question,
         "timestamp": time.time()
     })
-    
-    # Show loading indicator
+    # Show animated loader
+    st.markdown('<div class="loader"></div>', unsafe_allow_html=True)
     with st.spinner("🤖 AI is analyzing the repository..."):
         try:
-            # Get repository URL
             repo_url = st.session_state.get("repository_url", "")
             if not repo_url:
                 st.error("❌ No repository selected. Please select a repository first.")
                 return
-            
-            # Set environment variable for MCP servers
             import os
             os.environ['GITHUB_REPO_URL'] = repo_url
-            
-            # Ask AI agent
             from src.agent.ai_agent import ask_question
             response = ask_question(ai_agent, question, repo_url)
-            
             if response["success"]:
-                # Add AI response to history
                 st.session_state.messages.append({
                     "role": "assistant",
                     "content": response["response"],
                     "tools_used": response.get("tools_used", []),
                     "timestamp": time.time()
                 })
-                
-                st.success("✅ Response generated successfully!")
+                show_toast("✅ Response generated successfully!", success=True)
             else:
-                st.error(f"❌ Error: {response['response']}")
-        
+                show_toast(f"❌ Error: {response['response']}", success=False)
         except Exception as e:
-            st.error(f"❌ Error processing question: {str(e)}")
+            show_toast(f"❌ Error processing question: {str(e)}", success=False)
 
 def render_analysis_options():
     """Render additional analysis options"""
@@ -218,4 +203,32 @@ def export_conversation():
             data=json_str,
             file_name=f"conversation_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
             mime="application/json"
-        ) 
+        )
+
+def render_fab_buttons():
+    """Render floating action buttons for clear and export"""
+    st.markdown('''
+    <div class="fab" onclick="window.dispatchEvent(new CustomEvent('clearChat'))" title="Clear Chat">🗑️</div>
+    <div class="fab" style="right: 100px; background: #10b981;" onclick="window.dispatchEvent(new CustomEvent('exportChat'))" title="Export Conversation">⬇️</div>
+    <script>
+    window.addEventListener('clearChat', function() {
+        window.parent.postMessage({isStreamlitMessage: true, type: 'streamlit:setComponentValue', key: 'clear_chat', value: true}, '*');
+    });
+    window.addEventListener('exportChat', function() {
+        window.parent.postMessage({isStreamlitMessage: true, type: 'streamlit:setComponentValue', key: 'export_chat', value: true}, '*');
+    });
+    </script>
+    ''', unsafe_allow_html=True)
+    # Handle clear/export in Streamlit
+    if st.session_state.get('clear_chat', False):
+        clear_conversation()
+        st.session_state['clear_chat'] = False
+        st.rerun()
+    if st.session_state.get('export_chat', False):
+        export_conversation()
+        st.session_state['export_chat'] = False
+
+def show_toast(message: str, success: bool = True):
+    """Show a toast notification with animation"""
+    color = '#10b981' if success else '#ef4444'
+    st.markdown(f'<div class="toast" style="border-left: 6px solid {color};">{message}</div>', unsafe_allow_html=True) 
