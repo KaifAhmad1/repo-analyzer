@@ -1,5 +1,5 @@
 """
-🚀 GitHub Repository Analyzer - Modern UI
+🚀 GitHub Repository Analyzer - Modern UI with Advanced Multi-Agent System
 A beautiful, animated, and feature-rich interface for analyzing GitHub repositories
 """
 
@@ -20,7 +20,13 @@ sys.path.append(str(Path(__file__).parent / "src"))
 
 from src.ui.repository_selector import render_repository_selector
 from src.ui.chat_interface import render_chat_interface
-from src.agent.ai_agent import create_ai_agent
+from src.agent.ai_agent import (
+    create_ai_agent, 
+    create_advanced_agent, 
+    create_agent_team,
+    ask_question_advanced,
+    analyze_repository_advanced
+)
 from src.utils.config import load_config
 from src.servers.server_manager import start_mcp_servers, check_servers_status
 from src.servers.mcp_client_improved import SyncMCPClient
@@ -44,9 +50,34 @@ def create_header():
     st.markdown("""
     <div class="header-container">
         <h1 class="header-title">🚀 GitHub Repository Analyzer</h1>
-        <p class="header-subtitle">AI-Powered Repository Analysis with Modern MCP Servers</p>
+        <p class="header-subtitle">AI-Powered Repository Analysis with Advanced Multi-Agent System</p>
     </div>
     """, unsafe_allow_html=True)
+
+def create_agent_selector():
+    """Create agent selection interface"""
+    st.sidebar.markdown("### 🤖 Agent System")
+    
+    agent_type = st.sidebar.selectbox(
+        "Choose Agent Type",
+        ["Single Agent", "Multi-Agent Team", "Legacy System"],
+        help="Select the agent system to use for analysis"
+    )
+    
+    if agent_type == "Single Agent":
+        model = st.sidebar.selectbox(
+            "Model",
+            ["claude-sonnet-4-20250514", "gpt-4o-mini"],
+            help="Choose the AI model for the agent"
+        )
+    elif agent_type == "Multi-Agent Team":
+        st.sidebar.info("🤝 Using specialized team of agents for comprehensive analysis")
+        model = "claude-sonnet-4-20250514"
+    else:
+        st.sidebar.info("🔄 Using legacy agent system")
+        model = "claude-sonnet-4-20250514"
+    
+    return agent_type, model
 
 def create_stats_cards(repo_data=None):
     """Create animated stats cards"""
@@ -76,8 +107,8 @@ def create_stats_cards(repo_data=None):
             </div>
             """, unsafe_allow_html=True)
 
-def create_insights_panel(repo_url=None):
-    """Create insights panel with repository analysis"""
+def create_insights_panel(repo_url=None, agent_type="Single Agent"):
+    """Create insights panel with repository analysis using advanced agents"""
     if not repo_url:
         st.markdown("""
         <div class="modern-card insight-card">
@@ -87,25 +118,30 @@ def create_insights_panel(repo_url=None):
         """, unsafe_allow_html=True)
         return
     
-    # Get repository insights using MCP client
+    # Get repository insights using advanced agents
     try:
-        with SyncMCPClient() as client:
-            # Get repository overview
-            overview = client.get_repository_overview(repo_url)
-            if overview.get("success"):
-                st.markdown("""
-                <div class="modern-card insight-card">
-                    <h3>💡 Repository Insights</h3>
-                    <div style="margin-top: 16px;">
-                """, unsafe_allow_html=True)
-                
-                # Parse the overview data
-                overview_text = overview.get("result", "")
-                st.markdown(overview_text)
-                
-                st.markdown("</div></div>", unsafe_allow_html=True)
+        with st.spinner("🤖 Analyzing repository with AI agents..."):
+            if agent_type == "Multi-Agent Team":
+                # Use team for comprehensive analysis
+                analysis = analyze_repository_advanced(repo_url)
             else:
-                st.error("Failed to get repository insights")
+                # Use single agent
+                analysis = ask_question_advanced(
+                    "Provide a comprehensive overview of this repository including its purpose, structure, and key features",
+                    repo_url,
+                    use_team=(agent_type == "Multi-Agent Team")
+                )
+            
+            st.markdown("""
+            <div class="modern-card insight-card">
+                <h3>💡 Repository Insights</h3>
+                <div style="margin-top: 16px;">
+            """, unsafe_allow_html=True)
+            
+            st.markdown(analysis)
+            
+            st.markdown("</div></div>", unsafe_allow_html=True)
+            
     except Exception as e:
         st.error(f"Error getting insights: {e}")
 
@@ -320,6 +356,9 @@ def main():
     if 'theme' not in st.session_state:
         st.session_state.theme = "light"
     
+    if 'agent_type' not in st.session_state:
+        st.session_state.agent_type = "Single Agent"
+    
     # Create header
     create_header()
     
@@ -369,6 +408,10 @@ def main():
             if anthropic_key:
                 os.environ["ANTHROPIC_API_KEY"] = anthropic_key
         
+        # Agent System Selection
+        agent_type, model = create_agent_selector()
+        st.session_state.agent_type = agent_type
+        
         # MCP Server Status
         st.markdown("### 🔧 MCP Servers")
         
@@ -406,11 +449,26 @@ def main():
     if repo_url:
         st.session_state.repository_url = repo_url
         
-        # Create AI agent if not exists
-        if st.session_state.ai_agent is None:
+        # Create AI agent if not exists or if agent type changed
+        if (st.session_state.ai_agent is None or 
+            hasattr(st.session_state, 'last_agent_type') and 
+            st.session_state.last_agent_type != agent_type):
+            
             try:
-                model = "gpt-4" if os.getenv("OPENAI_API_KEY") else "claude-3-sonnet"
-                st.session_state.ai_agent = create_ai_agent(model, config)
+                if agent_type == "Legacy System":
+                    # Use legacy agent system
+                    model = "gpt-4" if os.getenv("OPENAI_API_KEY") else "claude-3-sonnet"
+                    st.session_state.ai_agent = create_ai_agent(model, config)
+                else:
+                    # Use advanced-based system
+                    st.session_state.ai_agent = {
+                        "type": agent_type,
+                        "model": model,
+                        "config": config
+                    }
+                
+                st.session_state.last_agent_type = agent_type
+                
             except Exception as e:
                 st.error(f"Failed to create AI agent: {e}")
                 return
@@ -425,7 +483,7 @@ def main():
         
         with tab1:
             # Overview tab
-            create_insights_panel(repo_url)
+            create_insights_panel(repo_url, agent_type)
             create_visualizations(repo_url)
         
         with tab2:
@@ -442,7 +500,60 @@ def main():
         
         with tab5:
             # Chat tab
-            render_chat_interface(st.session_state.ai_agent)
+            if agent_type == "Legacy System":
+                render_chat_interface(st.session_state.ai_agent)
+            else:
+                # advanced-based chat interface
+                st.markdown("### 💬 AI Chat with advanced Agents")
+                
+                # Chat input
+                user_question = st.text_input(
+                    "Ask a question about the repository:",
+                    placeholder="e.g., What is this repository about? Find authentication code..."
+                )
+                
+                if st.button("🤖 Ask AI Agent"):
+                    if user_question:
+                        with st.spinner("🤖 AI agent is thinking..."):
+                            try:
+                                if agent_type == "Multi-Agent Team":
+                                    response = ask_question_advanced(
+                                        user_question, 
+                                        repo_url, 
+                                        use_team=True
+                                    )
+                                else:
+                                    response = ask_question_advanced(
+                                        user_question, 
+                                        repo_url, 
+                                        use_team=False
+                                    )
+                                
+                                st.markdown("### 🤖 AI Response")
+                                st.markdown(response)
+                                
+                                # Add to chat history
+                                st.session_state.messages.append({
+                                    "role": "user",
+                                    "content": user_question
+                                })
+                                st.session_state.messages.append({
+                                    "role": "assistant", 
+                                    "content": response
+                                })
+                                
+                            except Exception as e:
+                                st.error(f"Error getting AI response: {e}")
+                
+                # Chat history
+                if st.session_state.messages:
+                    st.markdown("### 💬 Chat History")
+                    for message in st.session_state.messages[-6:]:  # Show last 6 messages
+                        if message["role"] == "user":
+                            st.markdown(f"**You:** {message['content']}")
+                        else:
+                            st.markdown(f"**AI:** {message['content']}")
+                        st.divider()
         
         with tab6:
             # Analytics tab

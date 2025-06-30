@@ -1,46 +1,200 @@
 """
-Improved AI Agent for GitHub Repository Analysis
-Uses OpenAI/Anthropic APIs with official MCP SDK for better integration
+Multi-Agent System for GitHub Repository Analysis
+Integrates seamlessly with all MCP servers using advanced agent framework
 """
 
-import openai
-import anthropic
 import os
 import json
-import asyncio
 from typing import Dict, List, Any, Optional
+from agno.agent import Agent
+from agno.models.anthropic import Claude
+from agno.models.openai import OpenAIChat
+from agno.tools.reasoning import ReasoningTools
+from agno.team.team import Team
 from src.servers.mcp_client_improved import SyncMCPClient
 
+class MCPTools:
+    """Custom agent tools wrapper for MCP servers"""
+    
+    def __init__(self):
+        self.mcp_client = SyncMCPClient()
+    
+    def get_repository_overview(self, repo_url: str) -> str:
+        """Get repository overview using MCP server"""
+        try:
+            with self.mcp_client as client:
+                result = client.get_repository_overview(repo_url)
+                return json.dumps(result, indent=2)
+        except Exception as e:
+            return f"Error getting repository overview: {str(e)}"
+    
+    def search_code(self, repo_url: str, query: str, language: str = "") -> str:
+        """Search code using MCP server"""
+        try:
+            with self.mcp_client as client:
+                result = client.search_code(repo_url, query, language)
+                return json.dumps(result, indent=2)
+        except Exception as e:
+            return f"Error searching code: {str(e)}"
+    
+    def get_recent_commits(self, repo_url: str, limit: int = 10) -> str:
+        """Get recent commits using MCP server"""
+        try:
+            with self.mcp_client as client:
+                result = client.get_recent_commits(repo_url, limit)
+                return json.dumps(result, indent=2)
+        except Exception as e:
+            return f"Error getting commits: {str(e)}"
+    
+    def get_issues(self, repo_url: str, state: str = "open", limit: int = 10) -> str:
+        """Get issues using MCP server"""
+        try:
+            with self.mcp_client as client:
+                result = client.get_issues(repo_url, state, limit)
+                return json.dumps(result, indent=2)
+        except Exception as e:
+            return f"Error getting issues: {str(e)}"
+    
+    def analyze_repository(self, repo_url: str) -> str:
+        """Analyze repository using MCP server"""
+        try:
+            with self.mcp_client as client:
+                result = client.analyze_repository(repo_url)
+                return json.dumps(result, indent=2)
+        except Exception as e:
+            return f"Error analyzing repository: {str(e)}"
+
+def create_advanced_agent(model_name: str = "claude-sonnet-4-20250514") -> Agent:
+    """Create advanced agent with MCP tools integration"""
+    
+    # Initialize MCP tools
+    mcp_tools = MCPTools()
+    
+    # Create advanced agent
+    agent = Agent(
+        name="Repository Analyzer Agent",
+        model=Claude(id=model_name),
+        tools=[
+            ReasoningTools(add_instructions=True),
+            mcp_tools.get_repository_overview,
+            mcp_tools.search_code,
+            mcp_tools.get_recent_commits,
+            mcp_tools.get_issues,
+            mcp_tools.analyze_repository,
+        ],
+        instructions=[
+            "You are an intelligent GitHub repository analyzer powered by advanced AI.",
+            "Use the available MCP tools to gather comprehensive information about repositories.",
+            "Always provide detailed, helpful explanations with context.",
+            "Include code examples when relevant.",
+            "Be conversational and friendly.",
+            "Use tables to display data when appropriate.",
+            "Always explain what you're doing and why.",
+        ],
+        markdown=True,
+        add_datetime_to_instructions=True,
+    )
+    
+    return agent
+
+def create_agent_team() -> Team:
+    """Create team with specialized agents"""
+    
+    # Repository Overview Agent
+    overview_agent = Agent(
+        name="Repository Overview Agent",
+        role="Handle repository metadata and basic information",
+        model=Claude(id="claude-sonnet-4-20250514"),
+        tools=[MCPTools().get_repository_overview],
+        instructions="Focus on repository metadata, description, and basic statistics.",
+        add_datetime_to_instructions=True,
+    )
+    
+    # Code Analysis Agent
+    code_agent = Agent(
+        name="Code Analysis Agent",
+        role="Handle code search and analysis",
+        model=Claude(id="claude-sonnet-4-20250514"),
+        tools=[MCPTools().search_code, MCPTools().analyze_repository],
+        instructions="Focus on code patterns, structure, and technical analysis.",
+        add_datetime_to_instructions=True,
+    )
+    
+    # Activity Analysis Agent
+    activity_agent = Agent(
+        name="Activity Analysis Agent",
+        role="Handle commits, issues, and project activity",
+        model=Claude(id="claude-sonnet-4-20250514"),
+        tools=[MCPTools().get_recent_commits, MCPTools().get_issues],
+        instructions="Focus on project activity, recent changes, and community engagement.",
+        add_datetime_to_instructions=True,
+    )
+    
+    # Create team
+    team = Team(
+        name="Repository Analysis Team",
+        mode="coordinate",
+        model=Claude(id="claude-sonnet-4-20250514"),
+        members=[overview_agent, code_agent, activity_agent],
+        tools=[ReasoningTools(add_instructions=True)],
+        instructions=[
+            "Collaborate to provide comprehensive repository analysis",
+            "Consider repository structure, code quality, and project activity",
+            "Use tables and charts to display data clearly",
+            "Present findings in a structured, easy-to-follow format",
+            "Only output the final consolidated analysis",
+        ],
+        markdown=True,
+        show_members_responses=True,
+        enable_agentic_context=True,
+        add_datetime_to_instructions=True,
+        success_criteria="The team has provided a complete repository analysis with data, insights, and actionable recommendations.",
+    )
+    
+    return team
+
+def ask_question_advanced(question: str, repository_url: str, use_team: bool = False) -> str:
+    """Ask a question using advanced agent or team"""
+    try:
+        if use_team:
+            # Use team for complex analysis
+            team = create_agent_team()
+            response = team.run(f"Analyze the repository {repository_url}. {question}")
+            return response.content
+        else:
+            # Use single agent for simple questions
+            agent = create_advanced_agent()
+            response = agent.run(f"Repository: {repository_url}\n\nQuestion: {question}")
+            return response.content
+            
+    except Exception as e:
+        return f"Error processing request: {str(e)}"
+
+def analyze_repository_advanced(repository_url: str) -> str:
+    """Perform comprehensive repository analysis using advanced system"""
+    try:
+        team = create_agent_team()
+        response = team.run(f"Provide a comprehensive analysis of the repository: {repository_url}")
+        return response.content
+    except Exception as e:
+        return f"Error analyzing repository: {str(e)}"
+
+# Backward compatibility functions
 def create_ai_agent(model_name: str, config: Dict[str, Any]) -> Dict[str, Any]:
-    """Create and configure AI agent with improved MCP client"""
-    api_key = None
-    
-    if model_name.startswith("gpt"):
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            raise ValueError("OpenAI API key not found. Set OPENAI_API_KEY environment variable.")
-        client = openai.OpenAI(api_key=api_key)
-    elif model_name.startswith("claude"):
-        api_key = os.getenv("ANTHROPIC_API_KEY")
-        if not api_key:
-            raise ValueError("Anthropic API key not found. Set ANTHROPIC_API_KEY environment variable.")
-        client = anthropic.Anthropic(api_key=api_key)
-    else:
-        raise ValueError(f"Unsupported model: {model_name}")
-    
+    """Create advanced agent (backward compatibility)"""
+    agent = create_advanced_agent(model_name)
     return {
-        "client": client,
+        "agent": agent,
         "model": model_name,
-        "mcp_client": SyncMCPClient(),
         "config": config
     }
 
 def get_available_tools() -> List[Dict[str, Any]]:
-    """Get list of available MCP tools from the improved server"""
+    """Get list of available MCP tools"""
     return [
         {
             "name": "get_repository_overview",
-            "description": "Get comprehensive overview of a GitHub repository including stats, description, and metadata",
+            "description": "Get comprehensive overview of a GitHub repository",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -51,45 +205,45 @@ def get_available_tools() -> List[Dict[str, Any]]:
         },
         {
             "name": "search_code",
-            "description": "Search for code patterns or functions in the repository",
+            "description": "Search for code patterns in the repository",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "repo_url": {"type": "string", "description": "GitHub repository URL"},
                     "query": {"type": "string", "description": "Search query"},
-                    "language": {"type": "string", "description": "Programming language filter (optional)"}
+                    "language": {"type": "string", "description": "Programming language filter"}
                 },
                 "required": ["repo_url", "query"]
             }
         },
         {
             "name": "get_recent_commits",
-            "description": "Get recent commit history from the repository",
+            "description": "Get recent commit history",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "repo_url": {"type": "string", "description": "GitHub repository URL"},
-                    "limit": {"type": "integer", "description": "Number of commits to retrieve (default: 10)"}
+                    "limit": {"type": "integer", "description": "Number of commits to retrieve"}
                 },
                 "required": ["repo_url"]
             }
         },
         {
             "name": "get_issues",
-            "description": "Get issues and pull requests from the repository",
+            "description": "Get issues and pull requests",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "repo_url": {"type": "string", "description": "GitHub repository URL"},
-                    "state": {"type": "string", "description": "Issue state (open/closed, default: open)"},
-                    "limit": {"type": "integer", "description": "Number of issues to retrieve (default: 10)"}
+                    "state": {"type": "string", "description": "Issue state (open/closed)"},
+                    "limit": {"type": "integer", "description": "Number of issues to retrieve"}
                 },
                 "required": ["repo_url"]
             }
         },
         {
             "name": "analyze_repository",
-            "description": "Perform comprehensive repository analysis including structure, activity, and insights",
+            "description": "Perform comprehensive repository analysis",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -100,174 +254,34 @@ def get_available_tools() -> List[Dict[str, Any]]:
         }
     ]
 
-def create_system_prompt(repository_url: str) -> str:
-    """Create system prompt for the AI agent"""
-    return f"""You are an intelligent GitHub repository analyzer powered by AI. You can help users understand any GitHub repository by answering questions about its code, structure, commits, issues, and more.
-
-Current Repository: {repository_url}
-
-You have access to the following tools:
-- get_repository_overview: Get comprehensive repository information including stats, description, and metadata
-- search_code: Search for code patterns or functions in the repository
-- get_recent_commits: Get recent commit history from the repository
-- get_issues: Get issues and pull requests from the repository
-- analyze_repository: Perform comprehensive repository analysis
-
-Guidelines:
-1. Always use the appropriate tools to gather information before answering
-2. Provide detailed, helpful explanations with context
-3. Include code examples when relevant
-4. Be conversational and friendly
-5. If you need to use multiple tools, do so systematically
-6. Always explain what you're doing and why
-7. Use the analyze_repository tool for comprehensive overviews
-8. Use search_code for finding specific functionality or patterns
-
-Example questions you can answer:
-- "What is this repository about?"
-- "Show me the main entry points"
-- "What are the recent changes?"
-- "Find authentication-related code"
-- "What dependencies does this use?"
-- "Are there any performance issues?"
-- "Explain the database implementation"
-- "What's the testing strategy?"
-- "Give me a comprehensive analysis of this repository"
-
-Start by understanding the repository structure and then answer the user's question with detailed insights."""
-
 def ask_question(agent: Dict[str, Any], question: str, repository_url: str) -> Dict[str, Any]:
-    """Ask a question to the AI agent and get response using improved MCP client"""
+    """Ask a question using advanced agent (backward compatibility)"""
     try:
-        # Create system prompt
-        system_prompt = create_system_prompt(repository_url)
-        
-        # Get available tools
-        tools = get_available_tools()
-        
-        # Prepare messages
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": question}
-        ]
-        
-        # Make API call
-        if agent["model"].startswith("gpt"):
-            response = agent["client"].chat.completions.create(
-                model=agent["model"],
-                messages=messages,
-                tools=tools,
-                tool_choice="auto",
-                temperature=0.7,
-                max_tokens=2000
-            )
-            
-            # Process response
-            response_message = response.choices[0].message
-            
-            # Handle tool calls
-            if response_message.tool_calls:
-                tool_results = []
-                
-                # Use improved MCP client
-                with agent["mcp_client"] as mcp_client:
-                    for tool_call in response_message.tool_calls:
-                        tool_name = tool_call.function.name
-                        tool_args = json.loads(tool_call.function.arguments)
-                        
-                        # Add repository URL to tool args if not present
-                        if "repo_url" not in tool_args:
-                            tool_args["repo_url"] = repository_url
-                        
-                        # Call MCP tool
-                        result = mcp_client.call_tool(tool_name, tool_args)
-                        tool_results.append({
-                            "tool": tool_name,
-                            "result": result
-                        })
-                
-                # Add tool results to conversation
-                messages.append(response_message)
-                for result in tool_results:
-                    messages.append({
-                        "role": "tool",
-                        "tool_call_id": tool_call.id,
-                        "content": json.dumps(result["result"])
-                    })
-                
-                # Get final response
-                final_response = agent["client"].chat.completions.create(
-                    model=agent["model"],
-                    messages=messages,
-                    temperature=0.7,
-                    max_tokens=2000
-                )
-                
-                return {
-                    "response": final_response.choices[0].message.content,
-                    "tools_used": [r["tool"] for r in tool_results],
-                    "success": True
-                }
-            else:
-                return {
-                    "response": response_message.content,
-                    "tools_used": [],
-                    "success": True
-                }
-        
-        elif agent["model"].startswith("claude"):
-            # Handle Anthropic Claude
-            response = agent["client"].messages.create(
-                model=agent["model"],
-                max_tokens=2000,
-                temperature=0.7,
-                system=system_prompt,
-                messages=[{"role": "user", "content": question}]
-            )
-            
-            return {
-                "response": response.content[0].text,
-                "tools_used": [],
-                "success": True
-            }
-        
-        else:
-            return {
-                "response": "Unsupported model type",
-                "tools_used": [],
-                "success": False
-            }
-    
+        response = ask_question_advanced(question, repository_url)
+        return {
+            "response": response,
+            "success": True,
+            "model": agent.get("model", "advanced-agent")
+        }
     except Exception as e:
         return {
-            "response": f"Error processing question: {str(e)}",
-            "tools_used": [],
-            "success": False
+            "error": str(e),
+            "success": False,
+            "model": agent.get("model", "advanced-agent")
         }
 
 def analyze_repository(agent: Dict[str, Any], repository_url: str) -> Dict[str, Any]:
-    """Perform comprehensive repository analysis"""
+    """Analyze repository using advanced system (backward compatibility)"""
     try:
-        # Use the improved MCP client for analysis
-        with agent["mcp_client"] as mcp_client:
-            result = mcp_client.analyze_repository(repository_url)
-            
-            if result["success"]:
-                return {
-                    "response": result["result"],
-                    "tools_used": ["analyze_repository"],
-                    "success": True
-                }
-            else:
-                return {
-                    "response": f"Analysis failed: {result.get('error', 'Unknown error')}",
-                    "tools_used": [],
-                    "success": False
-                }
-    
+        response = analyze_repository_advanced(repository_url)
+        return {
+            "analysis": response,
+            "success": True,
+            "model": agent.get("model", "advanced-agent")
+        }
     except Exception as e:
         return {
-            "response": f"Error analyzing repository: {str(e)}",
-            "tools_used": [],
-            "success": False
+            "error": str(e),
+            "success": False,
+            "model": agent.get("model", "advanced-agent")
         } 

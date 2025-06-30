@@ -20,6 +20,9 @@ bokeh>=3.0.0
 openai>=1.0.0
 anthropic>=0.7.0
 
+# 🧠 Agno Multi-Agent Framework
+agno>=1.0.0
+
 # 🔧 GitHub API & Git
 PyGithub>=2.1.0
 gitpython>=3.1.0
