@@ -4,12 +4,13 @@
 app:
   name: "GitHub Repository Analyzer"
   version: "1.0.0"
+  description: "AI-powered GitHub repository analysis tool"
   debug: false
   environment: "development"  # development, production, staging
 
 # 🎨 UI Settings
 ui:
-  theme: "auto"  # auto, light, dark, ocean, forest, sunset
+  theme: "light"
   language: "en"
   animations: true
   responsive: true
@@ -18,7 +19,9 @@ ui:
   # Layout
   sidebar_width: "wide"
   main_width: "wide"
-  page_title: "🔍 GitHub Repository Analyzer"
+  page_title: "GitHub Repository Analyzer"
+  page_icon: "🔍"
+  sidebar_state: "expanded"
   
   # Features
   features:
@@ -33,17 +36,24 @@ ai:
   provider: "openai"  # openai, anthropic
   model: "gpt-4"
   temperature: 0.7
-  max_tokens: 1000
+  max_tokens: 2000
   timeout: 30
   
   # Fallback settings
   fallback_model: "gpt-3.5-turbo"
   retry_attempts: 3
   retry_delay: 1
+  
+  # Additional models
+  available_models:
+    - "gpt-4"
+    - "gpt-3.5-turbo"
+    - "claude-3-sonnet"
 
 # 🔧 GitHub API Settings
 github:
   api_base_url: "https://api.github.com"
+  api_rate_limit: 5000
   rate_limit_per_hour: 5000
   request_timeout: 30
   cache_enabled: true
@@ -96,12 +106,21 @@ mcp:
   
   # Servers
   servers:
-    file_content: true
-    repository_structure: true
-    commit_history: true
-    code_search: true
-    issues_pr: true
-    documentation: true
+    file_content:
+      port: 8001
+      name: "File Content Server"
+    repository_structure:
+      port: 8002
+      name: "Repository Structure Server"
+    commit_history:
+      port: 8003
+      name: "Commit History Server"
+    code_search:
+      port: 8004
+      name: "Code Search Server"
+    issues:
+      port: 8005
+      name: "Issues Server"
   
   # Connection
   retry_attempts: 3
@@ -215,4 +234,12 @@ development:
   
   # Development tools
   hot_reload: true
-  auto_restart: true 
+  auto_restart: true
+
+# Features
+features:
+  code_analysis: true
+  dependency_analysis: true
+  issue_tracking: true
+  commit_analysis: true
+  file_search: true 

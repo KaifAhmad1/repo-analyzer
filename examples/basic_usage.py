@@ -1,102 +1,108 @@
 """
-Basic Usage Example
-
-This example demonstrates how to use the GitHub Repository Analyzer
-with Agno-based AI agent to analyze repositories.
+Basic Usage Example for GitHub Repository Analyzer
+Demonstrates how to use the AI agent and MCP servers programmatically
 """
 
-import asyncio
 import os
-from ai_agent.agent import GitHubRepositoryAgent
+import sys
+from pathlib import Path
 
-async def main():
-    """
-    Main example function demonstrating repository analysis.
-    """
+# Add src to path for imports
+sys.path.append(str(Path(__file__).parent.parent / "src"))
+
+from src.agent.ai_agent import create_ai_agent, ask_question
+from src.utils.config import load_config
+from src.utils.github import validate_github_token, get_repository_info
+
+def main():
+    """Basic usage example"""
     print("🔍 GitHub Repository Analyzer - Basic Usage Example")
     print("=" * 50)
     
-    # Check for required environment variables
-    if not os.getenv("GITHUB_TOKEN"):
-        print("❌ Error: GITHUB_TOKEN environment variable is required")
-        print("Please set your GitHub token: export GITHUB_TOKEN=your_token")
+    # Load configuration
+    config = load_config()
+    print(f"✅ Configuration loaded: {config['app']['name']} v{config['app']['version']}")
+    
+    # Check environment variables
+    github_token = os.getenv("GITHUB_TOKEN")
+    openai_key = os.getenv("OPENAI_API_KEY")
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+    
+    if not github_token:
+        print("❌ GITHUB_TOKEN not found. Please set it in your environment.")
         return
     
-    if not os.getenv("OPENAI_API_KEY") and not os.getenv("ANTHROPIC_API_KEY"):
-        print("❌ Error: Either OPENAI_API_KEY or ANTHROPIC_API_KEY is required")
-        print("Please set one of them: export OPENAI_API_KEY=your_key")
+    if not openai_key and not anthropic_key:
+        print("❌ No AI API key found. Please set OPENAI_API_KEY or ANTHROPIC_API_KEY.")
         return
     
-    # Initialize the AI agent
-    print("🤖 Initializing AI Agent...")
+    # Validate GitHub token
+    print("🔐 Validating GitHub token...")
+    if not validate_github_token(github_token):
+        print("❌ Invalid GitHub token.")
+        return
+    print("✅ GitHub token validated successfully!")
+    
+    # Create AI agent
+    model = "gpt-4" if openai_key else "claude-3-sonnet"
+    print(f"🤖 Creating AI agent with model: {model}")
+    
     try:
-        # Use OpenAI if available, otherwise use Anthropic
-        if os.getenv("OPENAI_API_KEY"):
-            agent = GitHubRepositoryAgent("openai", "gpt-4")
-            print("✅ Initialized with OpenAI GPT-4")
-        else:
-            agent = GitHubRepositoryAgent("anthropic", "claude-3-sonnet")
-            print("✅ Initialized with Anthropic Claude-3")
+        agent = create_ai_agent(model, config)
+        print("✅ AI agent created successfully!")
     except Exception as e:
-        print(f"❌ Error initializing agent: {e}")
+        print(f"❌ Failed to create AI agent: {e}")
         return
     
-    # Example repository to analyze
-    repository = "microsoft/vscode"
-    print(f"\n📁 Analyzing repository: {repository}")
+    # Example repository
+    repo_url = "https://github.com/microsoft/vscode"
+    print(f"📁 Analyzing repository: {repo_url}")
     
-    # Example questions to ask
-    example_questions = [
-        "What is this repository about and what does it do?",
-        "Show me the main entry points of this application",
-        "What are the recent changes in the last 10 commits?",
-        "Find all functions related to authentication",
-        "What dependencies does this project use?"
+    # Set environment variable for MCP servers
+    os.environ['GITHUB_REPO_URL'] = repo_url
+    
+    # Get repository info
+    repo_info = get_repository_info(repo_url, github_token)
+    if repo_info:
+        print(f"📊 Repository: {repo_info['full_name']}")
+        print(f"📝 Description: {repo_info['description']}")
+        print(f"💻 Language: {repo_info['language']}")
+        print(f"⭐ Stars: {repo_info['stars']}")
+        print(f"🍴 Forks: {repo_info['forks']}")
+        print(f"🐛 Issues: {repo_info['issues']}")
+    
+    # Example questions
+    questions = [
+        "What is this repository about?",
+        "What are the main entry points of this application?",
+        "What programming languages are used?",
+        "Are there any recent changes in the last 5 commits?"
     ]
     
-    # Process each question
-    for i, question in enumerate(example_questions, 1):
+    print("\n" + "=" * 50)
+    print("💬 Example Questions and Answers")
+    print("=" * 50)
+    
+    for i, question in enumerate(questions, 1):
         print(f"\n❓ Question {i}: {question}")
-        print("-" * 40)
+        print("-" * 30)
         
         try:
-            # Process the question
-            response = await agent.process_question(question, repository)
+            response = ask_question(agent, question, repo_url)
             
-            # Display the answer
-            print(f"🤖 Answer: {response['answer']}")
-            
-            # Display tool usage if any
-            if response.get('tool_usage'):
-                print(f"🔧 Tools used: {len(response['tool_usage'])}")
-                for tool in response['tool_usage']:
-                    print(f"   - {tool.get('tool', 'Unknown')}")
-            
-            print(f"📊 Confidence: {response.get('confidence', 'N/A')}")
-            
+            if response["success"]:
+                print(f"🤖 Answer: {response['response'][:200]}...")
+                if response.get("tools_used"):
+                    print(f"🔧 Tools used: {', '.join(response['tools_used'])}")
+            else:
+                print(f"❌ Error: {response['response']}")
+        
         except Exception as e:
-            print(f"❌ Error processing question: {e}")
+            print(f"❌ Exception: {e}")
         
         print()
     
-    # Demonstrate repository overview
-    print("📊 Generating repository overview...")
-    try:
-        overview = await agent.analyze_repository_overview(repository)
-        print(f"📝 Overview: {overview['answer']}")
-    except Exception as e:
-        print(f"❌ Error generating overview: {e}")
-    
-    # Demonstrate code pattern analysis
-    print("\n🔍 Analyzing code patterns...")
-    try:
-        patterns = await agent.find_code_patterns(repository, "functions")
-        print(f"🔧 Functions found: {patterns['answer']}")
-    except Exception as e:
-        print(f"❌ Error analyzing patterns: {e}")
-    
-    print("\n✅ Example completed successfully!")
+    print("✅ Basic usage example completed!")
 
 if __name__ == "__main__":
-    # Run the example
-    asyncio.run(main()) 
+    main() 
