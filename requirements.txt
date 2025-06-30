@@ -1,104 +1,61 @@
-# 🚀 Core Dependencies
-streamlit>=1.28.0
-fastapi>=0.104.0
-uvicorn>=0.24.0
-pydantic>=2.0.0
+# Core Dependencies
+streamlit
+fastapi
+uvicorn
+pydantic
 
-# 🎨 Modern UI & Styling
-streamlit-option-menu>=0.3.6
-streamlit-ace>=0.1.1
-streamlit-aggrid>=0.3.4
-streamlit-extras>=0.3.0
-streamlit-lottie>=0.0.5
-streamlit-echarts>=0.4.0
-streamlit-folium>=0.13.0
-plotly>=5.15.0
-altair>=5.0.0
-bokeh>=3.0.0
+# Modern UI & Styling
+streamlit-option-menu
+streamlit-ace
+streamlit-aggrid
+streamlit-extras
+streamlit-lottie
+streamlit-echarts
+streamlit-folium
+plotly
+altair
+bokeh
 
-# 🤖 AI & LLM Integration
-openai>=1.0.0
-anthropic>=0.7.0
-
-# 🧠 Agno Multi-Agent Framework
-agno>=1.0.0
-
-# 🔧 GitHub API & Git
-PyGithub>=2.1.0
-gitpython>=3.1.0
-
-# 📊 Data Processing & Analysis
-pandas>=2.0.0
-numpy>=1.24.0
-networkx>=3.0
-matplotlib>=3.7.0
-seaborn>=0.12.0
+# AI & LLM Integration
+openai
+anthropic
+agno
 
 # 🔍 Code Analysis
-ast>=3.8.0
-radon>=6.0.0
-mccabe>=0.7.0
-pylint>=3.0.0
-black>=23.0.0
+ast
+radon
+mccabe
+pylint
+black
 
-# 🌐 Web & Parsing
-beautifulsoup4>=4.12.0
-markdown>=3.5.0
-pyyaml>=6.0
-jinja2>=3.1.0
+redis
+sqlalchemy
+cryptography
+pydantic[email]
+psutil
+memory-profiler
+pytest
+pytest-asyncio
+pytest-mock
+pytest-cov
+black
+flake8
+mypy
+pre-commit
 
-# 💾 Caching & Storage
-redis>=4.5.0
-sqlalchemy>=2.0.0
+mkdocs
+mkdocs-material
+babel
+mixpanel
+aiohttp
+asyncio-mqtt
 
-# 🔒 Security & Validation
-cryptography>=41.0.0
-pydantic[email]>=2.0.0
+mcp[cli]
+streamlit-pwa
+requests
+python-dotenv
 
-# 📈 Performance & Monitoring
-psutil>=5.9.0
-memory-profiler>=0.61.0
-
-# 🧪 Testing
-pytest>=7.4.0
-pytest-asyncio>=0.21.0
-pytest-mock>=3.11.0
-pytest-cov>=4.1.0
-
-# 🛠️ Development Tools
-black>=23.0.0
-flake8>=6.0.0
-mypy>=1.5.0
-pre-commit>=3.3.0
-
-# 📝 Documentation
-mkdocs>=1.5.0
-mkdocs-material>=9.2.0
-
-# 🌍 Internationalization
-babel>=2.12.0
-
-# 📊 Analytics
-mixpanel>=4.10.0
-
-# 🔄 Async & Concurrency
-aiohttp>=3.8.0
-asyncio-mqtt>=0.16.0
-
-# 🎯 MCP Protocol - Official Anthropic SDK
-mcp[cli]>=1.0.0
-
-# 📱 Mobile & PWA Support
-streamlit-pwa>=0.1.0
-
-# HTTP requests
-requests>=2.31.0
-
-# Configuration
-python-dotenv>=1.0.0
-
-# 🎨 Additional UI Enhancements
-streamlit-vertical-slider>=0.0.4
-streamlit-custom-notification-box>=0.1.8
-streamlit-timeline>=0.0.2
-streamlit-plotly-events>=0.0.8 
+streamlit-vertical-slider
+streamlit-custom-notification-box
+streamlit-timeline
+streamlit-plotly-events
