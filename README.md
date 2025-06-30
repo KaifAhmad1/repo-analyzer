@@ -1,76 +1,44 @@
-# 🚀 GitHub Repository Analyzer - Modern AI-Powered Analysis
+# 🚀 GitHub Repository Analyzer
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red.svg)](https://streamlit.io)
-[![MCP](https://img.shields.io/badge/MCP-1.0+-green.svg)](https://modelcontextprotocol.io)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
-> **A beautiful, modern, and feature-rich interface for analyzing GitHub repositories using AI agents and Model Context Protocol (MCP) servers.**
+A powerful, AI-driven GitHub repository analysis tool powered by **Google Gemini AI** with advanced multi-agent system capabilities.
 
 ## ✨ Features
 
-### 🎨 **Modern UI & Animations**
-- **Beautiful gradient designs** with smooth animations
-- **Responsive layout** that works on all devices
-- **Dark/Light theme toggle** with automatic switching
-- **Floating action buttons** for quick access
-- **Animated loading states** and progress indicators
-- **Modern card layouts** with hover effects
-- **Custom scrollbars** and smooth transitions
+- **🤖 Google Gemini AI Integration**: Powered by the latest Google Gemini models for intelligent analysis
+- **👥 Multi-Agent Team System**: Specialized agents for different aspects of repository analysis
+- **🔍 Comprehensive Analysis**: Code quality, architecture, security, and community health assessment
+- **📊 Beautiful Visualizations**: Interactive charts and data presentation
+- **🛠️ MCP Server Integration**: Seamless integration with Model Context Protocol servers
+- **🎨 Modern UI**: Beautiful, responsive interface with Streamlit
 
-### 🤖 **AI-Powered Analysis**
-- **Intelligent Q&A** with natural language processing
-- **Multi-step reasoning** and tool chaining
-- **Context-aware responses** based on repository data
-- **Structured insights** with detailed explanations
-- **Code analysis** and quality assessment
-- **Dependency mapping** and relationship analysis
+## 🏗️ Agent System Architecture
 
-### 📊 **Rich Visualizations**
-- **Interactive charts** using Plotly and Altair
-- **Commit activity timelines** with trend analysis
-- **Language distribution** pie charts
-- **Issue tracking** and bug analysis
-- **Repository statistics** with animated counters
-- **File structure trees** with interactive exploration
+### Single Agent Mode
+- **Repository Analyzer Agent**: Comprehensive analysis using Google Gemini
+- Enhanced prompt engineering for detailed insights
+- Professional analysis with actionable recommendations
 
-### 🔧 **MCP Server Integration**
-- **Unified MCP server** with comprehensive tools
-- **Real-time data fetching** from GitHub API
-- **Repository structure analysis** with file trees
-- **Commit history tracking** with detailed metadata
-- **Issue and PR management** with filtering
-- **Code search capabilities** with pattern matching
-
-### 💬 **Enhanced Chat Interface**
-- **Modern chat bubbles** with user/AI distinction
-- **Quick question buttons** for common queries
-- **Conversation history** with timestamps
-- **Tool usage tracking** with detailed explanations
-- **Export functionality** for conversation logs
-- **Auto-complete suggestions** for better UX
-
-### 📁 **Repository Explorer**
-- **Interactive file browser** with syntax highlighting
-- **Code preview** with line numbers
-- **Search functionality** across files
-- **Directory tree navigation** with expand/collapse
-- **File type icons** and metadata display
-- **Quick file actions** (view, download, analyze)
+### Multi-Agent Team Mode
+- **Repository Overview Agent**: Metadata and basic information analysis
+- **Code Analysis Agent**: Technical code patterns and architecture assessment
+- **Activity Analysis Agent**: Project activity and community health evaluation
+- **Security & Quality Agent**: Security vulnerabilities and code quality assessment
+- **Team Coordinator**: Orchestrates all agents for comprehensive analysis
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.8 or higher
-- GitHub Personal Access Token
-- OpenAI or Anthropic API Key
+
+1. **Python 3.8+**
+2. **Google API Key** for Gemini AI
+3. **GitHub Token** (optional, for private repositories)
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/repo-analyzer-4.git
-   cd repo-analyzer-4
+   git clone <repository-url>
+   cd repo-analyzer-8
    ```
 
 2. **Install dependencies**
@@ -79,263 +47,164 @@
    ```
 
 3. **Set up environment variables**
-   ```bash
-   # Create .env file
-   echo "GITHUB_TOKEN=your_github_token_here" > .env
-   echo "OPENAI_API_KEY=your_openai_key_here" >> .env
-   # OR
-   echo "ANTHROPIC_API_KEY=your_anthropic_key_here" >> .env
+   Create a `.env` file in the root directory:
+   ```env
+   # Required: Google Gemini API Key
+   GOOGLE_API_KEY=your_google_api_key_here
+   
+   # Optional: GitHub Token for private repos
+   GITHUB_TOKEN=your_github_token_here
+   
+   # Optional: Configuration
+   GEMINI_MODEL=gemini-2.0-flash-001
+   DEBUG=False
+   LOG_LEVEL=INFO
    ```
 
-4. **Run the application**
+4. **Get Google API Key**
+   - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Create a new API key
+   - Add it to your `.env` file
+
+### Running the Application
+
+1. **Start the application**
    ```bash
    streamlit run app.py
    ```
 
-5. **Open your browser**
-   Navigate to `http://localhost:8501` to see the beautiful interface!
+2. **Open your browser**
+   Navigate to `http://localhost:8501`
 
-## 🎯 Usage Guide
+3. **Test the integration**
+   ```bash
+   python test_gemini_integration.py
+   ```
 
-### 1. **Repository Selection**
-- Enter any public GitHub repository URL
-- Use the modern repository selector with validation
-- Browse popular repositories for inspiration
-- View recent repositories for quick access
+## 🤖 Agent System Details
 
-### 2. **AI-Powered Analysis**
-- Ask natural language questions about the repository
-- Use quick question buttons for common queries
-- Get detailed insights with tool usage tracking
-- Export conversations for later reference
+### Available Models
+- `gemini-2.0-flash-001` (Recommended - Fast and efficient)
+- `gemini-1.5-pro` (High-quality analysis)
+- `gemini-1.5-flash` (Balanced performance)
 
-### 3. **Visual Insights**
-- Explore interactive charts and visualizations
-- View commit activity and trends
-- Analyze language distribution and code patterns
-- Track issues and pull requests
+### Agent Roles and Specializations
 
-### 4. **Advanced Features**
-- Navigate file structure with interactive trees
-- Search for specific code patterns
-- Analyze dependencies and relationships
-- Generate comprehensive reports
+#### Repository Overview Agent
+- Analyzes repository metadata and structure
+- Provides project categorization and technology stack identification
+- Focuses on README analysis and basic statistics
 
-## 🛠️ Architecture
+#### Code Analysis Agent
+- Deep technical analysis of code patterns and architecture
+- Identifies design patterns, anti-patterns, and improvement areas
+- Assesses code quality, maintainability, and scalability
 
-### **Frontend (Streamlit)**
+#### Activity Analysis Agent
+- Evaluates project activity and community engagement
+- Analyzes commit patterns and development velocity
+- Assesses project maturity and maintenance status
+
+#### Security & Quality Agent
+- Identifies security vulnerabilities and code quality issues
+- Analyzes dependency vulnerabilities and best practices
+- Provides security improvement recommendations
+
+## 🛠️ Configuration
+
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `GOOGLE_API_KEY` | Google Gemini API key | Required |
+| `GITHUB_TOKEN` | GitHub personal access token | Optional |
+| `GEMINI_MODEL` | Default Gemini model | `gemini-2.0-flash-001` |
+| `DEBUG` | Enable debug mode | `False` |
+| `LOG_LEVEL` | Logging level | `INFO` |
+
+### MCP Server Configuration
+
+The application uses Model Context Protocol servers for enhanced functionality:
+
+- **Repository Analyzer Server** (Port 8001)
+- **Code Search Server** (Port 8002)
+- **Commit History Server** (Port 8003)
+- **File Content Server** (Port 8004)
+- **Issues Server** (Port 8005)
+- **Repository Structure Server** (Port 8006)
+
+## 📊 Features
+
+### Repository Analysis
+- **Comprehensive Overview**: Project purpose, structure, and key features
+- **Code Quality Assessment**: Architecture patterns, best practices, and improvement areas
+- **Security Analysis**: Vulnerability assessment and security recommendations
+- **Community Health**: Activity patterns, contributor engagement, and project sustainability
+
+### Visualizations
+- **Commit Activity Charts**: Recent development activity trends
+- **Language Distribution**: Programming language usage analysis
+- **Issue Tracking**: Open/closed issues and pull requests
+- **Repository Structure**: File and directory organization
+
+### Interactive Features
+- **Real-time Analysis**: Instant repository insights
+- **Multi-Agent Coordination**: Specialized analysis from different perspectives
+- **Export Capabilities**: Save analysis results and visualizations
+- **Custom Queries**: Ask specific questions about repositories
+
+## 🔧 Development
+
+### Project Structure
 ```
-src/ui/
-├── modern_styles.css      # Beautiful CSS with animations
-├── chat_interface.py      # Modern chat UI component
-├── repository_selector.py # Enhanced repo selector
-└── components/           # Reusable UI components
+repo-analyzer-8/
+├── app.py                          # Main Streamlit application
+├── src/
+│   ├── agent/
+│   │   └── ai_agent.py            # Google Gemini agent system
+│   ├── servers/                   # MCP server implementations
+│   ├── ui/                        # User interface components
+│   └── utils/
+│       └── config.py              # Configuration management
+├── test_gemini_integration.py     # Integration tests
+└── requirements.txt               # Python dependencies
 ```
 
-### **Backend (MCP Servers)**
-```
-src/servers/
-├── repository_analyzer_server.py  # Main MCP server
-├── mcp_client_improved.py        # Enhanced MCP client
-├── server_manager.py             # Server orchestration
-└── tools/                        # MCP tool implementations
-```
-
-### **AI Agent**
-```
-src/agent/
-├── ai_agent.py           # Main AI agent logic
-├── prompts.py            # System prompts and templates
-└── tools.py              # Tool calling and processing
-```
-
-## 🎨 UI Components
-
-### **Modern Cards**
-- Gradient backgrounds with hover effects
-- Animated borders and shadows
-- Responsive grid layouts
-- Interactive elements
-
-### **Chat Interface**
-- Bubble-style messages with user/AI distinction
-- Timestamps and tool usage tracking
-- Quick question buttons with icons
-- Export and clear functionality
-
-### **Visualizations**
-- Interactive Plotly charts
-- Animated progress bars
-- Timeline components
-- Statistics cards with counters
-
-### **Navigation**
-- Sidebar with configuration options
-- Tabbed interface for different views
-- Floating action buttons
-- Breadcrumb navigation
-
-## 🔧 Configuration
-
-### **Environment Variables**
+### Running Tests
 ```bash
-# Required
-GITHUB_TOKEN=your_github_token
+# Test Google Gemini integration
+python test_gemini_integration.py
 
-# AI Provider (choose one)
-OPENAI_API_KEY=your_openai_key
-ANTHROPIC_API_KEY=your_anthropic_key
-
-# Optional
-STREAMLIT_SERVER_PORT=8501
-STREAMLIT_SERVER_ADDRESS=localhost
-```
-
-### **MCP Server Configuration**
-```python
-# Server settings in config.py
-MCP_SERVER_HOST = "localhost"
-MCP_SERVER_PORT = 8000
-MCP_SERVER_TIMEOUT = 30
-```
-
-## 📊 Sample Questions
-
-The AI can answer questions like:
-
-- **"What is this repository about?"** - Get comprehensive overview
-- **"Show me the main entry points"** - Find application entry files
-- **"What are the recent changes?"** - View recent commits and updates
-- **"Find authentication-related code"** - Locate security implementations
-- **"What dependencies does this use?"** - Analyze project dependencies
-- **"Are there any performance issues?"** - Check for performance concerns
-- **"Explain the database implementation"** - Understand data storage
-- **"What's the testing strategy?"** - Review testing approach
-
-## 🎯 Advanced Features
-
-### **Code Analysis**
-- Syntax highlighting with multiple themes
-- Code complexity analysis
-- Security vulnerability scanning
-- Performance optimization suggestions
-
-### **Repository Insights**
-- Contributor analysis and statistics
-- Commit pattern analysis
-- Issue trend tracking
-- Dependency health assessment
-
-### **Export & Reporting**
-- Conversation export in JSON format
-- Repository analysis reports
-- Code quality metrics
-- Performance benchmarks
-
-## 🚀 Deployment
-
-### **Local Development**
-```bash
-# Development mode with auto-reload
-streamlit run app.py --server.runOnSave true
-```
-
-### **Production Deployment**
-```bash
-# Using Docker
-docker build -t repo-analyzer .
-docker run -p 8501:8501 repo-analyzer
-
-# Using Streamlit Cloud
-# Connect your GitHub repository to Streamlit Cloud
-```
-
-### **Environment Setup**
-```bash
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run with production settings
-streamlit run app.py --server.headless true
+# Run with specific model
+GEMINI_MODEL=gemini-1.5-pro python test_gemini_integration.py
 ```
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Submit a pull request
 
-### **Development Setup**
-```bash
-# Fork and clone
-git clone https://github.com/your-username/repo-analyzer-4.git
-
-# Install development dependencies
-pip install -r requirements-dev.txt
-
-# Run tests
-pytest tests/
-
-# Format code
-black src/
-flake8 src/
-```
-
-## 📈 Roadmap
-
-### **Phase 1: Enhanced UI** ✅
-- [x] Modern design with animations
-- [x] Responsive layout
-- [x] Dark/light theme
-- [x] Interactive visualizations
-
-### **Phase 2: Advanced Analysis** 🚧
-- [ ] Code quality scoring
-- [ ] Security vulnerability detection
-- [ ] Performance benchmarking
-- [ ] Architecture analysis
-
-### **Phase 3: Collaboration** 📋
-- [ ] Multi-user support
-- [ ] Team workspaces
-- [ ] Shared analysis reports
-- [ ] Real-time collaboration
-
-### **Phase 4: AI Enhancement** 📋
-- [ ] Custom AI models
-- [ ] Advanced code understanding
-- [ ] Predictive analytics
-- [ ] Automated recommendations
-
-## 📄 License
+## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
-- **Streamlit** for the amazing web framework
-- **Anthropic** for the MCP protocol and Claude AI
-- **OpenAI** for GPT models and API
-- **GitHub** for the comprehensive API
-- **Plotly** for beautiful visualizations
+- **Google Gemini AI** for providing the AI capabilities
+- **Streamlit** for the beautiful web interface
+- **Agno Framework** for the multi-agent system
+- **Model Context Protocol** for enhanced tool integration
 
-## 📞 Support
+## 🆘 Support
 
-- **Documentation**: [Wiki](https://github.com/your-username/repo-analyzer-4/wiki)
-- **Issues**: [GitHub Issues](https://github.com/your-username/repo-analyzer-4/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/repo-analyzer-4/discussions)
-- **Email**: support@repo-analyzer.com
+If you encounter any issues:
 
----
+1. Check that your Google API key is correctly set
+2. Ensure all dependencies are installed
+3. Verify your internet connection
+4. Check the logs for detailed error messages
 
-<div align="center">
-
-**Built with ❤️ using Streamlit, AI agents, and MCP servers**
-
-[![GitHub stars](https://img.shields.io/github/stars/your-username/repo-analyzer-4?style=social)](https://github.com/your-username/repo-analyzer-4)
-[![GitHub forks](https://img.shields.io/github/forks/your-username/repo-analyzer-4?style=social)](https://github.com/your-username/repo-analyzer-4)
-[![GitHub issues](https://img.shields.io/github/issues/your-username/repo-analyzer-4)](https://github.com/your-username/repo-analyzer-4/issues)
-
-</div>
+For additional support, please open an issue on GitHub. 

@@ -1,14 +1,13 @@
 """
 Multi-Agent System for GitHub Repository Analysis
-Integrates seamlessly with all MCP servers using advanced agent framework
+Integrates seamlessly with all MCP servers using Google Gemini AI
 """
 
 import os
 import json
 from typing import Dict, List, Any, Optional
 from agno.agent import Agent
-from agno.models.anthropic import Claude
-from agno.models.openai import OpenAIChat
+from agno.models.google import Gemini
 from agno.tools.reasoning import ReasoningTools
 from agno.team.team import Team
 from src.servers.mcp_client_improved import SyncMCPClient
@@ -64,16 +63,31 @@ class MCPTools:
         except Exception as e:
             return f"Error analyzing repository: {str(e)}"
 
-def create_advanced_agent(model_name: str = "claude-sonnet-4-20250514") -> Agent:
-    """Create advanced agent with MCP tools integration"""
+def create_advanced_agent(model_name: str = "gemini-2.0-flash-001") -> Agent:
+    """Create advanced agent with MCP tools integration using Google Gemini"""
     
     # Initialize MCP tools
     mcp_tools = MCPTools()
     
+    # Enhanced prompt engineering for the main agent
+    main_agent_instructions = [
+        "You are an expert GitHub repository analyzer powered by Google Gemini AI.",
+        "Your role is to provide comprehensive, insightful analysis of code repositories.",
+        "Always use the available MCP tools to gather accurate information before making conclusions.",
+        "Structure your responses with clear sections: Overview, Analysis, Insights, and Recommendations.",
+        "Include relevant code examples and technical details when appropriate.",
+        "Use markdown formatting for better readability including tables, code blocks, and lists.",
+        "Be thorough but concise, focusing on actionable insights.",
+        "Consider code quality, architecture patterns, security practices, and maintainability.",
+        "Always explain your reasoning and methodology.",
+        "Provide specific, actionable recommendations for improvement.",
+        "Use a professional yet approachable tone.",
+    ]
+    
     # Create advanced agent
     agent = Agent(
         name="Repository Analyzer Agent",
-        model=Claude(id=model_name),
+        model=Gemini(id=model_name),
         tools=[
             ReasoningTools(add_instructions=True),
             mcp_tools.get_repository_overview,
@@ -82,15 +96,7 @@ def create_advanced_agent(model_name: str = "claude-sonnet-4-20250514") -> Agent
             mcp_tools.get_issues,
             mcp_tools.analyze_repository,
         ],
-        instructions=[
-            "You are an intelligent GitHub repository analyzer powered by advanced AI.",
-            "Use the available MCP tools to gather comprehensive information about repositories.",
-            "Always provide detailed, helpful explanations with context.",
-            "Include code examples when relevant.",
-            "Be conversational and friendly.",
-            "Use tables to display data when appropriate.",
-            "Always explain what you're doing and why.",
-        ],
+        instructions=main_agent_instructions,
         markdown=True,
         add_datetime_to_instructions=True,
     )
@@ -98,57 +104,121 @@ def create_advanced_agent(model_name: str = "claude-sonnet-4-20250514") -> Agent
     return agent
 
 def create_agent_team() -> Team:
-    """Create team with specialized agents"""
+    """Create team with specialized agents using Google Gemini"""
     
-    # Repository Overview Agent
+    # Repository Overview Agent - Specialized in metadata and basic analysis
+    overview_agent_instructions = [
+        "You are a Repository Overview Specialist Agent powered by Google Gemini.",
+        "Your expertise lies in analyzing repository metadata, structure, and basic characteristics.",
+        "Focus on: repository description, README analysis, project structure, dependencies, and basic statistics.",
+        "Provide clear, structured overviews with key metrics and project categorization.",
+        "Identify the main purpose, target audience, and technology stack of the repository.",
+        "Use tables to present metadata clearly and concisely.",
+        "Always verify information using the repository overview tool before making statements.",
+    ]
+    
     overview_agent = Agent(
         name="Repository Overview Agent",
         role="Handle repository metadata and basic information",
-        model=Claude(id="claude-sonnet-4-20250514"),
+        model=Gemini(id="gemini-2.0-flash-001"),
         tools=[MCPTools().get_repository_overview],
-        instructions="Focus on repository metadata, description, and basic statistics.",
+        instructions=overview_agent_instructions,
         add_datetime_to_instructions=True,
     )
     
-    # Code Analysis Agent
+    # Code Analysis Agent - Specialized in technical code analysis
+    code_agent_instructions = [
+        "You are a Code Analysis Specialist Agent powered by Google Gemini.",
+        "Your expertise lies in deep technical analysis of code patterns, architecture, and quality.",
+        "Focus on: code structure, design patterns, complexity analysis, best practices, and potential issues.",
+        "Analyze code quality, maintainability, scalability, and security considerations.",
+        "Identify architectural patterns, anti-patterns, and areas for improvement.",
+        "Provide specific code examples and technical recommendations.",
+        "Use code search tools to find relevant examples and patterns.",
+        "Consider performance implications and optimization opportunities.",
+        "Always provide evidence-based analysis with concrete examples.",
+    ]
+    
     code_agent = Agent(
         name="Code Analysis Agent",
-        role="Handle code search and analysis",
-        model=Claude(id="claude-sonnet-4-20250514"),
+        role="Handle code search and technical analysis",
+        model=Gemini(id="gemini-2.0-flash-001"),
         tools=[MCPTools().search_code, MCPTools().analyze_repository],
-        instructions="Focus on code patterns, structure, and technical analysis.",
+        instructions=code_agent_instructions,
         add_datetime_to_instructions=True,
     )
     
-    # Activity Analysis Agent
+    # Activity Analysis Agent - Specialized in project activity and community health
+    activity_agent_instructions = [
+        "You are a Project Activity Specialist Agent powered by Google Gemini.",
+        "Your expertise lies in analyzing project activity, community engagement, and development health.",
+        "Focus on: commit patterns, issue management, community participation, and project momentum.",
+        "Analyze development velocity, contributor activity, and project maintenance status.",
+        "Identify trends in development activity, bug reports, and feature requests.",
+        "Assess community health, documentation quality, and project sustainability.",
+        "Provide insights on project maturity, maintenance practices, and future outlook.",
+        "Use commit and issue data to understand project priorities and development focus.",
+        "Consider the project's lifecycle stage and community engagement levels.",
+    ]
+    
     activity_agent = Agent(
         name="Activity Analysis Agent",
         role="Handle commits, issues, and project activity",
-        model=Claude(id="claude-sonnet-4-20250514"),
+        model=Gemini(id="gemini-2.0-flash-001"),
         tools=[MCPTools().get_recent_commits, MCPTools().get_issues],
-        instructions="Focus on project activity, recent changes, and community engagement.",
+        instructions=activity_agent_instructions,
         add_datetime_to_instructions=True,
     )
+    
+    # Security & Quality Agent - Specialized in security and code quality assessment
+    security_agent_instructions = [
+        "You are a Security & Quality Specialist Agent powered by Google Gemini.",
+        "Your expertise lies in identifying security vulnerabilities, code quality issues, and best practices.",
+        "Focus on: security patterns, dependency vulnerabilities, code quality metrics, and compliance.",
+        "Analyze potential security risks, authentication mechanisms, and data handling practices.",
+        "Identify code quality issues, technical debt, and areas requiring refactoring.",
+        "Assess testing coverage, error handling, and defensive programming practices.",
+        "Provide specific recommendations for security improvements and code quality enhancement.",
+        "Consider industry standards and best practices for secure development.",
+        "Always prioritize critical security and quality issues in your analysis.",
+    ]
+    
+    security_agent = Agent(
+        name="Security & Quality Agent",
+        role="Handle security analysis and code quality assessment",
+        model=Gemini(id="gemini-2.0-flash-001"),
+        tools=[MCPTools().search_code, MCPTools().analyze_repository],
+        instructions=security_agent_instructions,
+        add_datetime_to_instructions=True,
+    )
+    
+    # Team Coordinator - Orchestrates the specialized agents
+    team_instructions = [
+        "You are the Team Coordinator for the Repository Analysis Team powered by Google Gemini.",
+        "Your role is to orchestrate specialized agents to provide comprehensive repository analysis.",
+        "Coordinate the following specialists: Overview, Code Analysis, Activity Analysis, and Security & Quality.",
+        "Synthesize findings from all agents into a cohesive, well-structured analysis report.",
+        "Ensure all aspects of the repository are covered: metadata, code quality, activity, and security.",
+        "Present findings in a clear, professional format with executive summary and detailed sections.",
+        "Prioritize insights based on importance and impact.",
+        "Provide actionable recommendations that address the most critical findings first.",
+        "Use tables, charts, and structured formatting to present complex information clearly.",
+        "Ensure the final report is comprehensive yet accessible to different technical audiences.",
+    ]
     
     # Create team
     team = Team(
         name="Repository Analysis Team",
         mode="coordinate",
-        model=Claude(id="claude-sonnet-4-20250514"),
-        members=[overview_agent, code_agent, activity_agent],
+        model=Gemini(id="gemini-2.0-flash-001"),
+        members=[overview_agent, code_agent, activity_agent, security_agent],
         tools=[ReasoningTools(add_instructions=True)],
-        instructions=[
-            "Collaborate to provide comprehensive repository analysis",
-            "Consider repository structure, code quality, and project activity",
-            "Use tables and charts to display data clearly",
-            "Present findings in a structured, easy-to-follow format",
-            "Only output the final consolidated analysis",
-        ],
+        instructions=team_instructions,
         markdown=True,
         show_members_responses=True,
         enable_agentic_context=True,
         add_datetime_to_instructions=True,
-        success_criteria="The team has provided a complete repository analysis with data, insights, and actionable recommendations.",
+        success_criteria="The team has provided a complete repository analysis covering all aspects: overview, code quality, activity patterns, and security considerations, with actionable recommendations.",
     )
     
     return team
@@ -171,7 +241,7 @@ def ask_question_advanced(question: str, repository_url: str, use_team: bool = F
         return f"Error processing request: {str(e)}"
 
 def analyze_repository_advanced(repository_url: str) -> str:
-    """Perform comprehensive repository analysis using advanced system"""
+    """Perform comprehensive repository analysis using advanced team system"""
     try:
         team = create_agent_team()
         response = team.run(f"Provide a comprehensive analysis of the repository: {repository_url}")
@@ -198,20 +268,32 @@ def get_available_tools() -> List[Dict[str, Any]]:
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "repo_url": {"type": "string", "description": "GitHub repository URL"}
+                    "repo_url": {
+                        "type": "string",
+                        "description": "GitHub repository URL"
+                    }
                 },
                 "required": ["repo_url"]
             }
         },
         {
             "name": "search_code",
-            "description": "Search for code patterns in the repository",
+            "description": "Search for code patterns in a repository",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "repo_url": {"type": "string", "description": "GitHub repository URL"},
-                    "query": {"type": "string", "description": "Search query"},
-                    "language": {"type": "string", "description": "Programming language filter"}
+                    "repo_url": {
+                        "type": "string",
+                        "description": "GitHub repository URL"
+                    },
+                    "query": {
+                        "type": "string",
+                        "description": "Search query"
+                    },
+                    "language": {
+                        "type": "string",
+                        "description": "Programming language filter (optional)"
+                    }
                 },
                 "required": ["repo_url", "query"]
             }
@@ -222,21 +304,36 @@ def get_available_tools() -> List[Dict[str, Any]]:
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "repo_url": {"type": "string", "description": "GitHub repository URL"},
-                    "limit": {"type": "integer", "description": "Number of commits to retrieve"}
+                    "repo_url": {
+                        "type": "string",
+                        "description": "GitHub repository URL"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Number of commits to retrieve"
+                    }
                 },
                 "required": ["repo_url"]
             }
         },
         {
             "name": "get_issues",
-            "description": "Get issues and pull requests",
+            "description": "Get repository issues",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "repo_url": {"type": "string", "description": "GitHub repository URL"},
-                    "state": {"type": "string", "description": "Issue state (open/closed)"},
-                    "limit": {"type": "integer", "description": "Number of issues to retrieve"}
+                    "repo_url": {
+                        "type": "string",
+                        "description": "GitHub repository URL"
+                    },
+                    "state": {
+                        "type": "string",
+                        "description": "Issue state (open/closed)"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Number of issues to retrieve"
+                    }
                 },
                 "required": ["repo_url"]
             }
@@ -247,7 +344,10 @@ def get_available_tools() -> List[Dict[str, Any]]:
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "repo_url": {"type": "string", "description": "GitHub repository URL"}
+                    "repo_url": {
+                        "type": "string",
+                        "description": "GitHub repository URL"
+                    }
                 },
                 "required": ["repo_url"]
             }
@@ -255,33 +355,35 @@ def get_available_tools() -> List[Dict[str, Any]]:
     ]
 
 def ask_question(agent: Dict[str, Any], question: str, repository_url: str) -> Dict[str, Any]:
-    """Ask a question using advanced agent (backward compatibility)"""
+    """Ask a question using legacy agent format"""
     try:
-        response = ask_question_advanced(question, repository_url)
+        agent_instance = agent["agent"]
+        response = agent_instance.run(f"Repository: {repository_url}\n\nQuestion: {question}")
         return {
-            "response": response,
             "success": True,
-            "model": agent.get("model", "advanced-agent")
+            "response": response.content,
+            "model": agent["model"]
         }
     except Exception as e:
         return {
-            "error": str(e),
             "success": False,
-            "model": agent.get("model", "advanced-agent")
+            "error": str(e),
+            "model": agent["model"]
         }
 
 def analyze_repository(agent: Dict[str, Any], repository_url: str) -> Dict[str, Any]:
-    """Analyze repository using advanced system (backward compatibility)"""
+    """Analyze repository using legacy agent format"""
     try:
-        response = analyze_repository_advanced(repository_url)
+        agent_instance = agent["agent"]
+        response = agent_instance.run(f"Provide a comprehensive analysis of the repository: {repository_url}")
         return {
-            "analysis": response,
             "success": True,
-            "model": agent.get("model", "advanced-agent")
+            "response": response.content,
+            "model": agent["model"]
         }
     except Exception as e:
         return {
-            "error": str(e),
             "success": False,
-            "model": agent.get("model", "advanced-agent")
+            "error": str(e),
+            "model": agent["model"]
         } 

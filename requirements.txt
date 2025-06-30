@@ -1,7 +1,6 @@
 # Core Dependencies
-openai
-anthropic
-agno
+google-generativeai
+agno[google]
 streamlit
 fastapi
 uvicorn

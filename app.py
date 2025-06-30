@@ -67,15 +67,15 @@ def create_agent_selector():
     if agent_type == "Single Agent":
         model = st.sidebar.selectbox(
             "Model",
-            ["claude-sonnet-4-20250514", "gpt-4o-mini"],
-            help="Choose the AI model for the agent"
+            ["gemini-2.0-flash-001", "gemini-1.5-pro", "gemini-1.5-flash"],
+            help="Choose the Google Gemini AI model for the agent"
         )
     elif agent_type == "Multi-Agent Team":
         st.sidebar.info("🤝 Using specialized team of agents for comprehensive analysis")
-        model = "claude-sonnet-4-20250514"
+        model = "gemini-2.0-flash-001"
     else:
         st.sidebar.info("🔄 Using legacy agent system")
-        model = "claude-sonnet-4-20250514"
+        model = "gemini-2.0-flash-001"
     
     return agent_type, model
 
