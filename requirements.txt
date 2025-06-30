@@ -1,4 +1,7 @@
 # Core Dependencies
+openai
+anthropic
+agno
 streamlit
 fastapi
 uvicorn
@@ -16,10 +19,6 @@ plotly
 altair
 bokeh
 
-# AI & LLM Integration
-openai
-anthropic
-agno
 
 # 🔍 Code Analysis
 ast
