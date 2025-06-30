@@ -5,7 +5,7 @@ agno
 streamlit
 fastapi
 uvicorn
-pydantic
+pydantic[email]
 
 # Modern UI & Styling
 streamlit-option-menu
@@ -19,41 +19,47 @@ plotly
 altair
 bokeh
 
-
 # 🔍 Code Analysis
-ast
 radon
 mccabe
 pylint
 black
 
+# Database & Caching
 redis
 sqlalchemy
 cryptography
-pydantic[email]
+
+# System & Performance
 psutil
 memory-profiler
+
+# Testing
 pytest
 pytest-asyncio
 pytest-mock
 pytest-cov
-black
+
+# Code Quality
 flake8
 mypy
 pre-commit
 
+# Documentation
 mkdocs
 mkdocs-material
 babel
+
+# Analytics & Communication
 mixpanel
 aiohttp
 asyncio-mqtt
 
+# MCP & Additional Streamlit Components
 mcp[cli]
 streamlit-pwa
 requests
 python-dotenv
-
 streamlit-vertical-slider
 streamlit-custom-notification-box
 streamlit-timeline
