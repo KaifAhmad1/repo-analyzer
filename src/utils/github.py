@@ -3,15 +3,10 @@ Simple GitHub API utilities for the Repository Analyzer
 """
 
 import requests
-from .config import get_github_token
 
 def make_github_request(endpoint):
     """Make a GitHub API request"""
-    token = get_github_token()
-    
     headers = {"Accept": "application/vnd.github.v3+json"}
-    if token:
-        headers["Authorization"] = f"token {token}"
     
     response = requests.get(f"https://api.github.com{endpoint}", headers=headers)
     response.raise_for_status()

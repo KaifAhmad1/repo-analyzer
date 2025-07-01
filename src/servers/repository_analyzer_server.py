@@ -13,18 +13,9 @@ from fastmcp import FastMCP, Context
 # Create FastMCP server instance
 mcp = FastMCP("Repository Analyzer 🚀")
 
-def get_github_token() -> Optional[str]:
-    """Get GitHub token from environment or session state"""
-    import streamlit as st
-    return st.session_state.get("github_token", os.getenv("GITHUB_TOKEN"))
-
 def make_github_request(endpoint: str) -> Dict[str, Any]:
     """Make a GitHub API request"""
-    token = get_github_token()
-    
     headers = {"Accept": "application/vnd.github.v3+json"}
-    if token:
-        headers["Authorization"] = f"token {token}"
     
     response = requests.get(f"https://api.github.com{endpoint}", headers=headers)
     response.raise_for_status()

@@ -11,10 +11,6 @@ from datetime import datetime
 
 mcp = FastMCP("Commit History Server 🚀")
 
-def get_github_token() -> Optional[str]:
-    import streamlit as st
-    return st.session_state.get("github_token", os.getenv("GITHUB_TOKEN"))
-
 def parse_repo_url(repo_url: str) -> tuple[str, str]:
     if "github.com" in repo_url:
         parts = repo_url.replace("https://github.com/", "").split("/")
@@ -25,10 +21,7 @@ def parse_repo_url(repo_url: str) -> tuple[str, str]:
         raise ValueError("Invalid GitHub URL")
 
 def make_github_request(endpoint: str, params: dict = None) -> Any:
-    token = get_github_token()
     headers = {"Accept": "application/vnd.github.v3+json"}
-    if token:
-        headers["Authorization"] = f"token {token}"
     response = requests.get(f"https://api.github.com{endpoint}", headers=headers, params=params)
     response.raise_for_status()
     return response.json()
