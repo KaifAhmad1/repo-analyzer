@@ -68,21 +68,18 @@ def create_agent_selector():
     
     agent_type = st.sidebar.selectbox(
         "Choose Agent Type",
-        ["Single Agent", "Multi-Agent Team", "Legacy System"],
+        ["Single Agent", "Multi-Agent Team"],
         help="Select the agent system to use for analysis"
     )
     
     if agent_type == "Single Agent":
         model = st.sidebar.selectbox(
-            "Model",
+            "Gemini Model",
             ["gemini-2.0-flash-001", "gemini-1.5-pro", "gemini-1.5-flash"],
             help="Choose the Google Gemini AI model for the agent"
         )
-    elif agent_type == "Multi-Agent Team":
-        st.sidebar.info("🤝 Using specialized team of agents for comprehensive analysis")
-        model = "gemini-2.0-flash-001"
     else:
-        st.sidebar.info("🔄 Using legacy agent system")
+        st.sidebar.info("🤝 Using specialized team of Gemini agents for comprehensive analysis")
         model = "gemini-2.0-flash-001"
     
     return agent_type, model
@@ -527,39 +524,17 @@ def create_sidebar_controls():
             os.environ["GITHUB_TOKEN"] = github_token
         
         # AI API Key
-        ai_provider = st.selectbox(
-            "AI Provider",
-            ["OpenAI", "Anthropic", "Google Gemini"],
-            help="Choose your AI provider"
-        )
+        st.markdown("### 🤖 AI Configuration")
+        st.info("Using Google Gemini AI for repository analysis")
         
-        if ai_provider == "OpenAI":
-            openai_key = st.text_input(
-                "OpenAI API Key",
-                type="password",
-                help="Enter your OpenAI API key",
-                value=os.getenv("OPENAI_API_KEY", "")
-            )
-            if openai_key:
-                os.environ["OPENAI_API_KEY"] = openai_key
-        elif ai_provider == "Anthropic":
-            anthropic_key = st.text_input(
-                "Anthropic API Key",
-                type="password",
-                help="Enter your Anthropic API key",
-                value=os.getenv("ANTHROPIC_API_KEY", "")
-            )
-            if anthropic_key:
-                os.environ["ANTHROPIC_API_KEY"] = anthropic_key
-        else:
-            gemini_key = st.text_input(
-                "Google Gemini API Key",
-                type="password",
-                help="Enter your Google Gemini API key",
-                value=os.getenv("GOOGLE_API_KEY", "")
-            )
-            if gemini_key:
-                os.environ["GOOGLE_API_KEY"] = gemini_key
+        gemini_key = st.text_input(
+            "Google Gemini API Key",
+            type="password",
+            help="Enter your Google Gemini API key",
+            value=os.getenv("GOOGLE_API_KEY", "")
+        )
+        if gemini_key:
+            os.environ["GOOGLE_API_KEY"] = gemini_key
         
         # Agent System Selection
         agent_type, model = create_agent_selector()
@@ -648,17 +623,12 @@ def main():
             st.session_state.last_agent_type != st.session_state.agent_type):
             
             try:
-                if st.session_state.agent_type == "Legacy System":
-                    # Use legacy agent system
-                    model = "gpt-4" if os.getenv("OPENAI_API_KEY") else "claude-3-sonnet"
-                    st.session_state.ai_agent = create_ai_agent(model, config)
-                else:
-                    # Use advanced-based system
-                    st.session_state.ai_agent = {
-                        "type": st.session_state.agent_type,
-                        "model": "gemini-2.0-flash-001",
-                        "config": config
-                    }
+                # Use Gemini-based system
+                st.session_state.ai_agent = {
+                    "type": st.session_state.agent_type,
+                    "model": "gemini-2.0-flash-001",
+                    "config": config
+                }
                 
                 st.session_state.last_agent_type = st.session_state.agent_type
                 
