@@ -1,6 +1,6 @@
 """
-Multi-Agent System for GitHub Repository Analysis
-Integrates seamlessly with all MCP servers using Google Gemini AI
+Streamlined AI Agent System for GitHub Repository Analysis
+Integrates with MCP servers using Google Gemini AI
 """
 
 import os
@@ -170,88 +170,60 @@ def create_agent_team() -> Team:
         add_datetime_to_instructions=True,
     )
     
-    # Security & Quality Agent - Specialized in security and code quality assessment
-    security_agent_instructions = [
-        "You are a Security & Quality Specialist Agent powered by Google Gemini.",
-        "Your expertise lies in identifying security vulnerabilities, code quality issues, and best practices.",
-        "Focus on: security patterns, dependency vulnerabilities, code quality metrics, and compliance.",
-        "Analyze potential security risks, authentication mechanisms, and data handling practices.",
-        "Identify code quality issues, technical debt, and areas requiring refactoring.",
-        "Assess testing coverage, error handling, and defensive programming practices.",
-        "Provide specific recommendations for security improvements and code quality enhancement.",
-        "Consider industry standards and best practices for secure development.",
-        "Always prioritize critical security and quality issues in your analysis.",
-    ]
-    
-    security_agent = Agent(
-        name="Security & Quality Agent",
-        role="Handle security analysis and code quality assessment",
-        model=Gemini(id="gemini-2.0-flash-001"),
-        tools=[MCPTools().search_code, MCPTools().analyze_repository],
-        instructions=security_agent_instructions,
-        add_datetime_to_instructions=True,
-    )
-    
     # Team Coordinator - Orchestrates the specialized agents
     team_instructions = [
         "You are the Team Coordinator for the Repository Analysis Team powered by Google Gemini.",
         "Your role is to orchestrate specialized agents to provide comprehensive repository analysis.",
-        "Coordinate the following specialists: Overview, Code Analysis, Activity Analysis, and Security & Quality.",
+        "Coordinate the following specialists: Overview, Code Analysis, and Activity Analysis.",
         "Synthesize findings from all agents into a cohesive, well-structured analysis report.",
-        "Ensure all aspects of the repository are covered: metadata, code quality, activity, and security.",
-        "Present findings in a clear, professional format with executive summary and detailed sections.",
-        "Prioritize insights based on importance and impact.",
-        "Provide actionable recommendations that address the most critical findings first.",
-        "Use tables, charts, and structured formatting to present complex information clearly.",
-        "Ensure the final report is comprehensive yet accessible to different technical audiences.",
+        "Ensure each agent's expertise is utilized appropriately for the given question.",
+        "Provide a comprehensive response that covers all relevant aspects of the repository.",
+        "Structure the final response with clear sections and actionable insights.",
+        "Always maintain a professional and informative tone.",
     ]
     
-    # Create team
+    # Create the team
     team = Team(
         name="Repository Analysis Team",
-        mode="coordinate",
-        model=Gemini(id="gemini-2.0-flash-001"),
-        members=[overview_agent, code_agent, activity_agent, security_agent],
-        tools=[ReasoningTools(add_instructions=True)],
+        agents=[overview_agent, code_agent, activity_agent],
         instructions=team_instructions,
+        model=Gemini(id="gemini-2.0-flash-001"),
         markdown=True,
-        show_members_responses=True,
-        enable_agentic_context=True,
         add_datetime_to_instructions=True,
-        success_criteria="The team has provided a complete repository analysis covering all aspects: overview, code quality, activity patterns, and security considerations, with actionable recommendations.",
     )
     
     return team
 
 def ask_question_advanced(question: str, repository_url: str, use_team: bool = False) -> str:
-    """Ask a question using advanced agent or team"""
+    """Ask a question about a repository using advanced AI agents"""
     try:
         if use_team:
-            # Use team for complex analysis
+            # Use team of specialized agents
             team = create_agent_team()
-            response = team.run(f"Analyze the repository {repository_url}. {question}")
-            return response.content
+            response = team.run(f"Question: {question}\nRepository: {repository_url}")
         else:
-            # Use single agent for simple questions
+            # Use single advanced agent
             agent = create_advanced_agent()
-            response = agent.run(f"Repository: {repository_url}\n\nQuestion: {question}")
-            return response.content
-            
+            response = agent.run(f"Question: {question}\nRepository: {repository_url}")
+        
+        return response
+    
     except Exception as e:
-        return f"Error processing request: {str(e)}"
+        return f"Error getting AI response: {str(e)}"
 
 def analyze_repository_advanced(repository_url: str) -> str:
-    """Perform comprehensive repository analysis using advanced team system"""
+    """Perform comprehensive repository analysis using advanced agents"""
     try:
         team = create_agent_team()
-        response = team.run(f"Provide a comprehensive analysis of the repository: {repository_url}")
-        return response.content
+        response = team.run(f"Provide a comprehensive analysis of this repository: {repository_url}")
+        return response
+    
     except Exception as e:
         return f"Error analyzing repository: {str(e)}"
 
-# Backward compatibility functions
+# Legacy functions for backward compatibility
 def create_ai_agent(model_name: str, config: Dict[str, Any]) -> Dict[str, Any]:
-    """Create advanced agent (backward compatibility)"""
+    """Create AI agent (legacy function)"""
     agent = create_advanced_agent(model_name)
     return {
         "agent": agent,
@@ -259,131 +231,36 @@ def create_ai_agent(model_name: str, config: Dict[str, Any]) -> Dict[str, Any]:
         "config": config
     }
 
-def get_available_tools() -> List[Dict[str, Any]]:
-    """Get list of available MCP tools"""
-    return [
-        {
-            "name": "get_repository_overview",
-            "description": "Get comprehensive overview of a GitHub repository",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "repo_url": {
-                        "type": "string",
-                        "description": "GitHub repository URL"
-                    }
-                },
-                "required": ["repo_url"]
-            }
-        },
-        {
-            "name": "search_code",
-            "description": "Search for code patterns in a repository",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "repo_url": {
-                        "type": "string",
-                        "description": "GitHub repository URL"
-                    },
-                    "query": {
-                        "type": "string",
-                        "description": "Search query"
-                    },
-                    "language": {
-                        "type": "string",
-                        "description": "Programming language filter (optional)"
-                    }
-                },
-                "required": ["repo_url", "query"]
-            }
-        },
-        {
-            "name": "get_recent_commits",
-            "description": "Get recent commit history",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "repo_url": {
-                        "type": "string",
-                        "description": "GitHub repository URL"
-                    },
-                    "limit": {
-                        "type": "integer",
-                        "description": "Number of commits to retrieve"
-                    }
-                },
-                "required": ["repo_url"]
-            }
-        },
-        {
-            "name": "get_issues",
-            "description": "Get repository issues",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "repo_url": {
-                        "type": "string",
-                        "description": "GitHub repository URL"
-                    },
-                    "state": {
-                        "type": "string",
-                        "description": "Issue state (open/closed)"
-                    },
-                    "limit": {
-                        "type": "integer",
-                        "description": "Number of issues to retrieve"
-                    }
-                },
-                "required": ["repo_url"]
-            }
-        },
-        {
-            "name": "analyze_repository",
-            "description": "Perform comprehensive repository analysis",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "repo_url": {
-                        "type": "string",
-                        "description": "GitHub repository URL"
-                    }
-                },
-                "required": ["repo_url"]
-            }
-        }
-    ]
-
 def ask_question(agent: Dict[str, Any], question: str, repository_url: str) -> Dict[str, Any]:
-    """Ask a question using legacy agent format"""
+    """Ask question using legacy agent format"""
     try:
-        agent_instance = agent["agent"]
-        response = agent_instance.run(f"Repository: {repository_url}\n\nQuestion: {question}")
+        response = agent["agent"].run(f"Question: {question}\nRepository: {repository_url}")
         return {
             "success": True,
-            "response": response.content,
-            "model": agent["model"]
+            "response": response,
+            "question": question,
+            "repository": repository_url
         }
     except Exception as e:
         return {
             "success": False,
             "error": str(e),
-            "model": agent["model"]
+            "question": question,
+            "repository": repository_url
         }
 
 def analyze_repository(agent: Dict[str, Any], repository_url: str) -> Dict[str, Any]:
     """Analyze repository using legacy agent format"""
     try:
-        agent_instance = agent["agent"]
-        response = agent_instance.run(f"Provide a comprehensive analysis of the repository: {repository_url}")
+        response = agent["agent"].run(f"Analyze this repository comprehensively: {repository_url}")
         return {
             "success": True,
-            "response": response.content,
-            "model": agent["model"]
+            "analysis": response,
+            "repository": repository_url
         }
     except Exception as e:
         return {
             "success": False,
             "error": str(e),
-            "model": agent["model"]
+            "repository": repository_url
         } 
