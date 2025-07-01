@@ -1,6 +1,6 @@
 # 🚀 GitHub Repository Analyzer
 
-A comprehensive, AI-powered GitHub repository analysis tool that leverages Model Context Protocol (MCP) servers and Google Gemini AI to provide intelligent insights about code repositories. Built with Streamlit for a modern, interactive web interface.
+> A comprehensive, AI-powered GitHub repository analysis tool that leverages Model Context Protocol (MCP) servers and Google Gemini AI to provide intelligent insights about code repositories. Built with Streamlit for a modern, interactive web interface.
 
 ## ✨ Key Features
 
@@ -251,7 +251,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - **[Google Gemini](https://ai.google.dev/)** - Advanced AI capabilities
 - **[Model Context Protocol](https://modelcontextprotocol.io/)** - Standardized server architecture
 - **[GitHub API](https://docs.github.com/en/rest)** - Comprehensive repository data access
-- **[Agno Framework](https://github.com/agno-ai/agno)** - Multi-agent system framework
+- **[Agno Framework](https://github.com/agno-agi/agno)** - Multi-agent system framework
 
 ## 📞 Support & Documentation
 
