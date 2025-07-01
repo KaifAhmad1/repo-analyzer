@@ -42,7 +42,7 @@ def render_chat_interface(repo_url: Optional[str] = None) -> None:
     for i, (label, q) in enumerate(QUICK_QUESTIONS):
         if cols[i % 4].button(label, key=f"quick_{i}"):
             st.session_state.question_input = q
-            st.experimental_rerun()
+            st.rerun()
 
     # --- User Input ---
     st.markdown("#### 📝 Ask a Question")
@@ -58,13 +58,13 @@ def render_chat_interface(repo_url: Optional[str] = None) -> None:
             if question.strip():
                 process_question(question, repo_url)
                 st.session_state.question_input = ""
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.warning("⚠️ Please enter a question.")
     with clear_col:
         if st.button("🗑️ Clear Chat"):
             st.session_state.chat_history = []
-            st.experimental_rerun()
+            st.rerun()
     with export_col:
         if st.button("📥 Export Chat"):
             export_chat_history()

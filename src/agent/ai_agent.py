@@ -301,6 +301,12 @@ def create_repository_analyzer_agent(model_name: str = "gemini-2.0-flash-001") -
 def ask_question(question: str, repository_url: str) -> str:
     """Ask a question about a repository using FastMCP v2"""
     try:
+        # Check if Google API key is available
+        from src.utils.config import get_google_api_key
+        api_key = get_google_api_key()
+        if not api_key:
+            return "❌ **Google API Key Required**\n\nPlease set your Google AI API key in the settings sidebar to use AI features.\n\n1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey) to get your API key\n2. Enter it in the sidebar under '🔑 API Configuration'\n3. Click '💾 Save Configuration'"
+        
         agent = create_repository_analyzer_agent()
         response = agent.run(f"Question: {question}\nRepository: {repository_url}")
         return response
