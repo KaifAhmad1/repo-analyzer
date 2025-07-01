@@ -75,26 +75,8 @@ def render_repository_selector() -> Optional[str]:
             st.error("❌ Invalid GitHub repository URL. Please enter a valid URL.")
             return None
     
-    # Quick examples
-    st.markdown("#### 💡 Example Repositories")
-    
-    examples = [
-        ("Microsoft VSCode", "https://github.com/microsoft/vscode"),
-        ("React", "https://github.com/facebook/react"),
-        ("Python", "https://github.com/python/cpython"),
-        ("Django", "https://github.com/django/django"),
-    ]
-    
-    cols = st.columns(2)
-    for i, (name, url) in enumerate(examples):
-        with cols[i % 2]:
-            if st.button(f"📦 {name}", key=f"example_{i}", use_container_width=True):
-                st.session_state.example_url = url
-                st.rerun()
-    
-    # Handle example selection
-    if "example_url" in st.session_state:
-        st.session_state.pop("example_url")
-        return st.session_state.example_url
+    # Instructions for users
+    st.markdown("#### 📝 Instructions")
+    st.info("Please enter a valid GitHub repository URL to analyze. The URL should be in the format: `https://github.com/owner/repository`")
     
     return None 

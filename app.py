@@ -8,7 +8,7 @@ import os
 from src.ui.repository_selector import render_repository_selector
 from src.ui.chat_interface import render_chat_interface
 from src.ui.settings_sidebar import render_settings_sidebar
-from src.agent.ai_agent import get_repository_overview, analyze_repository
+from src.agent.ai_agent import get_repository_overview, analyze_repository, FastMCPTools
 from src.servers.server_manager import get_servers_status
 
 # Page config
@@ -68,8 +68,8 @@ with tab1:
 with tab2:
     st.markdown("### 🧑‍💻 Code Analysis")
     if repo_url:
-        from src.agent.ai_agent import get_code_metrics
-        metrics = get_code_metrics(repo_url)
+        tools = FastMCPTools()
+        metrics = tools.get_code_metrics(repo_url)
         st.write(metrics)
         # Add more code analysis features as needed
     else:
@@ -78,8 +78,8 @@ with tab2:
 with tab3:
     st.markdown("### 🗺️ Visual Repository Map")
     if repo_url:
-        from src.agent.ai_agent import get_directory_tree
-        tree = get_directory_tree(repo_url)
+        tools = FastMCPTools()
+        tree = tools.get_directory_tree(repo_url)
         st.write(tree)
         # Optionally, add a Plotly or Graphviz visualization here
     else:
