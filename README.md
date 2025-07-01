@@ -54,8 +54,8 @@ The system is designed to answer these types of questions effectively:
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd repo-analyzer-12
+   git clone https://github.com/KaifAhmad1/repo-analyzer.git
+   cd repo-analyzer
    ```
 
 2. **Install dependencies**
