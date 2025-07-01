@@ -20,7 +20,6 @@ sys.path.append(str(Path(__file__).parent / "src"))
 
 from src.ui.repository_selector import render_repository_selector
 from src.ui.chat_interface import render_chat_interface, render_chat_stats
-from src.ui.settings_sidebar import render_settings_sidebar, validate_api_keys
 from src.agent.ai_agent import ask_question, analyze_repository
 from src.servers.server_manager import start_mcp_servers, check_servers_status, get_detailed_server_status
 from src.servers.mcp_client_improved import UnifiedMCPClient
@@ -51,15 +50,6 @@ def create_header():
 def create_sidebar_controls():
     """Create simplified sidebar controls"""
     
-    # API Configuration Section
-    config = render_settings_sidebar()
-    
-    # Check if API keys are configured
-    if not config["config_valid"]:
-        st.sidebar.error("⚠️ Please configure your API keys to use AI features")
-        return None
-    
-    st.sidebar.markdown("---")
     st.sidebar.markdown("### ⚙️ AI Configuration")
     
     # Model selection
@@ -325,18 +315,6 @@ def main():
     
     # Create sidebar controls
     model = create_sidebar_controls()
-    
-    # Check if API keys are configured
-    if not validate_api_keys():
-        st.warning("⚠️ Please configure your API keys in the sidebar to use AI features")
-        st.info("You can still browse repositories and view basic information without API keys")
-        
-        # Show repository selector only
-        repo_url = render_repository_selector()
-        if repo_url:
-            st.session_state.selected_repo = repo_url
-            create_repository_overview(repo_url)
-        return
     
     # Start MCP servers if not running
     server_status = check_servers_status()

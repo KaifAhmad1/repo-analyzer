@@ -64,8 +64,11 @@ The system is designed to answer these types of questions effectively:
    ```
 
 3. **Configure API keys**
-   - Set your Google Gemini API key in the Streamlit interface
-   - The system will guide you through the setup process
+   - Create a `.env` file in the project root with your Google Gemini API key:
+   ```
+   GOOGLE_API_KEY=your_gemini_api_key_here
+   ```
+   - The API key is automatically loaded from the `.env` file
 
 4. **Start the application**
    ```bash
@@ -121,21 +124,19 @@ repo-analyzer-12/
     └── ui/
         ├── chat_interface.py      # Enhanced Q&A interface
         ├── repository_selector.py # Repository selection
-        ├── settings_sidebar.py    # Configuration panel
         └── modern_styles.css      # Custom styling
 ```
 
 ## 🔧 Configuration
 
 ### API Keys
-The system requires the following API keys:
+The system requires the following API key:
 - **Google Gemini API**: For AI-powered analysis
-- **GitHub Token** (optional): For higher rate limits
 
 ### Environment Variables
+Create a `.env` file in the project root:
 ```bash
-GOOGLE_GEMINI_API_KEY=your_gemini_api_key
-GITHUB_TOKEN=your_github_token  # Optional
+GOOGLE_API_KEY=your_gemini_api_key_here
 ```
 
 ## 🧪 Testing
