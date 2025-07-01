@@ -14,6 +14,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import pandas as pd
+import numpy as np
+from typing import Dict, Any, List, Optional
 
 # Add src to path for imports
 sys.path.append(str(Path(__file__).parent / "src"))
@@ -51,6 +53,12 @@ def create_header():
     <div class="header-container">
         <h1 class="header-title">🚀 GitHub Repository Analyzer</h1>
         <p class="header-subtitle">AI-Powered Repository Analysis with Advanced Multi-Agent System</p>
+        <div class="header-features">
+            <span class="feature-badge">🤖 AI Agents</span>
+            <span class="feature-badge">🔍 MCP Servers</span>
+            <span class="feature-badge">📊 Analytics</span>
+            <span class="feature-badge">💬 Chat Interface</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -84,25 +92,26 @@ def create_stats_cards(repo_data=None):
     if not repo_data:
         # Placeholder stats
         stats = [
-            {"label": "Files Analyzed", "value": "0", "icon": "📁"},
-            {"label": "Lines of Code", "value": "0", "icon": "💻"},
-            {"label": "Languages", "value": "0", "icon": "🔤"},
-            {"label": "Issues Found", "value": "0", "icon": "🐛"},
+            {"label": "Files Analyzed", "value": "0", "icon": "📁", "color": "primary"},
+            {"label": "Lines of Code", "value": "0", "icon": "💻", "color": "success"},
+            {"label": "Languages", "value": "0", "icon": "🔤", "color": "warning"},
+            {"label": "Issues Found", "value": "0", "icon": "🐛", "color": "error"},
         ]
     else:
         stats = [
-            {"label": "Files Analyzed", "value": str(repo_data.get("files", 0)), "icon": "📁"},
-            {"label": "Lines of Code", "value": str(repo_data.get("lines", 0)), "icon": "💻"},
-            {"label": "Languages", "value": str(repo_data.get("languages", 0)), "icon": "🔤"},
-            {"label": "Issues Found", "value": str(repo_data.get("issues", 0)), "icon": "🐛"},
+            {"label": "Files Analyzed", "value": str(repo_data.get("files", 0)), "icon": "📁", "color": "primary"},
+            {"label": "Lines of Code", "value": str(repo_data.get("lines", 0)), "icon": "💻", "color": "success"},
+            {"label": "Languages", "value": str(repo_data.get("languages", 0)), "icon": "🔤", "color": "warning"},
+            {"label": "Issues Found", "value": str(repo_data.get("issues", 0)), "icon": "🐛", "color": "error"},
         ]
     
     cols = st.columns(4)
     for i, stat in enumerate(stats):
         with cols[i]:
             st.markdown(f"""
-            <div class="stat-card">
-                <div class="stat-number">{stat['icon']} {stat['value']}</div>
+            <div class="stat-card stat-card-{stat['color']}">
+                <div class="stat-icon">{stat['icon']}</div>
+                <div class="stat-number">{stat['value']}</div>
                 <div class="stat-label">{stat['label']}</div>
             </div>
             """, unsafe_allow_html=True)
@@ -158,7 +167,7 @@ def create_visualizations(repo_url=None):
             issues = client.get_issues(repo_url, "open", 10)
             
             # Create tabs for different visualizations
-            tab1, tab2, tab3 = st.tabs(["📊 Activity", "🔤 Languages", "📈 Trends"])
+            tab1, tab2, tab3, tab4 = st.tabs(["📊 Activity", "🔤 Languages", "📈 Trends", "🎯 Analysis"])
             
             with tab1:
                 if commits.get("success"):
@@ -211,9 +220,48 @@ def create_visualizations(repo_url=None):
                             font=dict(color='#2c3e50')
                         )
                         st.plotly_chart(fig, use_container_width=True)
+            
+            with tab4:
+                # Code analysis visualization
+                create_code_analysis_charts()
     
     except Exception as e:
         st.error(f"Error creating visualizations: {e}")
+
+def create_code_analysis_charts():
+    """Create code analysis charts"""
+    # Sample data for code analysis
+    complexity_data = {
+        'Files': ['main.py', 'utils.py', 'config.py', 'models.py', 'api.py'],
+        'Complexity': [15, 8, 3, 12, 20],
+        'Lines': [200, 150, 80, 300, 400]
+    }
+    
+    df = pd.DataFrame(complexity_data)
+    
+    # Complexity chart
+    fig1 = px.bar(df, x='Files', y='Complexity', 
+                  title="Code Complexity Analysis",
+                  color='Complexity',
+                  color_continuous_scale='viridis')
+    fig1.update_layout(
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='#2c3e50')
+    )
+    st.plotly_chart(fig1, use_container_width=True)
+    
+    # Lines of code vs complexity scatter
+    fig2 = px.scatter(df, x='Lines', y='Complexity', 
+                      title="Lines of Code vs Complexity",
+                      size='Complexity',
+                      hover_data=['Files'])
+    fig2.update_layout(
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='#2c3e50')
+    )
+    st.plotly_chart(fig2, use_container_width=True)
 
 def create_file_explorer(repo_url=None):
     """Create interactive file explorer"""
@@ -317,17 +365,234 @@ def create_issues_table(repo_url=None):
     except Exception as e:
         st.error(f"Error loading issues: {e}")
 
+def create_advanced_chat_interface(repo_url=None, agent_type="Single Agent"):
+    """Create advanced chat interface with modern design"""
+    if not repo_url:
+        st.markdown("""
+        <div class="modern-card">
+            <h3>💬 AI Chat Assistant</h3>
+            <p>Select a repository to start chatting with the AI assistant.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        return
+    
+    # Chat container with modern styling
+    st.markdown("""
+    <div class="chat-main-container">
+        <div class="chat-header">
+            <h3>💬 AI Repository Assistant</h3>
+            <p>Ask questions about the repository and get intelligent insights</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Chat history display
+    if 'messages' not in st.session_state:
+        st.session_state.messages = []
+    
+    # Display chat history
+    if st.session_state.messages:
+        st.markdown("### 💭 Conversation History")
+        chat_container = st.container()
+        
+        with chat_container:
+            for i, message in enumerate(st.session_state.messages):
+                is_user = message["role"] == "user"
+                bubble_class = "user" if is_user else "assistant"
+                icon = "👤" if is_user else "🤖"
+                
+                st.markdown(f"""
+                <div class="chat-message {bubble_class}">
+                    <div class="chat-message-header">
+                        <span class="chat-icon">{icon}</span>
+                        <strong>{'You' if is_user else 'AI Assistant'}</strong>
+                        <small>{message.get('timestamp', 'Unknown')}</small>
+                    </div>
+                    <div class="chat-content">{message["content"]}</div>
+                </div>
+                """, unsafe_allow_html=True)
+    
+    # Quick questions
+    st.markdown("### 💡 Quick Questions")
+    quick_questions = [
+        "What is this repository about?",
+        "Show me the main entry points",
+        "What are the recent changes?",
+        "Find authentication-related code",
+        "What dependencies does this use?",
+        "Are there any performance issues?",
+        "Explain the database implementation",
+        "What's the testing strategy?"
+    ]
+    
+    cols = st.columns(2)
+    for i, question in enumerate(quick_questions):
+        with cols[i % 2]:
+            if st.button(f"❓ {question}", key=f"quick_{i}", use_container_width=True):
+                process_chat_question(question, repo_url, agent_type)
+                st.rerun()
+    
+    # Chat input
+    st.markdown("### 💭 Ask a Question")
+    col1, col2 = st.columns([4, 1])
+    
+    with col1:
+        user_question = st.text_input(
+            "Type your question here...",
+            placeholder="e.g., What is this repository about? Show me the main entry points...",
+            key="chat_input",
+            label_visibility="collapsed"
+        )
+    
+    with col2:
+        if st.button("🚀 Ask AI", type="primary", use_container_width=True):
+            if user_question:
+                process_chat_question(user_question, repo_url, agent_type)
+                st.session_state.chat_input = ""
+                st.rerun()
+
+def process_chat_question(question: str, repo_url: str, agent_type: str):
+    """Process a chat question and get AI response"""
+    if 'messages' not in st.session_state:
+        st.session_state.messages = []
+    
+    # Add user message
+    st.session_state.messages.append({
+        "role": "user",
+        "content": question,
+        "timestamp": datetime.now().strftime("%H:%M")
+    })
+    
+    # Show loading animation
+    with st.spinner("🤖 AI is analyzing the repository..."):
+        try:
+            if agent_type == "Multi-Agent Team":
+                response = ask_question_advanced(question, repo_url, use_team=True)
+            else:
+                response = ask_question_advanced(question, repo_url, use_team=False)
+            
+            # Add AI response
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": response,
+                "timestamp": datetime.now().strftime("%H:%M")
+            })
+            
+        except Exception as e:
+            st.error(f"Error getting AI response: {e}")
+
 def create_floating_actions():
     """Create floating action buttons"""
     st.markdown("""
-    <div class="fab" onclick="clearChat()">🗑️</div>
+    <div class="fab-container">
+        <div class="fab fab-primary" onclick="clearChat()">🗑️</div>
+        <div class="fab fab-secondary" onclick="exportChat()">📤</div>
+        <div class="fab fab-success" onclick="shareChat()">📤</div>
+    </div>
     <script>
     function clearChat() {
         // Clear chat functionality
         console.log('Clear chat clicked');
     }
+    function exportChat() {
+        // Export chat functionality
+        console.log('Export chat clicked');
+    }
+    function shareChat() {
+        // Share chat functionality
+        console.log('Share chat clicked');
+    }
     </script>
     """, unsafe_allow_html=True)
+
+def create_sidebar_controls():
+    """Create sidebar controls"""
+    with st.sidebar:
+        st.markdown("### ⚙️ Configuration")
+        
+        # Theme toggle
+        if st.button("🌙 Toggle Theme"):
+            st.session_state.theme = "dark" if st.session_state.theme == "light" else "light"
+            st.rerun()
+        
+        # GitHub Token
+        github_token = st.text_input(
+            "GitHub Token",
+            type="password",
+            help="Enter your GitHub personal access token",
+            value=os.getenv("GITHUB_TOKEN", "")
+        )
+        
+        if github_token:
+            os.environ["GITHUB_TOKEN"] = github_token
+        
+        # AI API Key
+        ai_provider = st.selectbox(
+            "AI Provider",
+            ["OpenAI", "Anthropic", "Google Gemini"],
+            help="Choose your AI provider"
+        )
+        
+        if ai_provider == "OpenAI":
+            openai_key = st.text_input(
+                "OpenAI API Key",
+                type="password",
+                help="Enter your OpenAI API key",
+                value=os.getenv("OPENAI_API_KEY", "")
+            )
+            if openai_key:
+                os.environ["OPENAI_API_KEY"] = openai_key
+        elif ai_provider == "Anthropic":
+            anthropic_key = st.text_input(
+                "Anthropic API Key",
+                type="password",
+                help="Enter your Anthropic API key",
+                value=os.getenv("ANTHROPIC_API_KEY", "")
+            )
+            if anthropic_key:
+                os.environ["ANTHROPIC_API_KEY"] = anthropic_key
+        else:
+            gemini_key = st.text_input(
+                "Google Gemini API Key",
+                type="password",
+                help="Enter your Google Gemini API key",
+                value=os.getenv("GOOGLE_API_KEY", "")
+            )
+            if gemini_key:
+                os.environ["GOOGLE_API_KEY"] = gemini_key
+        
+        # Agent System Selection
+        agent_type, model = create_agent_selector()
+        st.session_state.agent_type = agent_type
+        
+        # MCP Server Status
+        st.markdown("### 🔧 MCP Servers")
+        
+        if st.button("🚀 Start MCP Servers"):
+            with st.spinner("Starting MCP servers..."):
+                if start_mcp_servers():
+                    st.success("✅ MCP servers started successfully!")
+                else:
+                    st.error("❌ Failed to start MCP servers")
+        
+        # Check server status
+        server_status = check_servers_status()
+        for server_name, status in server_status.items():
+            status_icon = "✅" if status else "❌"
+            st.text(f"{status_icon} {server_name.replace('_', ' ').title()}")
+        
+        # Quick actions
+        st.markdown("### ⚡ Quick Actions")
+        if st.button("🗑️ Clear Chat"):
+            st.session_state.messages = []
+            st.rerun()
+        
+        if st.button("📊 Export Data"):
+            # Export functionality
+            st.info("Export feature coming soon!")
+        
+        if st.button("🔄 Refresh Analysis"):
+            st.rerun()
 
 def main():
     """Main application function"""
@@ -362,83 +627,11 @@ def main():
     # Create header
     create_header()
     
-    # Sidebar
-    with st.sidebar:
-        st.markdown("### ⚙️ Configuration")
-        
-        # Theme toggle
-        if st.button("🌙 Toggle Theme"):
-            st.session_state.theme = "dark" if st.session_state.theme == "light" else "light"
-            st.rerun()
-        
-        # GitHub Token
-        github_token = st.text_input(
-            "GitHub Token",
-            type="password",
-            help="Enter your GitHub personal access token",
-            value=os.getenv("GITHUB_TOKEN", "")
-        )
-        
-        if github_token:
-            os.environ["GITHUB_TOKEN"] = github_token
-        
-        # AI API Key
-        ai_provider = st.selectbox(
-            "AI Provider",
-            ["OpenAI", "Anthropic"],
-            help="Choose your AI provider"
-        )
-        
-        if ai_provider == "OpenAI":
-            openai_key = st.text_input(
-                "OpenAI API Key",
-                type="password",
-                help="Enter your OpenAI API key",
-                value=os.getenv("OPENAI_API_KEY", "")
-            )
-            if openai_key:
-                os.environ["OPENAI_API_KEY"] = openai_key
-        else:
-            anthropic_key = st.text_input(
-                "Anthropic API Key",
-                type="password",
-                help="Enter your Anthropic API key",
-                value=os.getenv("ANTHROPIC_API_KEY", "")
-            )
-            if anthropic_key:
-                os.environ["ANTHROPIC_API_KEY"] = anthropic_key
-        
-        # Agent System Selection
-        agent_type, model = create_agent_selector()
-        st.session_state.agent_type = agent_type
-        
-        # MCP Server Status
-        st.markdown("### 🔧 MCP Servers")
-        
-        if st.button("🚀 Start MCP Servers"):
-            with st.spinner("Starting MCP servers..."):
-                if start_mcp_servers():
-                    st.success("✅ MCP servers started successfully!")
-                else:
-                    st.error("❌ Failed to start MCP servers")
-        
-        # Check server status
-        server_status = check_servers_status()
-        for server_name, status in server_status.items():
-            status_icon = "✅" if status else "❌"
-            st.text(f"{status_icon} {server_name.replace('_', ' ').title()}")
-        
-        # Quick actions
-        st.markdown("### ⚡ Quick Actions")
-        if st.button("🗑️ Clear Chat"):
-            st.session_state.messages = []
-            st.rerun()
-        
-        if st.button("📊 Export Data"):
-            # Export functionality
-            st.info("Export feature coming soon!")
+    # Sidebar controls
+    create_sidebar_controls()
     
     # Main content
+    github_token = os.getenv("GITHUB_TOKEN")
     if not github_token:
         st.warning("⚠️ Please enter your GitHub token in the sidebar to continue.")
         return
@@ -452,22 +645,22 @@ def main():
         # Create AI agent if not exists or if agent type changed
         if (st.session_state.ai_agent is None or 
             hasattr(st.session_state, 'last_agent_type') and 
-            st.session_state.last_agent_type != agent_type):
+            st.session_state.last_agent_type != st.session_state.agent_type):
             
             try:
-                if agent_type == "Legacy System":
+                if st.session_state.agent_type == "Legacy System":
                     # Use legacy agent system
                     model = "gpt-4" if os.getenv("OPENAI_API_KEY") else "claude-3-sonnet"
                     st.session_state.ai_agent = create_ai_agent(model, config)
                 else:
                     # Use advanced-based system
                     st.session_state.ai_agent = {
-                        "type": agent_type,
-                        "model": model,
+                        "type": st.session_state.agent_type,
+                        "model": "gemini-2.0-flash-001",
                         "config": config
                     }
                 
-                st.session_state.last_agent_type = agent_type
+                st.session_state.last_agent_type = st.session_state.agent_type
                 
             except Exception as e:
                 st.error(f"Failed to create AI agent: {e}")
@@ -476,14 +669,14 @@ def main():
         # Stats cards
         create_stats_cards()
         
-        # Main content tabs
-        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-            "🏠 Overview", "📁 Files", "🕒 Commits", "🐛 Issues", "💬 Chat", "📊 Analytics"
+        # Main content tabs with modern design
+        tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+            "🏠 Overview", "📁 Files", "🕒 Commits", "🐛 Issues", "💬 Chat", "📊 Analytics", "🔧 Tools"
         ])
         
         with tab1:
             # Overview tab
-            create_insights_panel(repo_url, agent_type)
+            create_insights_panel(repo_url, st.session_state.agent_type)
             create_visualizations(repo_url)
         
         with tab2:
@@ -499,61 +692,8 @@ def main():
             create_issues_table(repo_url)
         
         with tab5:
-            # Chat tab
-            if agent_type == "Legacy System":
-                render_chat_interface(st.session_state.ai_agent)
-            else:
-                # advanced-based chat interface
-                st.markdown("### 💬 AI Chat with advanced Agents")
-                
-                # Chat input
-                user_question = st.text_input(
-                    "Ask a question about the repository:",
-                    placeholder="e.g., What is this repository about? Find authentication code..."
-                )
-                
-                if st.button("🤖 Ask AI Agent"):
-                    if user_question:
-                        with st.spinner("🤖 AI agent is thinking..."):
-                            try:
-                                if agent_type == "Multi-Agent Team":
-                                    response = ask_question_advanced(
-                                        user_question, 
-                                        repo_url, 
-                                        use_team=True
-                                    )
-                                else:
-                                    response = ask_question_advanced(
-                                        user_question, 
-                                        repo_url, 
-                                        use_team=False
-                                    )
-                                
-                                st.markdown("### 🤖 AI Response")
-                                st.markdown(response)
-                                
-                                # Add to chat history
-                                st.session_state.messages.append({
-                                    "role": "user",
-                                    "content": user_question
-                                })
-                                st.session_state.messages.append({
-                                    "role": "assistant", 
-                                    "content": response
-                                })
-                                
-                            except Exception as e:
-                                st.error(f"Error getting AI response: {e}")
-                
-                # Chat history
-                if st.session_state.messages:
-                    st.markdown("### 💬 Chat History")
-                    for message in st.session_state.messages[-6:]:  # Show last 6 messages
-                        if message["role"] == "user":
-                            st.markdown(f"**You:** {message['content']}")
-                        else:
-                            st.markdown(f"**AI:** {message['content']}")
-                        st.divider()
+            # Chat tab - Enhanced chat interface
+            create_advanced_chat_interface(repo_url, st.session_state.agent_type)
         
         with tab6:
             # Analytics tab
@@ -561,6 +701,40 @@ def main():
             <div class="modern-card">
                 <h3>📊 Advanced Analytics</h3>
                 <p>Advanced analytics and insights coming soon!</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with tab7:
+            # Tools tab
+            st.markdown("""
+            <div class="modern-card">
+                <h3>🔧 Available Tools</h3>
+                <div class="tools-grid">
+                    <div class="tool-item">
+                        <h4>📁 File Content Server</h4>
+                        <p>Retrieve and read file contents</p>
+                    </div>
+                    <div class="tool-item">
+                        <h4>🌳 Repository Structure Server</h4>
+                        <p>Get directory trees and file listings</p>
+                    </div>
+                    <div class="tool-item">
+                        <h4>🕒 Commit History Server</h4>
+                        <p>Access commit messages and changes</p>
+                    </div>
+                    <div class="tool-item">
+                        <h4>🐛 Issue/PR Server</h4>
+                        <p>Query issues and pull requests</p>
+                    </div>
+                    <div class="tool-item">
+                        <h4>🔍 Code Search Server</h4>
+                        <p>Search for specific code patterns</p>
+                    </div>
+                    <div class="tool-item">
+                        <h4>📚 Documentation Server</h4>
+                        <p>Extract and process README files</p>
+                    </div>
+                </div>
             </div>
             """, unsafe_allow_html=True)
     
