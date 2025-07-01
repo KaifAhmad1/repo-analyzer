@@ -33,9 +33,21 @@ with st.sidebar:
     if repo_url:
         try:
             repo_info = get_repository_overview(repo_url)
-            if isinstance(repo_info, str):
+            # Handle both old string format and new tuple format
+            if isinstance(repo_info, tuple):
+                repo_info_text, tools_used = repo_info
+                if isinstance(repo_info_text, str):
+                    import json
+                    try:
+                        repo_info = json.loads(repo_info_text)
+                    except:
+                        repo_info = {"name": "Repository", "description": repo_info_text}
+            elif isinstance(repo_info, str):
                 import json
-                repo_info = json.loads(repo_info)
+                try:
+                    repo_info = json.loads(repo_info)
+                except:
+                    repo_info = {"name": "Repository", "description": repo_info}
         except Exception:
             repo_info = None
     if repo_info and isinstance(repo_info, dict):
@@ -284,15 +296,19 @@ with tab4:
                     
                     # Generate the summary based on type
                     if summary_type == "Quick Overview":
-                        summary = analyze_repository(repo_url)
+                        summary, tools_used = analyze_repository(repo_url)
                     elif summary_type == "Detailed Analysis":
-                        summary = analyze_repository(repo_url) + "\n\n" + "Detailed analysis with additional insights..."
+                        summary, tools_used = analyze_repository(repo_url)
+                        summary += "\n\n" + "Detailed analysis with additional insights..."
                     elif summary_type == "Technical Summary":
-                        summary = analyze_repository(repo_url) + "\n\n" + "Technical architecture and implementation details..."
+                        summary, tools_used = analyze_repository(repo_url)
+                        summary += "\n\n" + "Technical architecture and implementation details..."
                     elif summary_type == "Contributor Analysis":
-                        summary = analyze_repository(repo_url) + "\n\n" + "Contributor activity and collaboration patterns..."
+                        summary, tools_used = analyze_repository(repo_url)
+                        summary += "\n\n" + "Contributor activity and collaboration patterns..."
                     elif summary_type == "Full Repository Report":
-                        summary = analyze_repository(repo_url) + "\n\n" + "Comprehensive repository analysis report..."
+                        summary, tools_used = analyze_repository(repo_url)
+                        summary += "\n\n" + "Comprehensive repository analysis report..."
                     
                     progress_bar.progress(80)
                     
@@ -304,6 +320,32 @@ with tab4:
                     # Display the summary
                     st.markdown("### 📝 Generated Summary")
                     st.markdown(summary)
+                    
+                    # Display tools used if available
+                    if tools_used:
+                        st.markdown("### 🔧 MCP Tools Used")
+                        tool_descriptions = {
+                            "get_file_content": "📄 File Content",
+                            "list_directory": "📁 Directory Listing", 
+                            "get_readme_content": "📖 README Content",
+                            "get_directory_tree": "🌳 Directory Tree",
+                            "get_file_structure": "📋 File Structure",
+                            "analyze_project_structure": "🏗️ Project Structure",
+                            "get_recent_commits": "📝 Recent Commits",
+                            "get_commit_details": "🔍 Commit Details",
+                            "get_commit_statistics": "📊 Commit Stats",
+                            "search_code": "🔍 Code Search",
+                            "search_files": "📁 File Search",
+                            "find_functions": "⚙️ Function Search",
+                            "get_code_metrics": "📈 Code Metrics",
+                            "search_dependencies": "📦 Dependency Search"
+                        }
+                        
+                        for tool in tools_used:
+                            tool_name = tool_descriptions.get(tool, f"🔧 {tool}")
+                            st.markdown(f"• {tool_name}")
+                        
+                        st.markdown(f"*Total tools used: {len(tools_used)}*")
                     
                     # Add additional sections if requested
                     if include_metrics:

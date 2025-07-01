@@ -120,8 +120,7 @@ def process_question(question: str, repo_url: str) -> None:
             status_text.text("🧠 Processing your question...")
             progress_bar.progress(80)
             
-            response = ask_question(question, repo_url)
-            tools_used = extract_tools_from_response(response)
+            response, tools_used = ask_question(question, repo_url)
             
             status_text.text("✅ Response ready!")
             progress_bar.progress(100)
@@ -185,15 +184,56 @@ def display_chat_history() -> None:
     user_messages = len([m for m in st.session_state.chat_history if m["role"] == "user"])
     ai_messages = len([m for m in st.session_state.chat_history if m["role"] == "assistant"])
     
-    col1, col2, col3 = st.columns(3)
+    # Calculate total tools used
+    all_tools_used = []
+    for message in st.session_state.chat_history:
+        if message["role"] == "assistant" and message["tools_used"]:
+            all_tools_used.extend(message["tools_used"])
+    unique_tools_used = len(set(all_tools_used))
+    total_tool_calls = len(all_tools_used)
+    
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.metric("Total Messages", total_messages)
     with col2:
         st.metric("Your Questions", user_messages)
     with col3:
         st.metric("AI Responses", ai_messages)
+    with col4:
+        st.metric("MCP Tools Used", f"{unique_tools_used} unique")
     
     st.markdown("### 📝 Conversation History")
+    
+    # Add tool usage breakdown
+    if all_tools_used:
+        st.markdown("#### 🔧 Tool Usage Breakdown")
+        from collections import Counter
+        tool_counts = Counter(all_tools_used)
+        
+        # Create a nice display of tool usage
+        tool_descriptions = {
+            "get_file_content": "📄 File Content",
+            "list_directory": "📁 Directory Listing", 
+            "get_readme_content": "📖 README Content",
+            "get_directory_tree": "🌳 Directory Tree",
+            "get_file_structure": "📋 File Structure",
+            "analyze_project_structure": "🏗️ Project Structure",
+            "get_recent_commits": "📝 Recent Commits",
+            "get_commit_details": "🔍 Commit Details",
+            "get_commit_statistics": "📊 Commit Stats",
+            "search_code": "🔍 Code Search",
+            "search_files": "📁 File Search",
+            "find_functions": "⚙️ Function Search",
+            "get_code_metrics": "📈 Code Metrics",
+            "search_dependencies": "📦 Dependency Search"
+        }
+        
+        # Display top tools used
+        cols = st.columns(3)
+        for i, (tool, count) in enumerate(tool_counts.most_common(6)):
+            with cols[i % 3]:
+                tool_name = tool_descriptions.get(tool, f"🔧 {tool}")
+                st.metric(tool_name, count)
     
     # Add a search/filter option
     search_term = st.text_input("🔍 Search in conversation history", placeholder="Type to filter messages...")
@@ -221,11 +261,35 @@ def display_chat_history() -> None:
             else:
                 st.markdown(message['content'])
             
-            # Tool usage badges
+            # Tool usage badges with enhanced display
             if message["role"] == "assistant" and message["tools_used"]:
-                st.markdown("**Tools used:**")
+                st.markdown("**🔧 MCP Tools Used:**")
+                
+                # Create a nice display for tools
+                tool_descriptions = {
+                    "get_file_content": "📄 File Content",
+                    "list_directory": "📁 Directory Listing", 
+                    "get_readme_content": "📖 README Content",
+                    "get_directory_tree": "🌳 Directory Tree",
+                    "get_file_structure": "📋 File Structure",
+                    "analyze_project_structure": "🏗️ Project Structure",
+                    "get_recent_commits": "📝 Recent Commits",
+                    "get_commit_details": "🔍 Commit Details",
+                    "get_commit_statistics": "📊 Commit Stats",
+                    "search_code": "🔍 Code Search",
+                    "search_files": "📁 File Search",
+                    "find_functions": "⚙️ Function Search",
+                    "get_code_metrics": "📈 Code Metrics",
+                    "search_dependencies": "📦 Dependency Search"
+                }
+                
+                # Display tools in a nice format
                 for tool in message["tools_used"]:
-                    st.markdown(f"🔧 {tool}")
+                    tool_name = tool_descriptions.get(tool, f"🔧 {tool}")
+                    st.markdown(f"• {tool_name}")
+                
+                # Add tool usage summary
+                st.markdown(f"*Total tools used: {len(message['tools_used'])}*")
             
             # Copy button for AI responses
             if message["role"] == "assistant":

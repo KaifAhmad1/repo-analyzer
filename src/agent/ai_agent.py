@@ -298,29 +298,135 @@ def create_repository_analyzer_agent(model_name: str = "gemini-2.0-flash-001") -
     
     return agent
 
-def ask_question(question: str, repository_url: str) -> str:
-    """Ask a question about a repository using FastMCP v2"""
+def ask_question(question: str, repository_url: str) -> tuple[str, list[str]]:
+    """Ask a question about a repository using FastMCP v2 and return response with tools used"""
     try:
         # Check if Google API key is available
         from src.utils.config import get_google_api_key
         api_key = get_google_api_key()
         if not api_key:
-            return "❌ **Google API Key Required**\n\nPlease set your Google AI API key in the settings sidebar to use AI features.\n\n1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey) to get your API key\n2. Enter it in the sidebar under '🔑 API Configuration'\n3. Click '💾 Save Configuration'"
+            return ("❌ **Google API Key Required**\n\nPlease set your Google AI API key in the settings sidebar to use AI features.\n\n1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey) to get your API key\n2. Enter it in the sidebar under '🔑 API Configuration'\n3. Click '💾 Save Configuration'", [])
         
-        agent = create_repository_analyzer_agent()
+        # Create a custom agent that tracks tool usage
+        tools_used = []
+        
+        def create_tracking_agent():
+            tools = FastMCPTools()
+            
+            # Create wrapper functions that track usage
+            def tracked_get_file_content(repo_url: str, file_path: str) -> str:
+                tools_used.append("get_file_content")
+                return tools.get_file_content(repo_url, file_path)
+            
+            def tracked_list_directory(repo_url: str, path: str = "") -> str:
+                tools_used.append("list_directory")
+                return tools.list_directory(repo_url, path)
+            
+            def tracked_get_readme_content(repo_url: str) -> str:
+                tools_used.append("get_readme_content")
+                return tools.get_readme_content(repo_url)
+            
+            def tracked_get_directory_tree(repo_url: str, max_depth: int = 3) -> str:
+                tools_used.append("get_directory_tree")
+                return tools.get_directory_tree(repo_url, max_depth)
+            
+            def tracked_get_file_structure(repo_url: str) -> str:
+                tools_used.append("get_file_structure")
+                return tools.get_file_structure(repo_url)
+            
+            def tracked_analyze_project_structure(repo_url: str) -> str:
+                tools_used.append("analyze_project_structure")
+                return tools.analyze_project_structure(repo_url)
+            
+            def tracked_get_recent_commits(repo_url: str, limit: int = 20) -> str:
+                tools_used.append("get_recent_commits")
+                return tools.get_recent_commits(repo_url, limit)
+            
+            def tracked_get_commit_details(repo_url: str, commit_sha: str) -> str:
+                tools_used.append("get_commit_details")
+                return tools.get_commit_details(repo_url, commit_sha)
+            
+            def tracked_get_commit_statistics(repo_url: str, days: int = 30) -> str:
+                tools_used.append("get_commit_statistics")
+                return tools.get_commit_statistics(repo_url, days)
+            
+            def tracked_search_code(repo_url: str, query: str, language: str = "") -> str:
+                tools_used.append("search_code")
+                return tools.search_code(repo_url, query, language)
+            
+            def tracked_search_files(repo_url: str, filename_pattern: str) -> str:
+                tools_used.append("search_files")
+                return tools.search_files(repo_url, filename_pattern)
+            
+            def tracked_find_functions(repo_url: str, function_name: str, language: str = "") -> str:
+                tools_used.append("find_functions")
+                return tools.find_functions(repo_url, function_name, language)
+            
+            def tracked_get_code_metrics(repo_url: str) -> str:
+                tools_used.append("get_code_metrics")
+                return tools.get_code_metrics(repo_url)
+            
+            def tracked_search_dependencies(repo_url: str) -> str:
+                tools_used.append("search_dependencies")
+                return tools.search_dependencies(repo_url)
+            
+            # Create agent with tracking tools
+            agent = Agent(
+                name="Repository Analyzer (FastMCP v2) - Tracking",
+                model=Gemini(id="gemini-2.0-flash-001"),
+                tools=[
+                    ReasoningTools(add_instructions=True),
+                    tracked_get_file_content,
+                    tracked_list_directory,
+                    tracked_get_readme_content,
+                    tracked_get_directory_tree,
+                    tracked_get_file_structure,
+                    tracked_analyze_project_structure,
+                    tracked_get_recent_commits,
+                    tracked_get_commit_details,
+                    tracked_get_commit_statistics,
+                    tracked_search_code,
+                    tracked_search_files,
+                    tracked_find_functions,
+                    tracked_get_code_metrics,
+                    tracked_search_dependencies,
+                ],
+                instructions=[
+                    "You are a GitHub Repository Analyzer powered by FastMCP v2. Your job is to answer questions about GitHub repositories using the available tools.",
+                    "Always use the appropriate tools to get accurate information and provide detailed analysis.",
+                    "Be clear and concise in your responses.",
+                    "Use markdown formatting and structure answers with headers and bullet points."
+                ],
+                markdown=True,
+                add_datetime_to_instructions=True,
+            )
+            
+            return agent
+        
+        agent = create_tracking_agent()
         response = agent.run(f"Question: {question}\nRepository: {repository_url}")
-        return response
+        
+        # Remove duplicates and return unique tools used
+        unique_tools = list(dict.fromkeys(tools_used))
+        return response, unique_tools
+        
     except Exception as e:
-        return f"Error getting response: {str(e)}"
+        return f"Error getting response: {str(e)}", []
 
-def analyze_repository(repository_url: str) -> str:
+def analyze_repository(repository_url: str) -> tuple[str, list[str]]:
     """Perform comprehensive repository analysis using FastMCP v2"""
     try:
-        agent = create_repository_analyzer_agent()
-        response = agent.run(f"Provide a comprehensive analysis of this repository: {repository_url}")
-        return response
+        # Check if Google API key is available
+        from src.utils.config import get_google_api_key
+        api_key = get_google_api_key()
+        if not api_key:
+            return ("❌ **Google API Key Required**\n\nPlease set your Google AI API key in the settings sidebar to use AI features.", [])
+        
+        # Use the same tracking mechanism as ask_question
+        response, tools_used = ask_question("Provide a comprehensive analysis of this repository", repository_url)
+        return response, tools_used
     except Exception as e:
-        return f"Error analyzing repository: {str(e)}"
+        return f"Error analyzing repository: {str(e)}", []
 
 def get_repository_overview(repository_url: str) -> str:
     """Get a quick overview of a repository"""
