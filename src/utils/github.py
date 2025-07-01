@@ -1,20 +1,15 @@
 """
-GitHub API utilities for the Repository Analyzer
+Simple GitHub API utilities for the Repository Analyzer
 """
 
 import requests
-from typing import Dict, Any, Optional, List
 from .config import get_github_token
 
-def make_github_request(endpoint: str, token: Optional[str] = None) -> Dict[str, Any]:
+def make_github_request(endpoint):
     """Make a GitHub API request"""
-    if not token:
-        token = get_github_token()
+    token = get_github_token()
     
-    headers = {
-        "Accept": "application/vnd.github.v3+json"
-    }
-    
+    headers = {"Accept": "application/vnd.github.v3+json"}
     if token:
         headers["Authorization"] = f"token {token}"
     
@@ -22,7 +17,7 @@ def make_github_request(endpoint: str, token: Optional[str] = None) -> Dict[str,
     response.raise_for_status()
     return response.json()
 
-def parse_repo_url(repo_url: str) -> tuple[str, str]:
+def parse_repo_url(repo_url):
     """Parse GitHub repository URL to get owner and repo name"""
     if "github.com" in repo_url:
         parts = repo_url.replace("https://github.com/", "").split("/")
@@ -32,7 +27,7 @@ def parse_repo_url(repo_url: str) -> tuple[str, str]:
     else:
         raise ValueError("Invalid GitHub URL")
 
-def get_repository_info(repo_url: str) -> Dict[str, Any]:
+def get_repository_info(repo_url):
     """Get basic repository information"""
     try:
         owner, repo = parse_repo_url(repo_url)
@@ -48,21 +43,12 @@ def get_repository_info(repo_url: str) -> Dict[str, Any]:
             "issues": data["open_issues_count"],
             "size": data["size"],
             "created_at": data["created_at"],
-            "updated_at": data["updated_at"],
-            "topics": data.get("topics", [])
+            "updated_at": data["updated_at"]
         }
     except Exception as e:
         raise Exception(f"Error getting repository info: {str(e)}")
 
-def get_repository_languages(repo_url: str) -> Dict[str, int]:
-    """Get repository language statistics"""
-    try:
-        owner, repo = parse_repo_url(repo_url)
-        return make_github_request(f"/repos/{owner}/{repo}/languages")
-    except Exception as e:
-        raise Exception(f"Error getting repository languages: {str(e)}")
-
-def get_repository_commits(repo_url: str, limit: int = 10) -> List[Dict[str, Any]]:
+def get_repository_commits(repo_url, limit=10):
     """Get recent commits from repository"""
     try:
         owner, repo = parse_repo_url(repo_url)
@@ -74,8 +60,7 @@ def get_repository_commits(repo_url: str, limit: int = 10) -> List[Dict[str, Any
                 "sha": commit_data["sha"][:8],
                 "message": commit_data["commit"]["message"],
                 "author": commit_data["commit"]["author"]["name"],
-                "date": commit_data["commit"]["author"]["date"],
-                "url": commit_data["html_url"]
+                "date": commit_data["commit"]["author"]["date"]
             }
             commits.append(commit)
         
@@ -83,7 +68,7 @@ def get_repository_commits(repo_url: str, limit: int = 10) -> List[Dict[str, Any
     except Exception as e:
         raise Exception(f"Error getting repository commits: {str(e)}")
 
-def get_repository_issues(repo_url: str, state: str = "open", limit: int = 10) -> List[Dict[str, Any]]:
+def get_repository_issues(repo_url, state="open", limit=10):
     """Get repository issues"""
     try:
         owner, repo = parse_repo_url(repo_url)
@@ -96,31 +81,10 @@ def get_repository_issues(repo_url: str, state: str = "open", limit: int = 10) -
                 "title": issue_data["title"],
                 "state": issue_data["state"],
                 "author": issue_data["user"]["login"],
-                "created_at": issue_data["created_at"],
-                "labels": [label["name"] for label in issue_data["labels"]]
+                "created_at": issue_data["created_at"]
             }
             issues.append(issue)
         
         return issues
     except Exception as e:
-        raise Exception(f"Error getting repository issues: {str(e)}")
-
-def search_repository_code(repo_url: str, query: str) -> List[Dict[str, Any]]:
-    """Search for code in repository"""
-    try:
-        owner, repo = parse_repo_url(repo_url)
-        data = make_github_request(f"/search/code?q={query}+repo:{owner}/{repo}")
-        
-        results = []
-        for item in data.get("items", []):
-            result = {
-                "file_path": item["path"],
-                "file_name": item["name"],
-                "url": item["html_url"],
-                "repository": item["repository"]["full_name"]
-            }
-            results.append(result)
-        
-        return results
-    except Exception as e:
-        raise Exception(f"Error searching repository code: {str(e)}") 
+        raise Exception(f"Error getting repository issues: {str(e)}") 

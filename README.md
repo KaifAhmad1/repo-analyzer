@@ -1,289 +1,224 @@
-# 🚀 GitHub Repository Analyzer
+# 🚀 GitHub Repository Analyzer - Multi-Server Ecosystem
 
-> A comprehensive, AI-powered GitHub repository analysis tool that leverages Model Context Protocol (MCP) servers and Google Gemini AI to provide intelligent insights about code repositories. Built with Streamlit for a modern, interactive web interface.
+A comprehensive AI-powered GitHub repository analysis tool built with **FastMCP v2**, **Google Gemini AI**, and **Streamlit**. This application provides deep insights into code repositories using a multi-server ecosystem of specialized MCP servers.
 
-## ✨ Key Features
+## ✨ Features
 
-- **🤖 Advanced AI Analysis**: Powered by Google Gemini AI for intelligent repository insights
-- **🔍 MCP Server Integration**: 6 specialized Model Context Protocol servers for structured data access
-- **💬 Interactive Q&A**: Natural language interface for asking questions about repositories
-- **📊 Real-time Visualizations**: Dynamic charts and analytics for repository data
-- **🎯 Multi-Agent System**: Specialized AI agents for different analysis aspects
-- **🔄 Live Data**: Real-time repository information and commit history
-- **🎨 Modern UI**: Clean, responsive interface built with Streamlit
+### 🤖 AI-Powered Analysis
+- **Single Agent Mode**: Comprehensive analysis using a single AI agent
+- **Multi-Agent Team**: Specialized agents for different aspects of analysis
+- **Google Gemini AI**: Powered by the latest Gemini models
+- **Natural Language Q&A**: Ask questions about repositories in plain English
 
-## 🏗️ System Architecture
+### 🔍 Multi-Server MCP Ecosystem
+- **Repository Analyzer Server**: Overview, analysis, and activity data
+- **File Content Server**: File contents and directory listings
+- **Repository Structure Server**: Directory trees and structure analysis
+- **Commit History Server**: Commit data and statistics
+- **Issues Server**: Issues and pull requests data
+- **Code Search Server**: Code search and metrics
 
-### MCP Servers (Model Context Protocol)
-The application uses 6 specialized MCP servers for comprehensive repository analysis:
+### 📊 Comprehensive Analytics
+- Repository overview and metadata
+- Directory structure visualization
+- Commit activity charts
+- Issues and pull requests tracking
+- Code metrics and statistics
+- File content analysis
 
-1. **Repository Analyzer Server** - Main server for comprehensive analysis
-2. **File Content Server** - Retrieve and read file contents
-3. **Repository Structure Server** - Get directory trees and file listings
-4. **Commit History Server** - Access commit messages and changes
-5. **Issues Server** - Query issues and pull requests
-6. **Code Search Server** - Search for specific code patterns
+### 🎨 Modern UI
+- Clean, responsive Streamlit interface
+- Tabbed organization for different data types
+- Real-time server status monitoring
+- Interactive charts and visualizations
+- Chat history and Q&A interface
 
-### AI Agent System
-- **Single Agent Mode**: General-purpose repository analysis using Google Gemini
-- **Multi-Agent Team Mode**: Specialized agents working together:
-  - **Repository Overview Agent**: Metadata and basic information analysis
-  - **Code Analysis Agent**: Technical code patterns and architecture assessment
-  - **Activity Analysis Agent**: Project activity and community health evaluation
+## 🏗️ Architecture
 
-## 🚀 Quick Start Guide
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Streamlit UI  │    │   AI Agents      │    │  FastMCP v2     │
+│                 │    │                  │    │   Servers       │
+│ • Repository    │◄──►│ • Single Agent   │◄──►│ • Repository    │
+│   Selector      │    │ • Multi-Agent    │    │   Analyzer      │
+│ • Q&A Interface │    │   Team           │    │ • File Content  │
+│ • Analytics     │    │ • Google Gemini  │    │ • Structure     │
+│ • Server Status │    │   Integration    │    │ • Commit History│
+└─────────────────┘    └──────────────────┘    │ • Issues        │
+                                               │ • Code Search   │
+                                               └─────────────────┘
+```
+
+## 🚀 Quick Start
 
 ### Prerequisites
-- **Python 3.8 or higher**
-- **GitHub Personal Access Token** (for enhanced API access)
-- **Google Gemini API Key** (required for AI functionality)
+- Python 3.8+
+- GitHub Personal Access Token
+- Google API Key (for Gemini AI)
 
-### Installation Steps
+### Installation
 
-1. **Clone the Repository**
+1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd repo-analyzer-11
+   cd repo-analyzer
    ```
 
-2. **Install Dependencies**
+2. **Install dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Set Up Environment Variables**
-   Create a `.env` file in the project root:
-   ```bash
-   # Create .env file
-   echo "GITHUB_TOKEN=your_github_token_here" > .env
-   echo "GOOGLE_API_KEY=your_gemini_api_key_here" >> .env
-   ```
+3. **Configure API keys**
+   - Set `GITHUB_TOKEN` environment variable
+   - Set `GOOGLE_API_KEY` environment variable
+   - Or use the settings sidebar in the app
 
-4. **Run the Application**
+4. **Run the application**
    ```bash
    streamlit run app.py
    ```
 
-5. **Access the Application**
-   Open your browser and navigate to `http://localhost:8501`
+### Testing the Ecosystem
 
-### Getting API Keys
+Run the test script to verify all components are working:
 
-#### GitHub Personal Access Token
-1. Go to [GitHub Settings > Developer settings > Personal access tokens](https://github.com/settings/tokens)
-2. Click "Generate new token (classic)"
-3. Select scopes: `repo`, `read:user`, `read:org`
-4. Copy the generated token
+```bash
+python test_multi_server_ecosystem.py
+```
 
-#### Google Gemini API Key
-1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Create a new API key
-3. Copy the generated key
-
-## 📋 Sample Questions & Use Cases
-
-The system can handle various types of repository analysis questions:
-
-### Repository Overview
-- "What is this repository about and what does it do?"
-- "What are the main features of this project?"
-- "What technologies and frameworks does this use?"
-
-### Code Structure & Architecture
-- "Show me the main entry points of this application"
-- "What is the overall architecture of this project?"
-- "How is the code organized and structured?"
-
-### Recent Activity & Changes
-- "What are the recent changes in the last 10 commits?"
-- "What features have been added recently?"
-- "Who are the main contributors to this project?"
-
-### Code Search & Analysis
-- "Find all functions related to authentication"
-- "Show me how database connections are implemented"
-- "Find error handling patterns in the code"
-
-### Dependencies & Configuration
-- "What dependencies does this project use?"
-- "What are the main configuration files?"
-- "How is the project set up and deployed?"
-
-### Issues & Community
-- "Are there any open issues related to performance?"
-- "What are the most common issues reported?"
-- "How active is the development community?"
-
-### Testing & Quality
-- "What's the testing strategy used in this project?"
-- "How is code quality maintained?"
-- "What are the code review practices?"
-
-## 🛠️ Configuration Options
+## 🔧 Configuration
 
 ### Environment Variables
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `GITHUB_TOKEN` | GitHub Personal Access Token | No* | None |
-| `GOOGLE_API_KEY` | Google Gemini API Key | Yes | None |
-| `GEMINI_MODEL` | Default Gemini model | No | `gemini-2.0-flash-001` |
-| `DEBUG` | Enable debug mode | No | `False` |
-| `LOG_LEVEL` | Logging level | No | `INFO` |
-
-*GitHub token is optional but recommended for better API rate limits
-
-### Agent Configuration
-- **Model Selection**: Choose from available Gemini models
-- **Agent Type**: Single agent or multi-agent team
-- **Analysis Depth**: Configure the level of detail in responses
-
-## 📁 Project Structure
-
+```bash
+export GITHUB_TOKEN="your_github_token"
+export GOOGLE_API_KEY="your_google_api_key"
 ```
-repo-analyzer-11/
+
+### API Keys Setup
+1. **GitHub Token**: Create a personal access token with `repo` scope
+2. **Google API Key**: Get an API key from Google AI Studio for Gemini
+
+## 📖 Usage
+
+### 1. Repository Selection
+- Enter a GitHub repository URL
+- The app will automatically fetch repository data
+
+### 2. Explore Data
+Use the tabbed interface to explore different aspects:
+- **📊 Overview**: Repository metadata and basic information
+- **📁 Structure**: Directory tree and file structure analysis
+- **📈 Activity**: Commit activity charts and statistics
+- **🐛 Issues**: Open issues and pull requests
+- **📊 Metrics**: Code metrics and statistics
+
+### 3. Ask Questions
+- Use the Q&A interface to ask natural language questions
+- Choose between single agent or multi-agent team mode
+- Get comprehensive AI-powered analysis
+
+### 4. Server Management
+- Monitor server status in the sidebar
+- Restart servers if needed
+- View detailed server information
+
+## 🛠️ Development
+
+### Project Structure
+```
+repo-analyzer/
 ├── app.py                          # Main Streamlit application
 ├── requirements.txt                # Python dependencies
-├── README.md                      # This documentation
-├── LICENSE                        # MIT License
-├── .env                           # Environment variables (create this)
+├── test_multi_server_ecosystem.py # Test script
 ├── src/
 │   ├── agent/
-│   │   └── ai_agent.py            # AI agent implementations
+│   │   └── ai_agent.py            # AI agent system
 │   ├── servers/
-│   │   ├── repository_analyzer_server.py  # Main MCP server
-│   │   ├── file_content_server.py         # File content server
-│   │   ├── commit_history_server.py       # Commit history server
-│   │   ├── issues_server.py               # Issues server
-│   │   ├── code_search_server.py          # Code search server
-│   │   ├── repository_structure_server.py # Structure server
-│   │   ├── server_manager.py              # Server management
-│   │   └── mcp_client_improved.py         # MCP client
+│   │   ├── repository_analyzer_server.py
+│   │   ├── file_content_server.py
+│   │   ├── repository_structure_server.py
+│   │   ├── commit_history_server.py
+│   │   ├── issues_server.py
+│   │   ├── code_search_server.py
+│   │   ├── mcp_client_improved.py # Unified MCP client
+│   │   └── server_manager.py      # Multi-server manager
 │   ├── ui/
-│   │   ├── repository_selector.py         # Repository selection UI
-│   │   ├── chat_interface.py              # Q&A interface
-│   │   └── modern_styles.css              # Styling
+│   │   ├── repository_selector.py
+│   │   ├── chat_interface.py
+│   │   ├── settings_sidebar.py
+│   │   └── modern_styles.css
 │   └── utils/
-│       ├── config.py                      # Configuration utilities
-│       └── github.py                      # GitHub API utilities
+│       ├── config.py              # Configuration utilities
+│       └── github.py              # GitHub API utilities
 ```
 
-## 🔧 Development Guide
+### Adding New Servers
+1. Create a new FastMCP v2 server in `src/servers/`
+2. Add server configuration to `server_manager.py`
+3. Add tools to `mcp_client_improved.py`
+4. Update AI agent tools in `ai_agent.py`
 
-### Running Tests
+### Testing
 ```bash
-# Run all tests
-pytest test_*.py
+# Test the entire ecosystem
+python test_multi_server_ecosystem.py
 
-# Run with coverage
-pytest --cov=src test_*.py
+# Test individual components
+python -m pytest tests/
 ```
 
-### Adding New MCP Servers
-1. Create a new server file in `src/servers/`
-2. Implement the MCP protocol using the FastMCP framework
-3. Add server to `server_manager.py`
-4. Update the main application to use the new server
+## 🔍 MCP Server Details
 
-### Extending AI Agents
-1. Extend the agent system in `src/agent/ai_agent.py`
-2. Add specialized tools and instructions
-3. Integrate with the UI components
-4. Test with various repository types
+### Repository Analyzer Server
+- **Tools**: Repository overview, analysis, activity data
+- **Purpose**: High-level repository insights and metadata
 
-### Customizing the UI
-1. Modify components in `src/ui/`
-2. Update styling in `src/ui/modern_styles.css`
-3. Add new visualizations as needed
+### File Content Server
+- **Tools**: File content retrieval, directory listing
+- **Purpose**: Access to specific files and directories
 
-## 🚀 Advanced Features
+### Repository Structure Server
+- **Tools**: Directory tree, file structure analysis
+- **Purpose**: Understanding repository organization
 
-### Multi-Agent Team Analysis
-The system can coordinate multiple specialized agents:
-- **Overview Agent**: Analyzes repository metadata and structure
-- **Code Agent**: Deep technical analysis of code patterns
-- **Activity Agent**: Evaluates project activity and community health
+### Commit History Server
+- **Tools**: Recent commits, commit statistics, commit details
+- **Purpose**: Development activity and history analysis
 
-### Real-time Data Visualization
-- Commit activity charts
-- Language distribution analysis
-- Issue tracking and trends
-- Repository structure visualization
+### Issues Server
+- **Tools**: Issues, pull requests, issue statistics
+- **Purpose**: Community and development workflow analysis
 
-### Intelligent Q&A System
-- Natural language processing
-- Context-aware responses
-- Tool usage tracking
-- Conversation history
+### Code Search Server
+- **Tools**: Code search, file search, code metrics
+- **Purpose**: Code analysis and quality assessment
 
 ## 🤝 Contributing
 
-We welcome contributions! Here's how to get started:
-
-1. **Fork the repository**
-2. **Create a feature branch**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-3. **Make your changes**
-4. **Add tests** for new functionality
-5. **Submit a pull request**
-
-### Development Setup
-```bash
-# Clone your fork
-git clone https://github.com/your-username/repo-analyzer-11.git
-cd repo-analyzer-11
-
-# Install in development mode
-pip install -e .
-
-# Set up pre-commit hooks
-pre-commit install
-```
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
 ## 📄 License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
-- **[Streamlit](https://streamlit.io/)** - Modern web framework for data applications
-- **[Google Gemini](https://ai.google.dev/)** - Advanced AI capabilities
-- **[Model Context Protocol](https://modelcontextprotocol.io/)** - Standardized server architecture
-- **[GitHub API](https://docs.github.com/en/rest)** - Comprehensive repository data access
-- **[Agno Framework](https://github.com/agno-agi/agno)** - Multi-agent system framework
+- **FastMCP**: For the excellent MCP framework
+- **Google Gemini**: For powerful AI capabilities
+- **Streamlit**: For the beautiful web interface
+- **GitHub API**: For repository data access
 
-## 📞 Support & Documentation
+## 🆘 Support
 
-### Getting Help
-- **GitHub Issues**: Open an issue for bugs or feature requests
-- **Documentation**: Check the inline code documentation
-- **Examples**: Review the sample questions and use cases
+If you encounter any issues:
+1. Check the test script output
+2. Verify API keys are configured
+3. Ensure all dependencies are installed
+4. Check server status in the sidebar
 
-### Common Issues
-1. **API Key Issues**: Ensure your Google Gemini API key is correctly set
-2. **GitHub Rate Limits**: Use a GitHub token for higher rate limits
-3. **Dependencies**: Make sure all requirements are installed
-4. **Port Conflicts**: Change the port if 8501 is already in use
-
-### Performance Tips
-- Use GitHub tokens for better API rate limits
-- Choose appropriate Gemini models for your use case
-- Clear chat history periodically for better performance
-
----
-
-## 🎯 Project Goals
-
-This project demonstrates:
-- **Modern AI Integration**: Seamless integration with Google Gemini AI
-- **MCP Protocol Implementation**: Standardized server architecture
-- **Interactive Web Applications**: Beautiful Streamlit-based UI
-- **Repository Analysis**: Comprehensive code and project analysis
-- **Multi-Agent Systems**: Coordinated AI agent workflows
-
-**Built with ❤️ using Streamlit, MCP Servers, and Google Gemini AI**
-
----
-
-*For more information, visit the project repository or contact the development team.* 
+For more help, please open an issue on GitHub.
