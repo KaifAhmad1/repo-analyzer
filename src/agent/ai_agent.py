@@ -1,6 +1,6 @@
 """
 Advanced AI Agent System for GitHub Repository Analysis
-Integrates with all FastMCP v2 servers using Google Gemini AI
+Integrates with all all MCP servers using FastMCP v2 servers using Google Gemini AI and Agno Multiagent System Framework
 """
 
 import os
