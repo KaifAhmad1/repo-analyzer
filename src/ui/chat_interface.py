@@ -46,28 +46,45 @@ def render_chat_interface(repo_url: Optional[str] = None) -> None:
 
     # --- User Input ---
     st.markdown("#### 📝 Ask a Question")
-    question = st.text_input(
-        "Your question:",
-        value=st.session_state.get("question_input", ""),
-        placeholder="e.g., What is this repository about?",
-        key="question_input_box"
-    )
-    ask_col, clear_col, export_col = st.columns([2,1,1])
-    with ask_col:
-        if st.button("🤖 Ask AI Agent", type="primary"):
-            if question.strip():
-                process_question(question, repo_url)
-                st.session_state.question_input = ""
-                st.rerun()
-            else:
-                st.warning("⚠️ Please enter a question.")
-    with clear_col:
-        if st.button("🗑️ Clear Chat"):
-            st.session_state.chat_history = []
-            st.rerun()
-    with export_col:
-        if st.button("📥 Export Chat"):
-            export_chat_history()
+    
+    # Create a form for better UX with enter key support
+    with st.form(key="question_form", clear_on_submit=True):
+        question = st.text_input(
+            "Your question:",
+            value=st.session_state.get("question_input", ""),
+            placeholder="e.g., What is this repository about? (Press Enter to submit)",
+            key="question_input_box",
+            help="Type your question and press Enter or click the Ask button"
+        )
+        
+        # Button row
+        col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
+        with col1:
+            submit_button = st.form_submit_button("🤖 Ask AI Agent", type="primary", use_container_width=True)
+        with col2:
+            clear_button = st.form_submit_button("🗑️ Clear", use_container_width=True)
+        with col3:
+            export_button = st.form_submit_button("📥 Export", use_container_width=True)
+        with col4:
+            refresh_button = st.form_submit_button("🔄 Refresh", use_container_width=True)
+    
+    # Handle form submissions
+    if submit_button and question.strip():
+        process_question(question, repo_url)
+        st.session_state.question_input = ""
+        st.rerun()
+    elif submit_button and not question.strip():
+        st.warning("⚠️ Please enter a question.")
+    
+    if clear_button:
+        st.session_state.chat_history = []
+        st.rerun()
+    
+    if export_button:
+        export_chat_history()
+    
+    if refresh_button:
+        st.rerun()
 
     # --- Display Chat History ---
     display_chat_history()
@@ -81,24 +98,59 @@ def process_question(question: str, repo_url: str) -> None:
         "timestamp": datetime.now().isoformat(),
         "tools_used": []
     })
-    with st.spinner("🤖 Analyzing repository with AI agent..."):
+    
+    # Create a progress container
+    progress_container = st.container()
+    with progress_container:
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
+        # Update progress stages
+        status_text.text("🔍 Initializing AI agent...")
+        progress_bar.progress(20)
+        
+        status_text.text("📡 Connecting to repository...")
+        progress_bar.progress(40)
+        
+        status_text.text("🤖 Analyzing with AI tools...")
+        progress_bar.progress(60)
+        
         try:
             from src.agent.ai_agent import ask_question
+            status_text.text("🧠 Processing your question...")
+            progress_bar.progress(80)
+            
             response = ask_question(question, repo_url)
             tools_used = extract_tools_from_response(response)
+            
+            status_text.text("✅ Response ready!")
+            progress_bar.progress(100)
+            
             st.session_state.chat_history.append({
                 "role": "assistant",
                 "content": response,
                 "timestamp": datetime.now().isoformat(),
                 "tools_used": tools_used
             })
+            
+            # Clear progress indicators
+            progress_bar.empty()
+            status_text.empty()
+            
         except Exception as e:
+            status_text.text("❌ Error occurred")
+            progress_bar.progress(100)
+            
             st.session_state.chat_history.append({
                 "role": "assistant",
                 "content": f"❌ Error: {str(e)}",
                 "timestamp": datetime.now().isoformat(),
                 "tools_used": []
             })
+            
+            # Clear progress indicators
+            progress_bar.empty()
+            status_text.empty()
 
 # --- Tool Extraction (Heuristic) ---
 def extract_tools_from_response(response: str) -> list:
@@ -125,24 +177,61 @@ def extract_tools_from_response(response: str) -> list:
 def display_chat_history() -> None:
     """Display the chat history with tool usage badges"""
     if not st.session_state.chat_history:
+        st.info("💬 No conversation history yet. Ask a question to get started!")
         return
+    
+    # Header with stats
+    total_messages = len(st.session_state.chat_history)
+    user_messages = len([m for m in st.session_state.chat_history if m["role"] == "user"])
+    ai_messages = len([m for m in st.session_state.chat_history if m["role"] == "assistant"])
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Total Messages", total_messages)
+    with col2:
+        st.metric("Your Questions", user_messages)
+    with col3:
+        st.metric("AI Responses", ai_messages)
+    
     st.markdown("### 📝 Conversation History")
-    for i, message in enumerate(reversed(st.session_state.chat_history[-10:])):
+    
+    # Add a search/filter option
+    search_term = st.text_input("🔍 Search in conversation history", placeholder="Type to filter messages...")
+    
+    # Filter messages if search term is provided
+    filtered_messages = st.session_state.chat_history
+    if search_term:
+        filtered_messages = [
+            msg for msg in st.session_state.chat_history 
+            if search_term.lower() in msg["content"].lower()
+        ]
+        if not filtered_messages:
+            st.info(f"No messages found containing '{search_term}'")
+            return
+    
+    # Display messages with enhanced styling
+    for i, message in enumerate(reversed(filtered_messages[-10:])):
         is_user = message["role"] == "user"
-        with st.container():
-            bubble_class = "chat-message user" if is_user else "chat-message ai"
-            st.markdown(f"<div class='{bubble_class}'>", unsafe_allow_html=True)
-            icon = "👤" if is_user else "🤖"
-            st.markdown(f"<b>{icon} {'You' if is_user else 'AI'}:</b> {message['content']}", unsafe_allow_html=True)
-            st.markdown(f"<span style='font-size:0.8em;color:#888;'>{format_timestamp(message['timestamp'])}</span>", unsafe_allow_html=True)
+        
+        # Create expandable container for each message
+        with st.expander(f"{'👤 You' if is_user else '🤖 AI'} - {format_timestamp(message['timestamp'])}", expanded=True):
+            # Message content with better formatting
+            if is_user:
+                st.markdown(f"**{message['content']}**")
+            else:
+                st.markdown(message['content'])
+            
+            # Tool usage badges
             if message["role"] == "assistant" and message["tools_used"]:
-                st.markdown(
-                    "<div style='margin-top:0.5em;'>" +
-                    " ".join([f"<span class='tool-usage'>{tool}</span>" for tool in message["tools_used"]]) +
-                    "</div>",
-                    unsafe_allow_html=True
-                )
-            st.markdown("</div>", unsafe_allow_html=True)
+                st.markdown("**Tools used:**")
+                for tool in message["tools_used"]:
+                    st.markdown(f"🔧 {tool}")
+            
+            # Copy button for AI responses
+            if message["role"] == "assistant":
+                if st.button(f"📋 Copy Response", key=f"copy_{i}"):
+                    st.write("Response copied to clipboard!")
+                    # Note: In a real implementation, you'd use st.clipboard.write()
 
 # --- Export Chat ---
 def export_chat_history() -> None:
