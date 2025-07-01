@@ -156,6 +156,54 @@ class FastMCPTools:
             return json.dumps(result, indent=2)
         except Exception as e:
             return f"Error: {str(e)}"
+    
+    async def analyze_code_structure(self, repo_url: str, file_path: str) -> str:
+        """Analyze code structure using AST and CST for Python files"""
+        try:
+            result = await self._call_server_tool("code_search", "analyze_code_structure", repo_url=repo_url, file_path=file_path)
+            return json.dumps(result, indent=2)
+        except Exception as e:
+            return f"Error: {str(e)}"
+    
+    async def find_code_patterns(self, repo_url: str, pattern_type: str, language: str = "Python") -> str:
+        """Find specific code patterns using AST analysis"""
+        try:
+            result = await self._call_server_tool("code_search", "find_code_patterns", repo_url=repo_url, pattern_type=pattern_type, language=language)
+            return json.dumps(result, indent=2)
+        except Exception as e:
+            return f"Error: {str(e)}"
+    
+    async def analyze_file_content(self, repo_url: str, file_path: str) -> str:
+        """Get file content with advanced code analysis for Python files"""
+        try:
+            result = await self._call_server_tool("file_content", "analyze_file_content", repo_url=repo_url, file_path=file_path)
+            return json.dumps(result, indent=2)
+        except Exception as e:
+            return f"Error: {str(e)}"
+    
+    async def get_code_summary(self, repo_url: str, file_path: str) -> str:
+        """Get a summary of code structure and metrics for Python files"""
+        try:
+            result = await self._call_server_tool("file_content", "get_code_summary", repo_url=repo_url, file_path=file_path)
+            return json.dumps(result, indent=2)
+        except Exception as e:
+            return f"Error: {str(e)}"
+    
+    async def find_code_issues(self, repo_url: str, file_path: str) -> str:
+        """Find potential code issues and suggestions for Python files"""
+        try:
+            result = await self._call_server_tool("file_content", "find_code_issues", repo_url=repo_url, file_path=file_path)
+            return json.dumps(result, indent=2)
+        except Exception as e:
+            return f"Error: {str(e)}"
+    
+    async def analyze_codebase_structure(self, repo_url: str) -> str:
+        """Analyze the codebase structure with AST parsing for Python files"""
+        try:
+            result = await self._call_server_tool("repository_structure", "analyze_codebase_structure", repo_url=repo_url)
+            return json.dumps(result, indent=2)
+        except Exception as e:
+            return f"Error: {str(e)}"
 
 def create_repository_analyzer_agent(model_name: str = "gemini-2.0-flash-001") -> Agent:
     """Create a focused repository analysis agent using FastMCP v2"""
@@ -189,6 +237,14 @@ def create_repository_analyzer_agent(model_name: str = "gemini-2.0-flash-001") -
         "- find_functions: Find function definitions",
         "- get_code_metrics: Get code metrics and statistics",
         "- search_dependencies: Search for dependency files",
+        "- analyze_code_structure: Analyze code structure using AST and CST for Python files",
+        "- find_code_patterns: Find specific code patterns (async_functions, decorators, type_hints, exceptions)",
+        "",
+        "📊 Advanced Code Analysis Tools:",
+        "- analyze_file_content: Get file content with advanced code analysis for Python files",
+        "- get_code_summary: Get a summary of code structure and metrics for Python files",
+        "- find_code_issues: Find potential code issues and suggestions for Python files",
+        "- analyze_codebase_structure: Analyze the codebase structure with AST parsing for Python files",
         "",
         "How to Answer Questions:",
         "1. Always use the appropriate tools to get accurate information",
@@ -198,8 +254,12 @@ def create_repository_analyzer_agent(model_name: str = "gemini-2.0-flash-001") -
         "5. For 'find functions' - use find_functions or search_code",
         "6. For 'dependencies' - use search_dependencies",
         "7. For 'file structure' - use get_directory_tree or get_file_structure",
-        "8. For 'code patterns' - use search_code",
-        "9. For 'project analysis' - use analyze_project_structure",
+        "8. For 'code analysis' - use analyze_code_structure, analyze_file_content, or analyze_codebase_structure",
+        "9. For 'code patterns' - use find_code_patterns with pattern_type (async_functions, decorators, type_hints, exceptions)",
+        "10. For 'code issues' - use find_code_issues to identify potential problems",
+        "11. For 'code summary' - use get_code_summary for quick overview of Python files",
+        "12. For 'code patterns' - use search_code",
+        "13. For 'project analysis' - use analyze_project_structure",
         "",
         "Response Format:",
         "- Be clear and concise",

@@ -8,6 +8,7 @@ A powerful GitHub repository analysis tool built with **FastMCP v2** for simple,
 - **4 Core Servers**: Simplified architecture with essential functionality
 - **Async Operations**: Efficient async/await patterns throughout
 - **AI-Powered Analysis**: Intelligent repository analysis using Google Gemini
+- **Advanced Code Analysis**: AST/CST parsing with Tree-sitter for deep code understanding
 - **Modern UI**: Clean, responsive web interface
 
 ## 🏗️ Architecture
@@ -19,12 +20,17 @@ A powerful GitHub repository analysis tool built with **FastMCP v2** for simple,
    - List directory contents
    - Extract README files
    - Get file information
+   - **Advanced Analysis**: AST-based code analysis for Python files
+   - **Code Summary**: Quick overview of functions, classes, and metrics
+   - **Issue Detection**: Identify potential code problems and suggestions
 
 2. **🌳 Repository Structure Server** - Get directory trees and file listings
    - Build directory tree structures
    - Analyze project structure
    - Find files by pattern
    - Identify key components
+   - **Codebase Analysis**: Comprehensive Python file analysis with AST parsing
+   - **Aggregate Metrics**: Function counts, complexity statistics, import analysis
 
 3. **📝 Commit History Server** - Access commit messages and changes
    - Get recent commits
@@ -37,26 +43,29 @@ A powerful GitHub repository analysis tool built with **FastMCP v2** for simple,
    - Find function definitions
    - Get code metrics
    - Search dependencies
+   - **AST/CST Analysis**: Analyze code structure using Abstract Syntax Trees
+   - **Pattern Detection**: Find async functions, decorators, type hints, exceptions
+   - **Code Complexity**: Calculate cyclomatic complexity and metrics
 
 ## 🚀 Quick Start
 
 ### Installation
 
-```bash
+   ```bash
 # Clone the repository
 git clone <repository-url>
 cd repo-analyzer-17
 
 # Install dependencies
-pip install -r requirements.txt
-```
+   pip install -r requirements.txt
+   ```
 
 ### Running the Application
 
-```bash
+   ```bash
 # Start the Streamlit application
-streamlit run app.py
-```
+   streamlit run app.py
+   ```
 
 ### Testing FastMCP v2 Implementation
 
@@ -162,6 +171,43 @@ from src.agent.ai_agent import test_fastmcp_connection
 result = test_fastmcp_connection()
 ```
 
+## 🔍 Advanced Code Analysis
+
+### AST/CST Analysis Features
+
+The system now includes powerful code analysis capabilities using Abstract Syntax Trees (AST) and Concrete Syntax Trees (CST):
+
+- **Function Analysis**: Extract function definitions, parameters, complexity, and docstrings
+- **Class Analysis**: Identify classes, methods, inheritance, and structure
+- **Import Analysis**: Track module imports and dependencies
+- **Pattern Detection**: Find async functions, decorators, type hints, and exception handling
+- **Code Metrics**: Calculate cyclomatic complexity, line counts, and structure metrics
+- **Issue Detection**: Identify potential code problems like missing docstrings, high complexity, and deep nesting
+
+### Available Analysis Tools
+
+```python
+# Analyze code structure of a specific file
+result = tools.analyze_code_structure(repo_url, "src/main.py")
+
+# Find specific code patterns
+result = tools.find_code_patterns(repo_url, "async_functions")
+result = tools.find_code_patterns(repo_url, "decorators")
+result = tools.find_code_patterns(repo_url, "type_hints")
+
+# Get comprehensive file analysis
+result = tools.analyze_file_content(repo_url, "src/main.py")
+
+# Get code summary
+result = tools.get_code_summary(repo_url, "src/main.py")
+
+# Find potential issues
+result = tools.find_code_issues(repo_url, "src/main.py")
+
+# Analyze entire codebase
+result = tools.analyze_codebase_structure(repo_url)
+```
+
 ## 🚀 FastMCP v2 Benefits
 
 - **Simplified Architecture**: 4 focused servers instead of complex multi-server setup
@@ -170,6 +216,7 @@ result = test_fastmcp_connection()
 - **Modern Patterns**: Clean, Pythonic code with type hints
 - **Better Error Handling**: Comprehensive error handling and logging
 - **Resource Management**: Automatic cleanup and resource management
+- **Advanced Analysis**: Built-in AST/CST parsing for deep code understanding
 
 ## 📊 Performance
 

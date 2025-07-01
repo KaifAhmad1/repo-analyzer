@@ -1,14 +1,171 @@
 """
 Repository Structure Server using FastMCP v2
-Simple and effective repository structure analysis
+Advanced repository structure analysis with code parsing
 """
 
 import requests
-from typing import Dict, Any, List, Optional
+import ast
+import json
+from typing import Dict, Any, List, Optional, Union
 from fastmcp import FastMCP, Context
+
+# Code analysis imports
+try:
+    import asttokens
+    import libcst as cst
+    from libcst.metadata import MetadataWrapper, QualifiedNameProvider
+    from tree_sitter import Language, Parser
+    AST_AVAILABLE = True
+except ImportError:
+    AST_AVAILABLE = False
 
 # Create FastMCP server instance
 mcp = FastMCP("Repository Structure Server 🌳")
+
+class RepositoryAnalyzer:
+    """Advanced repository analysis with code parsing"""
+    
+    @staticmethod
+    def analyze_python_files(files: List[Dict[str, Any]], owner: str, repo: str) -> Dict[str, Any]:
+        """Analyze all Python files in the repository"""
+        if not AST_AVAILABLE:
+            return {"error": "AST analysis not available"}
+        
+        analysis = {
+            "total_python_files": 0,
+            "functions": [],
+            "classes": [],
+            "imports": [],
+            "complexity_stats": {
+                "total_complexity": 0,
+                "avg_complexity": 0,
+                "max_complexity": 0
+            },
+            "file_analysis": []
+        }
+        
+        python_files = [f for f in files if f["name"].endswith('.py')]
+        analysis["total_python_files"] = len(python_files)
+        
+        for file_info in python_files:
+            try:
+                # Get file content
+                api_url = f"/repos/{owner}/{repo}/contents/{file_info['path']}"
+                file_data = make_github_request(api_url)
+                
+                if file_data.get("encoding") == "base64":
+                    import base64
+                    content = base64.b64decode(file_data["content"]).decode("utf-8", errors="ignore")
+                else:
+                    content = file_data["content"]
+                
+                # Analyze the file
+                file_analysis = RepositoryAnalyzer._analyze_single_file(content, file_info["path"])
+                analysis["file_analysis"].append(file_analysis)
+                
+                # Aggregate statistics
+                analysis["functions"].extend(file_analysis.get("functions", []))
+                analysis["classes"].extend(file_analysis.get("classes", []))
+                analysis["imports"].extend(file_analysis.get("imports", []))
+                analysis["complexity_stats"]["total_complexity"] += file_analysis.get("complexity", 0)
+                
+            except Exception:
+                continue
+        
+        # Calculate averages
+        if analysis["total_python_files"] > 0:
+            analysis["complexity_stats"]["avg_complexity"] = analysis["complexity_stats"]["total_complexity"] / analysis["total_python_files"]
+            analysis["complexity_stats"]["max_complexity"] = max([f.get("complexity", 0) for f in analysis["file_analysis"]], default=0)
+        
+        return analysis
+    
+    @staticmethod
+    def _analyze_single_file(content: str, file_path: str) -> Dict[str, Any]:
+        """Analyze a single Python file"""
+        try:
+            tree = ast.parse(content)
+            analyzer = RepositoryAnalyzer()
+            return analyzer._extract_file_analysis(tree, content, file_path)
+        except Exception as e:
+            return {"error": f"AST parsing failed: {str(e)}", "file_path": file_path}
+    
+    def _extract_file_analysis(self, tree: ast.AST, content: str, file_path: str) -> Dict[str, Any]:
+        """Extract analysis from a single file"""
+        analysis = {
+            "file_path": file_path,
+            "functions": [],
+            "classes": [],
+            "imports": [],
+            "complexity": 0,
+            "metrics": self._calculate_file_metrics(content)
+        }
+        
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef):
+                func_info = self._analyze_function(node)
+                analysis["functions"].append(func_info)
+                analysis["complexity"] += func_info.get("complexity", 1)
+            elif isinstance(node, ast.ClassDef):
+                class_info = self._analyze_class(node)
+                analysis["classes"].append(class_info)
+            elif isinstance(node, (ast.Import, ast.ImportFrom)):
+                import_info = self._analyze_import(node)
+                analysis["imports"].append(import_info)
+        
+        return analysis
+    
+    def _analyze_function(self, node: ast.FunctionDef) -> Dict[str, Any]:
+        """Analyze function definition"""
+        complexity = 1
+        for child in ast.walk(node):
+            if isinstance(child, (ast.If, ast.For, ast.While, ast.ExceptHandler)):
+                complexity += 1
+        
+        return {
+            "name": node.name,
+            "args": [arg.arg for arg in node.args.args],
+            "complexity": complexity,
+            "lineno": getattr(node, 'lineno', 0),
+            "has_docstring": ast.get_docstring(node) is not None
+        }
+    
+    def _analyze_class(self, node: ast.ClassDef) -> Dict[str, Any]:
+        """Analyze class definition"""
+        methods = []
+        for item in node.body:
+            if isinstance(item, ast.FunctionDef):
+                methods.append(item.name)
+        
+        return {
+            "name": node.name,
+            "methods": methods,
+            "lineno": getattr(node, 'lineno', 0),
+            "has_docstring": ast.get_docstring(node) is not None
+        }
+    
+    def _analyze_import(self, node: Union[ast.Import, ast.ImportFrom]) -> Dict[str, Any]:
+        """Analyze import statement"""
+        if isinstance(node, ast.Import):
+            return {
+                "type": "import",
+                "modules": [alias.name for alias in node.names]
+            }
+        else:
+            return {
+                "type": "from_import",
+                "module": node.module,
+                "names": [alias.name for alias in node.names]
+            }
+    
+    def _calculate_file_metrics(self, content: str) -> Dict[str, Any]:
+        """Calculate file metrics"""
+        lines = content.split('\n')
+        return {
+            "total_lines": len(lines),
+            "code_lines": len([line for line in lines if line.strip() and not line.strip().startswith('#')]),
+            "comment_lines": len([line for line in lines if line.strip().startswith('#')]),
+            "blank_lines": len([line for line in lines if not line.strip()])
+        }
 
 def parse_repo_url(repo_url: str) -> tuple[str, str]:
     """Parse GitHub repository URL to get owner and repo name"""
@@ -331,6 +488,72 @@ async def find_files_by_pattern(repo_url: str, pattern: str, ctx: Context) -> Di
         return {
             "error": str(e),
             "pattern": pattern,
+            "success": False
+        }
+
+@mcp.tool
+async def analyze_codebase_structure(repo_url: str, ctx: Context) -> Dict[str, Any]:
+    """Analyze the codebase structure with AST parsing for Python files"""
+    try:
+        await ctx.info(f"Analyzing codebase structure for {repo_url}")
+        
+        owner, repo = parse_repo_url(repo_url)
+        
+        # First get all files
+        def get_all_files(path: str = "") -> List[Dict[str, Any]]:
+            files = []
+            try:
+                contents = get_directory_contents(owner, repo, path)
+                for item in contents:
+                    if item["type"] == "file":
+                        files.append({
+                            "name": item["name"],
+                            "path": item["path"],
+                            "size": item.get("size", 0),
+                            "url": item.get("html_url", "")
+                        })
+                    elif item["type"] == "dir":
+                        files.extend(get_all_files(item["path"]))
+            except Exception:
+                pass
+            return files
+        
+        all_files = get_all_files()
+        
+        # Analyze Python files
+        code_analysis = RepositoryAnalyzer.analyze_python_files(all_files, owner, repo)
+        
+        # Group files by type
+        file_types = {}
+        for file in all_files:
+            ext = file["name"].split(".")[-1] if "." in file["name"] else "no_extension"
+            if ext not in file_types:
+                file_types[ext] = []
+            file_types[ext].append(file)
+        
+        # Find important files
+        important_files = []
+        for file in all_files:
+            name = file["name"].lower()
+            if any(keyword in name for keyword in ["readme", "license", "requirements", "package.json", "setup.py", "main", "app", "index"]):
+                important_files.append(file)
+        
+        result = {
+            "repository": f"{owner}/{repo}",
+            "total_files": len(all_files),
+            "file_types": {ext: len(files) for ext, files in file_types.items()},
+            "important_files": important_files,
+            "code_analysis": code_analysis,
+            "success": True
+        }
+        
+        await ctx.info(f"Codebase analysis completed: {len(all_files)} files, {code_analysis.get('total_python_files', 0)} Python files")
+        return result
+        
+    except Exception as e:
+        await ctx.error(f"Error analyzing codebase structure: {str(e)}")
+        return {
+            "error": str(e),
             "success": False
         }
 

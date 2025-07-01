@@ -1,15 +1,244 @@
 """
 Code Search Server using FastMCP v2
-Simple and effective code search and analysis
+Advanced code search and analysis with AST/CST parsing
 """
 
 import requests
 import re
-from typing import Dict, Any, List, Optional
+import ast
+import json
+from typing import Dict, Any, List, Optional, Union
 from fastmcp import FastMCP, Context
+
+# Code analysis imports
+try:
+    import asttokens
+    import libcst as cst
+    from libcst.metadata import MetadataWrapper, QualifiedNameProvider
+    from tree_sitter import Language, Parser
+    AST_AVAILABLE = True
+except ImportError:
+    AST_AVAILABLE = False
 
 # Create FastMCP server instance
 mcp = FastMCP("Code Search Server 🔍")
+
+# Initialize Tree-sitter parser
+def init_tree_sitter():
+    """Initialize Tree-sitter parser for Python"""
+    if not AST_AVAILABLE:
+        return None
+    
+    try:
+        # Load Python language
+        Language.build_library(
+            'build/my-languages.so',
+            ['tree_sitter_python']
+        )
+        PY_LANGUAGE = Language('build/my-languages.so', 'python')
+        parser = Parser()
+        parser.set_language(PY_LANGUAGE)
+        return parser
+    except Exception:
+        return None
+
+TREE_SITTER_PARSER = init_tree_sitter()
+
+class ASTAnalyzer:
+    """Advanced AST analysis for Python code"""
+    
+    @staticmethod
+    def analyze_ast(code: str) -> Dict[str, Any]:
+        """Analyze Python code using AST"""
+        if not AST_AVAILABLE:
+            return {"error": "AST analysis not available"}
+        
+        try:
+            tree = ast.parse(code)
+            analyzer = ASTAnalyzer()
+            return analyzer._extract_ast_info(tree)
+        except Exception as e:
+            return {"error": f"AST parsing failed: {str(e)}"}
+    
+    def _extract_ast_info(self, tree: ast.AST) -> Dict[str, Any]:
+        """Extract comprehensive information from AST"""
+        info = {
+            "functions": [],
+            "classes": [],
+            "imports": [],
+            "variables": [],
+            "calls": [],
+            "complexity": 0
+        }
+        
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef):
+                func_info = self._analyze_function(node)
+                info["functions"].append(func_info)
+                info["complexity"] += func_info.get("complexity", 1)
+            elif isinstance(node, ast.ClassDef):
+                class_info = self._analyze_class(node)
+                info["classes"].append(class_info)
+            elif isinstance(node, (ast.Import, ast.ImportFrom)):
+                import_info = self._analyze_import(node)
+                info["imports"].append(import_info)
+            elif isinstance(node, ast.Assign):
+                var_info = self._analyze_assignment(node)
+                info["variables"].extend(var_info)
+            elif isinstance(node, ast.Call):
+                call_info = self._analyze_call(node)
+                info["calls"].append(call_info)
+        
+        return info
+    
+    def _analyze_function(self, node: ast.FunctionDef) -> Dict[str, Any]:
+        """Analyze function definition"""
+        complexity = 1
+        for child in ast.walk(node):
+            if isinstance(child, (ast.If, ast.For, ast.While, ast.ExceptHandler)):
+                complexity += 1
+        
+        return {
+            "name": node.name,
+            "args": [arg.arg for arg in node.args.args],
+            "decorators": [self._get_decorator_name(d) for d in node.decorator_list],
+            "complexity": complexity,
+            "lineno": getattr(node, 'lineno', 0),
+            "end_lineno": getattr(node, 'end_lineno', 0)
+        }
+    
+    def _analyze_class(self, node: ast.ClassDef) -> Dict[str, Any]:
+        """Analyze class definition"""
+        methods = []
+        for item in node.body:
+            if isinstance(item, ast.FunctionDef):
+                methods.append(item.name)
+        
+        return {
+            "name": node.name,
+            "bases": [self._get_name(base) for base in node.bases],
+            "methods": methods,
+            "lineno": getattr(node, 'lineno', 0),
+            "end_lineno": getattr(node, 'end_lineno', 0)
+        }
+    
+    def _analyze_import(self, node: Union[ast.Import, ast.ImportFrom]) -> Dict[str, Any]:
+        """Analyze import statement"""
+        if isinstance(node, ast.Import):
+            return {
+                "type": "import",
+                "modules": [alias.name for alias in node.names],
+                "lineno": getattr(node, 'lineno', 0)
+            }
+        else:
+            return {
+                "type": "from_import",
+                "module": node.module,
+                "names": [alias.name for alias in node.names],
+                "lineno": getattr(node, 'lineno', 0)
+            }
+    
+    def _analyze_assignment(self, node: ast.Assign) -> List[Dict[str, Any]]:
+        """Analyze assignment statement"""
+        variables = []
+        for target in node.targets:
+            if isinstance(target, ast.Name):
+                variables.append({
+                    "name": target.id,
+                    "lineno": getattr(node, 'lineno', 0)
+                })
+        return variables
+    
+    def _analyze_call(self, node: ast.Call) -> Dict[str, Any]:
+        """Analyze function call"""
+        return {
+            "func": self._get_name(node.func),
+            "args_count": len(node.args),
+            "keywords": [kw.arg for kw in node.keywords],
+            "lineno": getattr(node, 'lineno', 0)
+        }
+    
+    def _get_name(self, node: ast.AST) -> str:
+        """Extract name from AST node"""
+        if isinstance(node, ast.Name):
+            return node.id
+        elif isinstance(node, ast.Attribute):
+            return f"{self._get_name(node.value)}.{node.attr}"
+        return str(node)
+    
+    def _get_decorator_name(self, node: ast.AST) -> str:
+        """Extract decorator name"""
+        if isinstance(node, ast.Name):
+            return node.id
+        elif isinstance(node, ast.Call):
+            return self._get_name(node.func)
+        return str(node)
+
+class CSTAnalyzer:
+    """Concrete Syntax Tree analysis for Python code"""
+    
+    @staticmethod
+    def analyze_cst(code: str) -> Dict[str, Any]:
+        """Analyze Python code using CST"""
+        if not AST_AVAILABLE:
+            return {"error": "CST analysis not available"}
+        
+        try:
+            tree = cst.parse_module(code)
+            wrapper = MetadataWrapper(tree)
+            analyzer = CSTAnalyzer()
+            return analyzer._extract_cst_info(tree, wrapper)
+        except Exception as e:
+            return {"error": f"CST parsing failed: {str(e)}"}
+    
+    def _extract_cst_info(self, tree: cst.Module, wrapper: MetadataWrapper) -> Dict[str, Any]:
+        """Extract information from CST"""
+        info = {
+            "formatting": {},
+            "comments": [],
+            "whitespace": {},
+            "structure": {}
+        }
+        
+        # Analyze formatting
+        info["formatting"] = self._analyze_formatting(tree)
+        
+        # Extract comments
+        info["comments"] = self._extract_comments(tree)
+        
+        return info
+    
+    def _analyze_formatting(self, tree: cst.Module) -> Dict[str, Any]:
+        """Analyze code formatting"""
+        return {
+            "indentation_style": "spaces",  # Could be detected
+            "line_length": self._get_max_line_length(tree),
+            "trailing_whitespace": self._check_trailing_whitespace(tree)
+        }
+    
+    def _extract_comments(self, tree: cst.Module) -> List[Dict[str, Any]]:
+        """Extract all comments from CST"""
+        comments = []
+        
+        class CommentVisitor(cst.CSTVisitor):
+            def visit_Comment(self, node: cst.Comment):
+                comments.append({
+                    "text": node.value,
+                    "lineno": node.start_pos[0] if hasattr(node, 'start_pos') else 0
+                })
+        
+        tree.visit(CommentVisitor())
+        return comments
+    
+    def _get_max_line_length(self, tree: cst.Module) -> int:
+        """Get maximum line length"""
+        lines = tree.code.split('\n')
+        return max(len(line) for line in lines) if lines else 0
+    
+    def _check_trailing_whitespace(self, tree: cst.Module) -> bool:
+        """Check for trailing whitespace"""
+        lines = tree.code.split('\n')
+        return any(line.rstrip() != line for line in lines)
 
 def parse_repo_url(repo_url: str) -> tuple[str, str]:
     """Parse GitHub repository URL to get owner and repo name"""
@@ -338,6 +567,223 @@ async def search_dependencies(repo_url: str, ctx: Context) -> Dict[str, Any]:
             "success": False
         }
 
+@mcp.tool
+async def analyze_code_structure(repo_url: str, file_path: str, ctx: Context) -> Dict[str, Any]:
+    """Analyze code structure using AST and CST for Python files"""
+    try:
+        await ctx.info(f"Analyzing code structure for {file_path}")
+        
+        # First get the file content
+        owner, repo = parse_repo_url(repo_url)
+        api_url = f"/repos/{owner}/{repo}/contents/{file_path}"
+        file_data = make_github_request(api_url)
+        
+        if file_data.get("encoding") == "base64":
+            import base64
+            content = base64.b64decode(file_data["content"]).decode("utf-8", errors="ignore")
+        else:
+            content = file_data["content"]
+        
+        # Check if it's a Python file
+        if not file_path.endswith('.py'):
+            return {
+                "error": "AST/CST analysis only available for Python files",
+                "file_path": file_path,
+                "success": False
+            }
+        
+        # Perform AST analysis
+        ast_analysis = ASTAnalyzer.analyze_ast(content)
+        
+        # Perform CST analysis
+        cst_analysis = CSTAnalyzer.analyze_cst(content)
+        
+        # Calculate additional metrics
+        metrics = {
+            "total_lines": len(content.split('\n')),
+            "code_lines": len([line for line in content.split('\n') if line.strip() and not line.strip().startswith('#')]),
+            "comment_lines": len([line for line in content.split('\n') if line.strip().startswith('#')]),
+            "blank_lines": len([line for line in content.split('\n') if not line.strip()]),
+            "function_count": len(ast_analysis.get("functions", [])),
+            "class_count": len(ast_analysis.get("classes", [])),
+            "import_count": len(ast_analysis.get("imports", [])),
+            "complexity_score": ast_analysis.get("complexity", 0)
+        }
+        
+        result = {
+            "file_path": file_path,
+            "ast_analysis": ast_analysis,
+            "cst_analysis": cst_analysis,
+            "metrics": metrics,
+            "success": True
+        }
+        
+        await ctx.info(f"Code analysis completed for {file_path}")
+        return result
+        
+    except Exception as e:
+        await ctx.error(f"Error analyzing code structure: {str(e)}")
+        return {
+            "error": str(e),
+            "file_path": file_path,
+            "success": False
+        }
+
+@mcp.tool
+async def find_code_patterns(repo_url: str, pattern_type: str, ctx: Context, language: str = "Python") -> Dict[str, Any]:
+    """Find specific code patterns using AST analysis"""
+    try:
+        await ctx.info(f"Searching for {pattern_type} patterns in {repo_url}")
+        
+        owner, repo = parse_repo_url(repo_url)
+        
+        # Search for Python files
+        search_query = f"language:python repo:{owner}/{repo}"
+        data = make_github_request(f"/search/code?q={search_query}&per_page=50")
+        
+        patterns = []
+        for item in data.get("items", []):
+            try:
+                # Get file content
+                file_path = item["path"]
+                file_data = make_github_request(f"/repos/{owner}/{repo}/contents/{file_path}")
+                
+                if file_data.get("encoding") == "base64":
+                    import base64
+                    content = base64.b64decode(file_data["content"]).decode("utf-8", errors="ignore")
+                else:
+                    content = file_data["content"]
+                
+                # Analyze based on pattern type
+                if pattern_type == "async_functions":
+                    found_patterns = _find_async_patterns(content)
+                elif pattern_type == "decorators":
+                    found_patterns = _find_decorator_patterns(content)
+                elif pattern_type == "type_hints":
+                    found_patterns = _find_type_hint_patterns(content)
+                elif pattern_type == "exceptions":
+                    found_patterns = _find_exception_patterns(content)
+                else:
+                    found_patterns = []
+                
+                if found_patterns:
+                    patterns.append({
+                        "file_path": file_path,
+                        "url": item["html_url"],
+                        "patterns": found_patterns
+                    })
+                    
+            except Exception:
+                continue
+        
+        result = {
+            "pattern_type": pattern_type,
+            "repository": f"{owner}/{repo}",
+            "files_with_patterns": patterns,
+            "count": len(patterns),
+            "success": True
+        }
+        
+        await ctx.info(f"Found {len(patterns)} files with {pattern_type} patterns")
+        return result
+        
+    except Exception as e:
+        await ctx.error(f"Error finding code patterns: {str(e)}")
+        return {
+            "error": str(e),
+            "pattern_type": pattern_type,
+            "success": False
+        }
+
+def _find_async_patterns(content: str) -> List[Dict[str, Any]]:
+    """Find async function patterns"""
+    patterns = []
+    try:
+        tree = ast.parse(content)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.AsyncFunctionDef):
+                patterns.append({
+                    "type": "async_function",
+                    "name": node.name,
+                    "lineno": getattr(node, 'lineno', 0)
+                })
+            elif isinstance(node, ast.AsyncFor):
+                patterns.append({
+                    "type": "async_for",
+                    "lineno": getattr(node, 'lineno', 0)
+                })
+            elif isinstance(node, ast.AsyncWith):
+                patterns.append({
+                    "type": "async_with",
+                    "lineno": getattr(node, 'lineno', 0)
+                })
+    except:
+        pass
+    return patterns
+
+def _find_decorator_patterns(content: str) -> List[Dict[str, Any]]:
+    """Find decorator patterns"""
+    patterns = []
+    try:
+        tree = ast.parse(content)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and node.decorator_list:
+                for decorator in node.decorator_list:
+                    patterns.append({
+                        "type": "decorator",
+                        "function": node.name,
+                        "decorator": ASTAnalyzer()._get_decorator_name(decorator),
+                        "lineno": getattr(node, 'lineno', 0)
+                    })
+    except:
+        pass
+    return patterns
+
+def _find_type_hint_patterns(content: str) -> List[Dict[str, Any]]:
+    """Find type hint patterns"""
+    patterns = []
+    try:
+        tree = ast.parse(content)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and node.returns:
+                patterns.append({
+                    "type": "return_type_hint",
+                    "function": node.name,
+                    "return_type": ASTAnalyzer()._get_name(node.returns),
+                    "lineno": getattr(node, 'lineno', 0)
+                })
+            elif isinstance(node, ast.arg) and node.annotation:
+                patterns.append({
+                    "type": "parameter_type_hint",
+                    "parameter": node.arg,
+                    "type_hint": ASTAnalyzer()._get_name(node.annotation),
+                    "lineno": getattr(node, 'lineno', 0)
+                })
+    except:
+        pass
+    return patterns
+
+def _find_exception_patterns(content: str) -> List[Dict[str, Any]]:
+    """Find exception handling patterns"""
+    patterns = []
+    try:
+        tree = ast.parse(content)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Try):
+                patterns.append({
+                    "type": "try_except",
+                    "lineno": getattr(node, 'lineno', 0),
+                    "except_count": len(node.handlers)
+                })
+            elif isinstance(node, ast.Raise):
+                patterns.append({
+                    "type": "raise",
+                    "lineno": getattr(node, 'lineno', 0)
+                })
+    except:
+        pass
+    return patterns
+
 # Resources for static data access
 @mcp.resource("search://{owner}/{repo}/languages")
 def get_languages_resource(owner: str, repo: str) -> Dict[str, Any]:
@@ -398,4 +844,4 @@ Please provide:
 5. Best practices recommendations"""
 
 if __name__ == "__main__":
-    mcp.run() 
+    mcp.run()
