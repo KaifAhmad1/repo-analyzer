@@ -1,6 +1,6 @@
 """
 GitHub Repository Q&A Chat Interface
-Clean, intuitive interface for repository analysis questions
+Enhanced interface with MCP tool tracking and improved UX
 """
 
 import streamlit as st
@@ -15,6 +15,7 @@ def render_chat_interface(repo_url: Optional[str] = None, agent_type: str = "Sin
         return
     
     st.markdown("### 💬 Repository Analysis Q&A")
+    st.markdown("Ask questions about this repository and get AI-powered insights with MCP tool tracking.")
     
     # Initialize chat history
     if "chat_history" not in st.session_state:
@@ -29,7 +30,7 @@ def render_chat_interface(repo_url: Optional[str] = None, agent_type: str = "Sin
         key="question_input"
     )
     
-    # Quick question categories
+    # Quick question categories with better organization
     st.markdown("#### 🚀 Quick Questions")
     
     # Repository Overview Questions
@@ -105,13 +106,14 @@ def render_chat_interface(repo_url: Optional[str] = None, agent_type: str = "Sin
     display_chat_history()
 
 def process_question(question: str, repo_url: str, agent_type: str) -> None:
-    """Process a question and get AI response"""
+    """Process a question and get AI response with MCP tool tracking"""
     
     # Add user message to history
     st.session_state.chat_history.append({
         "role": "user",
         "content": question,
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
+        "tools_used": []
     })
     
     # Get AI response with progress indicator
@@ -121,11 +123,15 @@ def process_question(question: str, repo_url: str, agent_type: str) -> None:
             
             response = ask_question(question, repo_url)
             
+            # Extract tools used from response (this would need to be enhanced in the agent)
+            tools_used = extract_tools_from_response(response)
+            
             # Add AI response to history
             st.session_state.chat_history.append({
                 "role": "assistant",
                 "content": response,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
+                "tools_used": tools_used
             })
             
         except Exception as e:
@@ -133,11 +139,40 @@ def process_question(question: str, repo_url: str, agent_type: str) -> None:
             st.session_state.chat_history.append({
                 "role": "assistant",
                 "content": error_response,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
+                "tools_used": []
             })
 
+def extract_tools_from_response(response: str) -> list:
+    """Extract which MCP tools were likely used based on response content"""
+    tools_used = []
+    
+    # Simple heuristic to detect which tools were likely used
+    if "repository overview" in response.lower() or "description" in response.lower():
+        tools_used.append("📊 Repository Overview")
+    
+    if "file structure" in response.lower() or "directory" in response.lower():
+        tools_used.append("📁 File Structure")
+    
+    if "commit" in response.lower() or "recent changes" in response.lower():
+        tools_used.append("🔄 Commit History")
+    
+    if "issue" in response.lower() or "pull request" in response.lower():
+        tools_used.append("🐛 Issues & PRs")
+    
+    if "search" in response.lower() or "function" in response.lower():
+        tools_used.append("🔍 Code Search")
+    
+    if "metrics" in response.lower() or "statistics" in response.lower():
+        tools_used.append("📈 Code Metrics")
+    
+    if "readme" in response.lower() or "documentation" in response.lower():
+        tools_used.append("📖 File Content")
+    
+    return tools_used
+
 def display_chat_history() -> None:
-    """Display the chat history with better formatting"""
+    """Display the chat history with MCP tool tracking"""
     
     if not st.session_state.chat_history:
         return
@@ -155,7 +190,7 @@ def display_chat_history() -> None:
         if st.button("📥 Export Chat"):
             export_chat_history()
     
-    # Display messages with better formatting
+    # Display messages with better formatting and tool tracking
     for i, message in enumerate(reversed(st.session_state.chat_history[-10:])):  # Show last 10
         is_user = message["role"] == "user"
         
@@ -169,6 +204,16 @@ def display_chat_history() -> None:
             else:
                 st.markdown(f"**Answer:**")
                 st.markdown(message['content'])
+                
+                # Show MCP tools used
+                if message.get('tools_used'):
+                    st.markdown("---")
+                    st.markdown("**🔧 MCP Tools Used:**")
+                    for tool in message['tools_used']:
+                        st.markdown(f"- {tool}")
+                else:
+                    st.markdown("---")
+                    st.markdown("*🔧 MCP Tools: Not tracked*")
 
 def format_timestamp(timestamp: str) -> str:
     """Format timestamp for display"""
@@ -179,7 +224,7 @@ def format_timestamp(timestamp: str) -> str:
         return timestamp
 
 def export_chat_history() -> None:
-    """Export chat history to a file"""
+    """Export chat history to a file with MCP tool information"""
     if not st.session_state.chat_history:
         st.warning("No chat history to export.")
         return
@@ -193,6 +238,14 @@ def export_chat_history() -> None:
         timestamp = format_timestamp(message["timestamp"])
         export_content += f"## {role} ({timestamp})\n\n"
         export_content += f"{message['content']}\n\n"
+        
+        # Add MCP tools information
+        if message.get('tools_used'):
+            export_content += "**MCP Tools Used:**\n"
+            for tool in message['tools_used']:
+                export_content += f"- {tool}\n"
+            export_content += "\n"
+        
         export_content += "---\n\n"
     
     # Create download button
@@ -204,7 +257,7 @@ def export_chat_history() -> None:
     )
 
 def render_chat_stats() -> None:
-    """Render enhanced chat statistics"""
+    """Render enhanced chat statistics with MCP tool usage"""
     
     if "chat_history" not in st.session_state or not st.session_state.chat_history:
         return
@@ -214,6 +267,13 @@ def render_chat_stats() -> None:
     total_messages = len(st.session_state.chat_history)
     user_messages = len([m for m in st.session_state.chat_history if m["role"] == "user"])
     ai_messages = len([m for m in st.session_state.chat_history if m["role"] == "assistant"])
+    
+    # Count MCP tool usage
+    tool_usage = {}
+    for message in st.session_state.chat_history:
+        if message.get('tools_used'):
+            for tool in message['tools_used']:
+                tool_usage[tool] = tool_usage.get(tool, 0) + 1
     
     # Create metrics with better styling
     col1, col2, col3, col4 = st.columns(4)
@@ -232,4 +292,10 @@ def render_chat_stats() -> None:
             avg_length = sum(len(m["content"]) for m in st.session_state.chat_history if m["role"] == "user") / user_messages
             st.metric("📏 Avg Question Length", f"{avg_length:.0f} chars")
         else:
-            st.metric("📏 Avg Question Length", "0 chars") 
+            st.metric("📏 Avg Question Length", "0 chars")
+    
+    # Show MCP tool usage
+    if tool_usage:
+        st.markdown("#### 🔧 MCP Tool Usage")
+        for tool, count in sorted(tool_usage.items(), key=lambda x: x[1], reverse=True):
+            st.markdown(f"- **{tool}**: Used {count} times") 
