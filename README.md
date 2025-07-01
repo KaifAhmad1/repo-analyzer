@@ -1,6 +1,6 @@
 # 🚀 GitHub Repository Analyzer - Multi-Server Ecosystem
 
-A comprehensive AI-powered GitHub repository analysis tool built with **FastMCP v2**, **Google Gemini AI**, and **Streamlit**. This application provides deep insights into code repositories using a multi-server ecosystem of specialized MCP servers.
+> A comprehensive AI-powered GitHub repository analysis tool built with **FastMCP v2**, **Google Gemini AI**, **Agno**, and **Streamlit**. This application provides deep insights into code repositories using a multi-server ecosystem of specialized MCP servers.
 
 ## ✨ Features
 
