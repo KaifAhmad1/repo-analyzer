@@ -1,6 +1,6 @@
 # 🚀 GitHub Repository Analyzer
 
-A powerful, AI-driven GitHub repository analysis system built with Streamlit, FastMCP v2 servers, and Google Gemini AI. This system provides comprehensive insights into any public GitHub repository through an intuitive Q&A interface.
+> A powerful, AI-driven GitHub repository analysis system built with Streamlit, FastMCP v2 servers, and Google Gemini AI. This system provides comprehensive insights into any public GitHub repository through an intuitive Q&A interface.
 
 ## ✨ Features
 
@@ -200,13 +200,6 @@ This will test:
 - **Server Status**: Monitor MCP server health
 - **Error Recovery**: Automatic retry and fallback mechanisms
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
 
 ## 📄 License
 
@@ -218,15 +211,9 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **Google Gemini**: For AI capabilities
 - **Streamlit**: For the web interface
 - **GitHub API**: For repository data access
+- **Agno**: For building AI Agent
 
-## 🆘 Support
-
-If you encounter any issues:
-1. Check the server status in the sidebar
-2. Verify your API keys are configured correctly
-3. Ensure the target repository is public
-4. Review the error messages for specific guidance
 
 ---
 
-**Built with ❤️ using Streamlit, FastMCP v2 Multi-Server Ecosystem, and Google Gemini AI**
+**Built with ❤️ using Streamlit, FastMCP, Agno Ecosystem, and Google Gemini AI**
