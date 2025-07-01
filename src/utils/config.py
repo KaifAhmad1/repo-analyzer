@@ -13,6 +13,10 @@ def get_google_api_key():
     """Get Google API key from environment"""
     return os.getenv("GOOGLE_API_KEY")
 
+def get_groq_api_key():
+    """Get Groq API key from environment"""
+    return os.getenv("GROQ_API_KEY")
+
 def has_required_keys():
     """Check if required API keys are configured"""
     return bool(get_google_api_key())

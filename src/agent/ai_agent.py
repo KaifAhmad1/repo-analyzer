@@ -8,7 +8,7 @@ import json
 import asyncio
 from typing import Dict, List, Any, Optional
 from agno.agent import Agent
-from agno.models.google import Gemini
+from agno.models.groq import Groq
 from agno.tools.reasoning import ReasoningTools
 from fastmcp import Client
 
@@ -205,8 +205,8 @@ class FastMCPTools:
         except Exception as e:
             return f"Error: {str(e)}"
 
-def create_repository_analyzer_agent(model_name: str = "gemini-2.0-flash-001") -> Agent:
-    """Create a focused repository analysis agent using FastMCP v2"""
+def create_repository_analyzer_agent(model_name: str = "llama-3.3-70b-versatile") -> Agent:
+    """Create a focused repository analysis agent using FastMCP v2 and Groq Llama 3.3"""
     
     tools = FastMCPTools()
     
@@ -273,7 +273,7 @@ def create_repository_analyzer_agent(model_name: str = "gemini-2.0-flash-001") -
     
     agent = Agent(
         name="Repository Analyzer (FastMCP v2)",
-        model=Gemini(id=model_name),
+        model=Groq(id=model_name),
         tools=[
             ReasoningTools(add_instructions=True),
             tools.get_file_content,
@@ -301,11 +301,11 @@ def create_repository_analyzer_agent(model_name: str = "gemini-2.0-flash-001") -
 def ask_question(question: str, repository_url: str) -> tuple[str, list[str]]:
     """Ask a question about a repository using FastMCP v2 and return response with tools used"""
     try:
-        # Check if Google API key is available
-        from src.utils.config import get_google_api_key
-        api_key = get_google_api_key()
+        # Check if Groq API key is available
+        from src.utils.config import get_groq_api_key
+        api_key = get_groq_api_key()
         if not api_key:
-            return ("❌ **Google API Key Required**\n\nPlease set your Google AI API key in the settings sidebar to use AI features.\n\n1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey) to get your API key\n2. Enter it in the sidebar under '🔑 API Configuration'\n3. Click '💾 Save Configuration'", [])
+            return ("❌ **Groq API Key Required**\n\nPlease set your Groq API key in the .env file.", [])
         
         # Create a custom agent that tracks tool usage
         tools_used = []
@@ -373,7 +373,7 @@ def ask_question(question: str, repository_url: str) -> tuple[str, list[str]]:
             # Create agent with tracking tools
             agent = Agent(
                 name="Repository Analyzer (FastMCP v2) - Tracking",
-                model=Gemini(id="gemini-2.0-flash-001"),
+                model=Groq(id="llama-3.3-70b-versatile"),
                 tools=[
                     ReasoningTools(add_instructions=True),
                     tracked_get_file_content,
@@ -416,11 +416,11 @@ def ask_question(question: str, repository_url: str) -> tuple[str, list[str]]:
 def analyze_repository(repository_url: str) -> tuple[str, list[str]]:
     """Perform comprehensive repository analysis using FastMCP v2"""
     try:
-        # Check if Google API key is available
-        from src.utils.config import get_google_api_key
-        api_key = get_google_api_key()
+        # Check if Groq API key is available
+        from src.utils.config import get_groq_api_key
+        api_key = get_groq_api_key()
         if not api_key:
-            return ("❌ **Google API Key Required**\n\nPlease set your Google AI API key in the settings sidebar to use AI features.", [])
+            return ("❌ **Groq API Key Required**\n\nPlease set your Groq API key in the .env file.", [])
         
         # Use the same tracking mechanism as ask_question
         response, tools_used = ask_question("Provide a comprehensive analysis of this repository", repository_url)
