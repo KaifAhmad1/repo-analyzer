@@ -19,9 +19,9 @@ from typing import Dict, Any, List, Optional
 sys.path.append(str(Path(__file__).parent / "src"))
 
 from src.ui.repository_selector import render_repository_selector
-from src.ui.chat_interface import render_chat_interface
+from src.ui.chat_interface import render_chat_interface, render_chat_stats
 from src.ui.settings_sidebar import render_settings_sidebar, validate_api_keys
-from src.agent.ai_agent import create_advanced_agent, ask_question_advanced, analyze_repository_advanced
+from src.agent.ai_agent import ask_question, analyze_repository
 from src.servers.server_manager import start_mcp_servers, check_servers_status, get_detailed_server_status
 from src.servers.mcp_client_improved import UnifiedMCPClient
 
@@ -64,18 +64,12 @@ def create_sidebar_controls():
     # Check if API keys are configured
     if not config["config_valid"]:
         st.sidebar.error("⚠️ Please configure your API keys to use AI features")
-        return None, None
+        return None
     
     st.sidebar.markdown("---")
     st.sidebar.markdown("### ⚙️ AI Configuration")
     
-    # Agent selection
-    agent_type = st.sidebar.selectbox(
-        "Agent Type",
-        ["Single Agent", "Multi-Agent Team"],
-        help="Choose the AI agent system"
-    )
-    
+    # Model selection
     model = st.sidebar.selectbox(
         "AI Model",
         ["gemini-2.0-flash-001", "gemini-1.5-pro"],
@@ -111,7 +105,7 @@ def create_sidebar_controls():
         if st.button("📊 Status"):
             st.sidebar.json(detailed_status)
     
-    return agent_type, model
+    return model
 
 def create_repository_overview(repo_url: str):
     """Create repository overview section using unified MCP client"""
@@ -200,7 +194,7 @@ def create_activity_charts(repo_url: str):
         st.error(f"Error creating activity charts: {e}")
 
 def create_issues_table(repo_url: str):
-    """Create issues table using unified MCP client"""
+    """Create issues and pull requests table"""
     if not repo_url:
         return
     
@@ -208,7 +202,6 @@ def create_issues_table(repo_url: str):
         with UnifiedMCPClient() as client:
             # Get issues
             issues = client.get_issues(repo_url, "open", 10)
-            
             if issues.get("success") and issues.get("result"):
                 issues_data = issues["result"]
                 
@@ -255,83 +248,6 @@ def create_code_metrics(repo_url: str):
     except Exception as e:
         st.error(f"Error getting code metrics: {e}")
 
-def create_qa_interface(repo_url: str, agent_type: str, model: str):
-    """Create Q&A interface with enhanced capabilities"""
-    if not repo_url:
-        st.info("Please select a repository to start asking questions.")
-        return
-    
-    st.markdown("### 💬 Ask Questions About This Repository")
-    
-    # Question input
-    question = st.text_area(
-        "Enter your question:",
-        placeholder="e.g., What is this repository about? Show me the main entry points. What are the recent changes? Analyze the code quality. What are the main issues?",
-        height=100
-    )
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        if st.button("🤖 Ask AI Agent", type="primary"):
-            if question.strip():
-                with st.spinner("🤖 Analyzing with AI agent..."):
-                    try:
-                        response = ask_question_advanced(
-                            question, 
-                            repo_url, 
-                            use_team=(agent_type == "Multi-Agent Team")
-                        )
-                        
-                        st.markdown("#### 🤖 AI Response")
-                        st.markdown(response)
-                        
-                        # Store in session state for chat history
-                        if "chat_history" not in st.session_state:
-                            st.session_state.chat_history = []
-                        
-                        st.session_state.chat_history.append({
-                            "question": question,
-                            "answer": response,
-                            "timestamp": datetime.now().isoformat()
-                        })
-                        
-                    except Exception as e:
-                        st.error(f"Error getting AI response: {e}")
-            else:
-                st.warning("Please enter a question.")
-    
-    with col2:
-        if st.button("📊 Full Analysis"):
-            with st.spinner("🤖 Performing comprehensive analysis..."):
-                try:
-                    response = analyze_repository_advanced(repo_url)
-                    
-                    st.markdown("#### 📊 Comprehensive Analysis")
-                    st.markdown(response)
-                    
-                    # Store in session state for chat history
-                    if "chat_history" not in st.session_state:
-                        st.session_state.chat_history = []
-                    
-                    st.session_state.chat_history.append({
-                        "question": "Comprehensive repository analysis",
-                        "answer": response,
-                        "timestamp": datetime.now().isoformat()
-                    })
-                    
-                except Exception as e:
-                    st.error(f"Error performing analysis: {e}")
-    
-    # Show chat history
-    if "chat_history" in st.session_state and st.session_state.chat_history:
-        st.markdown("### 📝 Chat History")
-        for i, chat in enumerate(reversed(st.session_state.chat_history[-5:])):  # Show last 5
-            with st.expander(f"Q: {chat['question'][:50]}..."):
-                st.markdown(f"**Question:** {chat['question']}")
-                st.markdown(f"**Answer:** {chat['answer']}")
-                st.caption(f"Asked at: {chat['timestamp']}")
-
 def main():
     """Main application function"""
     # Load CSS
@@ -345,7 +261,7 @@ def main():
         st.session_state.selected_repo = None
     
     # Create sidebar controls
-    agent_type, model = create_sidebar_controls()
+    model = create_sidebar_controls()
     
     # Check if API keys are configured
     if not validate_api_keys():
@@ -371,35 +287,33 @@ def main():
             st.success(f"Started {sum(results.values())}/{len(results)} servers")
     
     # Main content area
-    col1, col2 = st.columns([2, 1])
-    
-    with col1:
-        # Repository selector
-        repo_url = render_repository_selector()
-        if repo_url:
-            st.session_state.selected_repo = repo_url
-            
-            # Create tabs for different sections
-            tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Overview", "📁 Structure", "📈 Activity", "🐛 Issues", "📊 Metrics"])
-            
-            with tab1:
-                create_repository_overview(repo_url)
-            
-            with tab2:
-                create_repository_structure(repo_url)
-            
-            with tab3:
-                create_activity_charts(repo_url)
-            
-            with tab4:
-                create_issues_table(repo_url)
-            
-            with tab5:
-                create_code_metrics(repo_url)
-    
-    with col2:
-        # Q&A Interface
-        create_qa_interface(st.session_state.selected_repo, agent_type, model)
+    repo_url = render_repository_selector()
+    if repo_url:
+        st.session_state.selected_repo = repo_url
+        
+        # Create tabs for different sections
+        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+            "📊 Overview", "📁 Structure", "📈 Activity", "🐛 Issues", "📊 Metrics", "💬 Q&A"
+        ])
+        
+        with tab1:
+            create_repository_overview(repo_url)
+        
+        with tab2:
+            create_repository_structure(repo_url)
+        
+        with tab3:
+            create_activity_charts(repo_url)
+        
+        with tab4:
+            create_issues_table(repo_url)
+        
+        with tab5:
+            create_code_metrics(repo_url)
+        
+        with tab6:
+            render_chat_interface(repo_url)
+            render_chat_stats()
     
     # Footer
     st.markdown("---")
