@@ -7,7 +7,7 @@ import streamlit as st
 from datetime import datetime
 from typing import Optional
 
-def render_chat_interface(repo_url: Optional[str] = None, agent_type: str = "Single Agent") -> None:
+def render_chat_interface(repo_url: Optional[str] = None) -> None:
     """Render the enhanced chat interface component"""
     
     if not repo_url:
@@ -96,7 +96,7 @@ def render_chat_interface(repo_url: Optional[str] = None, agent_type: str = "Sin
     with col2:
         if st.button("🤖 Ask AI Agent", type="primary", use_container_width=True):
             if question.strip():
-                process_question(question, repo_url, agent_type)
+                process_question(question, repo_url)
                 st.session_state.question_input = ""
                 st.rerun()
             else:
@@ -105,7 +105,7 @@ def render_chat_interface(repo_url: Optional[str] = None, agent_type: str = "Sin
     # Display chat history
     display_chat_history()
 
-def process_question(question: str, repo_url: str, agent_type: str) -> None:
+def process_question(question: str, repo_url: str) -> None:
     """Process a question and get AI response with MCP tool tracking"""
     
     # Add user message to history

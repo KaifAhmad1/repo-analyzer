@@ -38,23 +38,7 @@
     margin-bottom: 0 !important;
 }
 
-.header-features {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
 
-.feature-badge {
-    display: inline-block;
-    background: rgba(255,255,255,0.2);
-    padding: 8px 16px;
-    border-radius: 20px;
-    margin: 5px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    backdrop-filter: blur(10px);
-}
 
 /* Card Styles */
 .modern-card {
@@ -459,16 +443,6 @@
     .tab-button {
         font-size: 1rem;
         padding: 15px 20px;
-    }
-    
-    .header-features {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .feature-badge {
-        width: 100%;
-        text-align: center;
     }
 }
 
