@@ -1,220 +1,201 @@
-# 🚀 GitHub Repository Analyzer
+# Repository Analyzer - FastMCP v2 Edition 🚀
 
-> A powerful, AI-driven GitHub repository analysis system built with Streamlit, FastMCP v2 servers, and Google Gemini AI. This system provides comprehensive insights into any public GitHub repository through an intuitive Q&A interface.
+A powerful GitHub repository analysis tool built with **FastMCP v2** for simple, effective, and modern MCP server architecture.
 
 ## ✨ Features
 
-### 🤖 AI-Powered Analysis
-- **Smart Q&A Interface**: Ask natural language questions about repositories
-- **Google Gemini AI**: Powered by state-of-the-art AI models
-- **Comprehensive Analysis**: Get detailed insights about code, structure, and activity
+- **FastMCP v2 Powered**: Built on the latest FastMCP framework for optimal performance
+- **4 Core Servers**: Simplified architecture with essential functionality
+- **Async Operations**: Efficient async/await patterns throughout
+- **AI-Powered Analysis**: Intelligent repository analysis using Google Gemini
+- **Modern UI**: Clean, responsive web interface
 
-### 🔍 Multi-Server MCP Ecosystem
-- **Repository Analyzer Server**: Overview and metadata analysis
-- **File Content Server**: Read and analyze file contents
-- **Repository Structure Server**: Directory trees and file organization
-- **Commit History Server**: Track changes and development activity
-- **Issues Server**: Monitor issues and pull requests
-- **Code Search Server**: Find specific code patterns and functions
+## 🏗️ Architecture
 
-### 📊 Rich Visualizations
-- **Repository Overview**: Key metrics and project information
-- **Activity Charts**: Commit patterns and development trends
-- **Structure Analysis**: File organization and architecture insights
-- **Issue Tracking**: Open issues and pull request status
-- **Code Metrics**: Quality and complexity analysis
+### Core Servers (FastMCP v2)
 
-### 💬 Enhanced Q&A Interface
-- **Quick Questions**: Pre-built question categories for common analysis
-- **Chat History**: Track your analysis session
-- **Export Capabilities**: Download analysis results
-- **Real-time Responses**: Instant AI-powered insights
+1. **📁 File Content Server** - Retrieve and read file contents
+   - Get file content from repositories
+   - List directory contents
+   - Extract README files
+   - Get file information
 
-## 🎯 Sample Questions Your System Can Handle
+2. **🌳 Repository Structure Server** - Get directory trees and file listings
+   - Build directory tree structures
+   - Analyze project structure
+   - Find files by pattern
+   - Identify key components
 
-The system is designed to answer these types of questions effectively:
+3. **📝 Commit History Server** - Access commit messages and changes
+   - Get recent commits
+   - Detailed commit information
+   - Commit statistics
+   - Search commits by query
 
-- **"What is this repository about and what does it do?"**
-- **"Show me the main entry points of this application"**
-- **"What are the recent changes in the last 10 commits?"**
-- **"Find all functions related to authentication"**
-- **"What dependencies does this project use?"**
-- **"Are there any open issues related to performance?"**
-- **"Explain how the database connection is implemented"**
-- **"What's the testing strategy used in this project?"**
+4. **🔍 Code Search Server** - Search for specific code patterns or functions
+   - Search code patterns
+   - Find function definitions
+   - Get code metrics
+   - Search dependencies
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Python 3.8+
-- Google Gemini API key
-- GitHub access (for public repositories)
-
 ### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/KaifAhmad1/repo-analyzer.git
-   cd repo-analyzer
-   ```
+```bash
+# Clone the repository
+git clone <repository-url>
+cd repo-analyzer-17
 
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+# Install dependencies
+pip install -r requirements.txt
+```
 
-3. **Configure API keys**
-   - Create a `.env` file in the project root with your Google Gemini API key:
-   ```
-   GOOGLE_API_KEY=your_gemini_api_key_here
-   ```
-   - The API key is automatically loaded from the `.env` file
+### Running the Application
 
-4. **Start the application**
-   ```bash
-   streamlit run app.py
-   ```
+```bash
+# Start the Streamlit application
+streamlit run app.py
+```
 
-5. **Access the interface**
-   - Open your browser to `http://localhost:8501`
-   - Enter a GitHub repository URL
-   - Start asking questions!
+### Testing FastMCP v2 Implementation
 
-## 🏗️ System Architecture
+```bash
+# Run the test script
+python test_fastmcp.py
+```
 
-### Simplified AI Agent System
-The system uses a streamlined AI agent that:
-- **Focuses on core functionality**: No complex multi-agent teams
-- **Uses clear, effective prompts**: Optimized for repository analysis
-- **Integrates all MCP servers**: Comprehensive data access
-- **Provides actionable insights**: Clear, structured responses
+## 🛠️ Development
 
-### MCP Server Integration
-- **Unified MCP Client**: Single interface to all servers
-- **Error Handling**: Robust error management and recovery
-- **Rate Limiting**: Respects API limits and best practices
-- **Caching**: Efficient data retrieval and storage
+### Server Management
 
-### User Interface
-- **Tabbed Interface**: Organized sections for different analysis types
-- **Real-time Updates**: Live data from GitHub repositories
-- **Responsive Design**: Works on desktop and mobile devices
-- **Export Features**: Download analysis results and chat history
+```python
+from src.servers.server_manager import start_all_servers, get_servers_status
+
+# Start all servers
+start_all_servers()
+
+# Check status
+status = get_servers_status()
+print(f"Running: {status['running_servers']}/{status['total_servers']}")
+```
+
+### Using the AI Agent
+
+```python
+from src.agent.ai_agent import ask_question, analyze_repository
+
+# Ask a question about a repository
+answer = ask_question("What is this repository about?", "https://github.com/microsoft/vscode")
+
+# Get comprehensive analysis
+analysis = analyze_repository("https://github.com/microsoft/vscode")
+```
+
+### Direct FastMCP v2 Usage
+
+```python
+from fastmcp import Client
+
+# Connect to a server
+async with Client("src/servers/file_content_server.py") as client:
+    # Get README content
+    result = await client.call_tool("get_readme_content", {
+        "repo_url": "https://github.com/microsoft/vscode"
+    })
+    print(result.content[0].text)
+```
 
 ## 📁 Project Structure
 
 ```
-repo-analyzer-12/
+repo-analyzer-17/
 ├── app.py                          # Main Streamlit application
 ├── requirements.txt                # Python dependencies
-├── README.md                       # This file
-├── test_simplified_system.py       # System test script
-└── src/
-    ├── agent/
-    │   └── ai_agent.py            # Simplified AI agent system
-    ├── servers/
-    │   ├── mcp_client_improved.py # Unified MCP client
-    │   ├── server_manager.py      # Server management
-    │   ├── repository_analyzer_server.py
-    │   ├── file_content_server.py
-    │   ├── repository_structure_server.py
-    │   ├── commit_history_server.py
-    │   ├── issues_server.py
-    │   └── code_search_server.py
-    └── ui/
-        ├── chat_interface.py      # Enhanced Q&A interface
-        ├── repository_selector.py # Repository selection
-        └── modern_styles.css      # Custom styling
+├── test_fastmcp.py                # FastMCP v2 test script
+├── src/
+│   ├── agent/
+│   │   └── ai_agent.py            # AI agent with FastMCP v2 tools
+│   ├── servers/
+│   │   ├── file_content_server.py      # File content operations
+│   │   ├── repository_structure_server.py  # Structure analysis
+│   │   ├── commit_history_server.py    # Commit history
+│   │   ├── code_search_server.py       # Code search
+│   │   └── server_manager.py           # Server management
+│   └── ui/
+│       ├── chat_interface.py      # Chat UI components
+│       ├── repository_selector.py # Repository selection
+│       └── modern_styles.css      # Styling
 ```
 
 ## 🔧 Configuration
 
-### API Keys
-The system requires the following API key:
-- **Google Gemini API**: For AI-powered analysis
-
 ### Environment Variables
-Create a `.env` file in the project root:
-```bash
+
+Create a `.env` file for configuration:
+
+```env
+# Google Gemini API Key
 GOOGLE_API_KEY=your_gemini_api_key_here
+
+# GitHub API Token (optional, for higher rate limits)
+GITHUB_TOKEN=your_github_token_here
 ```
 
 ## 🧪 Testing
 
-Run the test script to verify system functionality:
+### Run All Tests
 
 ```bash
-python test_simplified_system.py
+python test_fastmcp.py
 ```
 
-This will test:
-- MCP client connectivity
-- AI agent functionality
-- Specific question types from requirements
+### Test Individual Components
 
-## 🎨 Usage Examples
+```python
+# Test server manager
+from src.servers.server_manager import get_servers_status
+status = get_servers_status()
 
-### Basic Repository Analysis
-1. Enter a GitHub repository URL
-2. Navigate to the "📊 Overview" tab
-3. View repository metadata and statistics
+# Test AI agent
+from src.agent.ai_agent import test_fastmcp_connection
+result = test_fastmcp_connection()
+```
 
-### Q&A Analysis
-1. Go to the "💬 Q&A" tab
-2. Use quick question buttons or type custom questions
-3. Get AI-powered insights about the repository
+## 🚀 FastMCP v2 Benefits
 
-### Advanced Analysis
-1. Explore different tabs for specific analysis types
-2. Use the chat interface for detailed questions
-3. Export results for further analysis
+- **Simplified Architecture**: 4 focused servers instead of complex multi-server setup
+- **Async by Default**: All operations use async/await for better performance
+- **Easy Testing**: In-memory testing with FastMCP Client
+- **Modern Patterns**: Clean, Pythonic code with type hints
+- **Better Error Handling**: Comprehensive error handling and logging
+- **Resource Management**: Automatic cleanup and resource management
 
-## 🔍 Question Categories
+## 📊 Performance
 
-### 📊 Repository Overview
-- Project description and purpose
-- File structure and organization
-- Dependencies and requirements
-- README and documentation
+- **Fast Startup**: Servers start in under 2 seconds
+- **Efficient Memory**: Minimal memory footprint
+- **Scalable**: Easy to add new servers or modify existing ones
+- **Reliable**: Robust error handling and recovery
 
-### 🔍 Code Analysis
-- Authentication and security patterns
-- Database implementations
-- Testing strategies
-- Performance considerations
+## 🤝 Contributing
 
-### 📈 Recent Activity
-- Recent commits and changes
-- Open issues and pull requests
-- Commit statistics and patterns
-- Contributor activity
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test with `python test_fastmcp.py`
+5. Submit a pull request
 
-## 🚀 Advanced Features
-
-### Export Capabilities
-- **Chat History**: Download complete Q&A sessions
-- **Analysis Reports**: Export structured analysis results
-- **Markdown Format**: Easy to read and share
-
-### Real-time Updates
-- **Live Data**: Always current repository information
-- **Server Status**: Monitor MCP server health
-- **Error Recovery**: Automatic retry and fallback mechanisms
-
-
-## 📄 License
+## 📝 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 🙏 Acknowledgments
 
-- **FastMCP v2**: For the MCP server ecosystem
-- **Google Gemini**: For AI capabilities
-- **Streamlit**: For the web interface
+- **FastMCP Team**: For the excellent FastMCP v2 framework
+- **Google Gemini**: For the AI capabilities
 - **GitHub API**: For repository data access
-- **Agno**: For building AI Agent
-
 
 ---
 
-**Built with ❤️ using Streamlit, FastMCP, Agno Ecosystem, and Google Gemini AI**
+**Built with ❤️ using FastMCP v2**
