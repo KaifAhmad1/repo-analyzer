@@ -19,9 +19,8 @@ A clean, modern interface for analyzing GitHub repositories using FastMCP v2 ser
    pip install -r requirements.txt
    ```
 
-2. **Configure API Key**:
-   - Get your Groq API key from [Groq Console](https://console.groq.com/keys)
-   - Create a `.env` file in the project root:
+2. **Configure Environment**:
+   - Create a `.env` file in the project root with your Groq API key:
      ```
      GROQ_API_KEY=your_groq_api_key_here
      ```
@@ -116,10 +115,8 @@ The interface has been simplified for better usability:
 ## 🔧 Configuration
 
 ### AI Models
-Choose from available Groq models:
-- `llama-3.1-70b-versatile` (default)
-- `llama-3.1-8b-instant`
-- `llama-3.1-405b-reasoning`
+The application uses Groq AI models for analysis:
+- `llama-3.1-70b-versatile` (default and recommended)
 
 ### Analysis Settings
 - **Analysis Depth**: Control how deep to explore repository structure (1-5)
