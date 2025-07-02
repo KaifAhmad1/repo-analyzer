@@ -1,31 +1,25 @@
 # 🚀 GitHub Repository Analyzer
 
-A powerful AI-powered repository analysis tool that uses FastMCP v2 servers and Groq AI to provide comprehensive insights about GitHub repositories.
+A powerful AI-powered repository analysis tool that uses FastMCP v2 servers and Groq AI to provide comprehensive insights about GitHub repositories with advanced AST (Abstract Syntax Tree) and CST (Concrete Syntax Tree) analysis capabilities.
 
-## ✨ Features
+## ✨ Core Features
 
-### 🔍 **Enhanced AI Analysis**
-- **Quick Analysis**: Get instant structured insights about any repository
-- **Smart Summary**: Generate comprehensive AI-powered reports
-- **Q&A Chat**: Ask natural language questions about repositories
-- **Code Pattern Analysis**: Deep technical analysis of architecture and patterns
+### 🔍 **AI-Powered Analysis**
+- **Quick Analysis**: Instant structured insights about any repository
+- **Smart Summary**: Comprehensive AI-powered reports with technical depth
+- **Q&A Chat**: Natural language questions with context-aware responses
+- **Code Pattern Analysis**: Deep technical analysis using AST/CST parsing
 
-### 🛠️ **Real-Time Processing Status**
-- **Live Tool Status**: See exactly which MCP tools are being used in real-time
-- **Progress Tracking**: Watch the analysis progress step by step
-- **Server Status**: Monitor which MCP servers are active and their health
+### 🛠️ **Advanced Code Analysis**
+- **AST Analysis**: Abstract Syntax Tree parsing for code structure understanding
+- **CST Analysis**: Concrete Syntax Tree analysis for detailed syntax examination
+- **Pattern Recognition**: Identify coding patterns, anti-patterns, and best practices
+- **Architecture Mapping**: Visualize code architecture and dependencies
 
-### 📊 **MCP Server Integration**
-- **File Content Server**: 📄 Access and analyze repository files
-- **Repository Structure Server**: 📁 Explore directory structure and organization
-- **Commit History Server**: 📝 Analyze development activity and patterns
-- **Code Search Server**: 🔍 Search and analyze code patterns and dependencies
-
-### 🎯 **User-Friendly Interface**
-- **Modern UI**: Clean, intuitive interface with real-time feedback
-- **System Health Monitoring**: Visual indicators of server status
-- **Tool Usage Display**: See which analysis tools were used for each response
-- **Progress Indicators**: Real-time status updates during analysis
+### 📊 **Real-Time Processing**
+- **Live Tool Status**: Real-time MCP tool usage tracking
+- **Progress Monitoring**: Step-by-step analysis progress
+- **Server Health**: Active MCP server monitoring and status
 
 ## 🚀 Quick Start
 
@@ -34,135 +28,194 @@ A powerful AI-powered repository analysis tool that uses FastMCP v2 servers and 
    pip install -r requirements.txt
    ```
 
-2. **Set up API Keys**:
-   - Get a Groq API key from [Groq Console](https://console.groq.com/)
-   - Set environment variable: `GROQ_API_KEY=your_key_here`
-
-3. **Start the Application**:
+2. **Configure API Keys**:
    ```bash
+   # Set your Groq API key
+   export GROQ_API_KEY=your_key_here
+   ```
+
+3. **Start Servers & App**:
+   ```bash
+   # Start all MCP servers
+   python start_servers.py
+   
+   # Run the Streamlit app
    streamlit run app.py
    ```
 
-4. **Analyze a Repository**:
-   - Enter a GitHub repository URL
-   - Choose your analysis type (Quick Analysis, Smart Summary, or Q&A Chat)
-   - Watch real-time progress as the AI analyzes the repository
+## 🛠️ MCP Server Architecture
+
+The application uses four specialized MCP servers for comprehensive repository analysis:
+
+### 📄 **File Content Server**
+- **Purpose**: Access and read repository files
+- **Capabilities**: 
+  - File content retrieval
+  - Binary file detection
+  - File size analysis
+  - Content type identification
+- **Use Cases**: Code analysis, documentation review, configuration inspection
+
+### 📁 **Repository Structure Server**
+- **Purpose**: Analyze directory organization and project structure
+- **Capabilities**:
+  - Directory tree exploration
+  - File type categorization
+  - Project structure mapping
+  - Module organization analysis
+- **Use Cases**: Architecture understanding, project organization assessment
+
+### 📝 **Commit History Server**
+- **Purpose**: Track development activity and patterns
+- **Capabilities**:
+  - Commit analysis and statistics
+  - Contributor activity tracking
+  - Development timeline analysis
+  - Change pattern identification
+- **Use Cases**: Development activity analysis, contributor insights
+
+### 🔍 **Code Search Server**
+- **Purpose**: Search and analyze code patterns and dependencies
+- **Capabilities**:
+  - Semantic code search
+  - Pattern matching
+  - Dependency analysis
+  - Function and class discovery
+- **Use Cases**: Code exploration, dependency mapping, pattern identification
+
+## 🔬 AST/CST Analysis Features
+
+### Abstract Syntax Tree (AST) Analysis
+- **Code Structure Parsing**: Parse code into abstract syntax trees
+- **Semantic Analysis**: Understand code meaning and relationships
+- **Pattern Detection**: Identify coding patterns and anti-patterns
+- **Complexity Metrics**: Calculate cyclomatic complexity and other metrics
+
+### Concrete Syntax Tree (CST) Analysis
+- **Detailed Syntax Examination**: Analyze exact syntax structure
+- **Formatting Analysis**: Understand code formatting and style
+- **Token-level Analysis**: Examine individual code tokens
+- **Syntax Error Detection**: Identify potential syntax issues
+
+### Advanced Code Intelligence
+- **Function Analysis**: Map function calls and dependencies
+- **Class Hierarchy**: Analyze class relationships and inheritance
+- **Import Analysis**: Track module dependencies and imports
+- **Code Quality Metrics**: Assess code quality and maintainability
 
 ## 📋 Analysis Types
 
-### 🔍 Quick Analysis
-Provides structured insights including:
-- Project type and purpose
-- Technology stack
-- Key features and capabilities
-- Project structure overview
-- Dependencies analysis
-- Recent development activity
-- Code quality indicators
-- Documentation assessment
+### 🔍 **Quick Analysis**
+Provides instant structured insights:
+- **Project Overview**: Purpose, type, and main functionality
+- **Technology Stack**: Languages, frameworks, and tools used
+- **Architecture Analysis**: System design and organization
+- **Dependency Analysis**: External libraries and their purposes
+- **Code Quality Assessment**: Quality metrics and recommendations
 
-### 📊 Smart Summary
-Generate comprehensive reports:
-- **Complete Overview**: Full repository analysis
-- **Technical Analysis**: Deep technical insights
-- **Code Quality Report**: Quality metrics and recommendations
-- **Architecture Review**: System design analysis
+### 📊 **Smart Summary**
+Generate comprehensive technical reports:
+- **Complete Repository Analysis**: Full technical assessment
+- **Architecture Review**: System design and patterns
+- **Code Quality Report**: Metrics, issues, and improvements
+- **Development Activity**: Recent changes and contributor insights
+- **Best Practices Assessment**: Adherence to coding standards
 
-### 💬 Q&A Chat
-Ask natural language questions:
-- "What is this repository about?"
-- "Show me the main entry points"
-- "What dependencies does this project use?"
-- "Find all authentication functions"
-- "What's the testing strategy?"
-- And much more!
-
-## 🛠️ MCP Servers
-
-The application uses four specialized MCP servers:
-
-| Server | Icon | Purpose |
-|--------|------|---------|
-| **File Content** | 📄 | Access and read repository files |
-| **Repository Structure** | 📁 | Analyze directory organization |
-| **Commit History** | 📝 | Track development activity |
-| **Code Search** | 🔍 | Search code patterns and dependencies |
-
-## 📊 Real-Time Features
-
-### Processing Status
-- **Live Updates**: See exactly what the AI is doing
-- **Tool Progress**: Watch each MCP tool being used
-- **Server Status**: Monitor which servers are active
-- **Health Indicators**: Visual system health monitoring
-
-### Enhanced Display
-- **Grouped Tools**: Tools organized by MCP server
-- **Server Icons**: Visual indicators for each server type
-- **Progress Bars**: Real-time progress tracking
-- **Status Messages**: Detailed status updates
-
-## 🔧 Configuration
-
-### Analysis Settings
-- **Analysis Depth**: Control how deep to explore (1-5 levels)
-- **AI Model**: Choose from multiple Groq models
-- **Tool Usage Display**: Toggle tool usage information
-- **Auto-start Servers**: Automatically start offline servers
-
-### System Health
-- **Server Status**: Real-time monitoring of all MCP servers
-- **Health Percentage**: Overall system health indicator
-- **Quick Actions**: Start/stop servers with one click
+### 💬 **Q&A Chat**
+Natural language repository exploration:
+- **Context-Aware Responses**: AI understands repository context
+- **Code Examples**: Specific code snippets from the repository
+- **Technical Explanations**: Detailed technical insights
+- **Actionable Recommendations**: Practical improvement suggestions
 
 ## 🎯 Use Cases
 
+### **For Developers**
 - **Code Review**: Quickly understand unfamiliar codebases
 - **Architecture Analysis**: Evaluate system design and patterns
-- **Dependency Analysis**: Understand project dependencies and their purposes
-- **Development Activity**: Track recent changes and contributor activity
-- **Documentation Review**: Assess README and code documentation quality
-- **Best Practices**: Identify code quality and adherence to standards
+- **Dependency Management**: Understand and optimize dependencies
+- **Code Quality**: Assess and improve code quality
 
-## 🚀 Advanced Features
+### **For Teams**
+- **Onboarding**: Help new team members understand codebases
+- **Documentation**: Generate comprehensive project documentation
+- **Code Standards**: Ensure adherence to coding standards
+- **Technical Debt**: Identify and prioritize technical debt
 
-### Real-Time Processing
-Every analysis shows:
-- Which MCP servers are being used
-- Real-time progress updates
-- Tool usage breakdown
-- Processing status for each step
+### **For Managers**
+- **Project Assessment**: Evaluate project health and complexity
+- **Resource Planning**: Understand development effort and complexity
+- **Risk Assessment**: Identify potential technical risks
+- **Progress Tracking**: Monitor development activity and patterns
 
-### Enhanced AI Responses
-- **Structured Output**: Well-organized responses with headers
-- **Specific Examples**: Code examples from the repository
-- **Actionable Insights**: Practical recommendations
-- **Metrics and Statistics**: Quantitative analysis where available
+## 🔧 Configuration & Settings
 
-## 📈 Performance
+### **Analysis Configuration**
+- **Analysis Depth**: Control exploration depth (1-5 levels)
+- **AI Model Selection**: Choose from multiple Groq models
+- **Tool Usage Display**: Toggle detailed tool usage information
+- **Auto-start Servers**: Automatically manage MCP server lifecycle
 
-- **Fast Analysis**: Quick insights using optimized MCP servers
-- **Real-Time Feedback**: Immediate status updates
-- **Efficient Processing**: Parallel tool execution where possible
-- **Memory Management**: Optimized for large repositories
+### **System Monitoring**
+- **Server Health**: Real-time MCP server status monitoring
+- **Performance Metrics**: Analysis speed and efficiency tracking
+- **Error Handling**: Graceful error recovery and reporting
+- **Resource Management**: Optimized memory and processing usage
+
+## 📈 Performance & Scalability
+
+### **Optimized Processing**
+- **Parallel Execution**: Concurrent MCP tool usage
+- **Caching**: Intelligent result caching for repeated queries
+- **Memory Management**: Efficient handling of large repositories
+- **Network Optimization**: Optimized API calls and data transfer
+
+### **Scalability Features**
+- **Large Repository Support**: Handle repositories of any size
+- **Incremental Analysis**: Process changes incrementally
+- **Background Processing**: Non-blocking analysis operations
+- **Resource Monitoring**: Real-time resource usage tracking
 
 ## 🔍 Troubleshooting
 
-### Common Issues
-1. **Servers Not Starting**: Check API keys and network connectivity
-2. **Analysis Failing**: Ensure repository URL is valid and accessible
-3. **Slow Performance**: Large repositories may take longer to analyze
+### **Common Issues**
+1. **Server Connection Issues**: Check API keys and network connectivity
+2. **Analysis Failures**: Verify repository URL and accessibility
+3. **Performance Issues**: Large repositories may require more time
+4. **Memory Issues**: Ensure sufficient RAM for large analysis tasks
 
-### System Requirements
-- Python 3.8+
-- Groq API key
-- Internet connection for repository access
-- Sufficient memory for large repository analysis
+### **System Requirements**
+- **Python**: 3.8 or higher
+- **Memory**: 4GB RAM minimum (8GB+ recommended)
+- **Storage**: 1GB free space for caching and temporary files
+- **Network**: Stable internet connection for repository access
+
+## 🚀 Advanced Features
+
+### **Real-Time Analytics**
+- **Live Processing**: Real-time analysis progress tracking
+- **Tool Usage Analytics**: Detailed MCP tool usage statistics
+- **Performance Metrics**: Analysis speed and efficiency monitoring
+- **Error Tracking**: Comprehensive error logging and reporting
+
+### **Enhanced AI Capabilities**
+- **Context Awareness**: AI understands repository context and history
+- **Multi-language Support**: Analysis across multiple programming languages
+- **Pattern Recognition**: Advanced pattern detection and classification
+- **Predictive Analysis**: Identify potential issues and improvements
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit pull requests or open issues for bugs and feature requests.
+We welcome contributions! Please see our contributing guidelines for:
+- Bug reports and feature requests
+- Code contributions and pull requests
+- Documentation improvements
+- Testing and quality assurance
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+**Built with ❤️ using FastMCP v2, Groq AI, and Streamlit**

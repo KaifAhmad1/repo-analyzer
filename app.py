@@ -168,10 +168,10 @@ for i, (server_name, server_info) in enumerate(server_status['servers'].items())
         status_text = "Running" if server_info['running'] else "Offline"
         
         st.markdown(f"""
-        <div style="text-align: center; padding: 10px; border: 1px solid #ddd; border-radius: 8px; background-color: {'#f0f9ff' if server_info['running'] else '#fef2f2'};">
-            <div style="font-size: 24px;">{server_icon}</div>
-            <div style="font-weight: bold; margin: 5px 0;">{server_name.replace('_', ' ').title()}</div>
-            <div style="color: {status_color}; font-weight: bold;">{status_icon} {status_text}</div>
+        <div style="text-align: center; padding: 15px; border: 2px solid {'#10b981' if server_info['running'] else '#ef4444'}; border-radius: 12px; background: linear-gradient(135deg, {'#1f2937' if server_info['running'] else '#374151'}, {'#111827' if server_info['running'] else '#1f2937'}); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <div style="font-size: 32px; margin-bottom: 8px;">{server_icon}</div>
+            <div style="font-weight: bold; margin: 8px 0; color: #f9fafb; font-size: 16px;">{server_name.replace('_', ' ').title()}</div>
+            <div style="color: {'#10b981' if server_info['running'] else '#ef4444'}; font-weight: bold; font-size: 14px; background-color: rgba(255, 255, 255, 0.1); padding: 4px 8px; border-radius: 6px; display: inline-block;">{status_icon} {status_text}</div>
         </div>
         """, unsafe_allow_html=True)
 
