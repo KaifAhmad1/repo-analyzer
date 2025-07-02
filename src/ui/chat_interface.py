@@ -123,7 +123,7 @@ def process_question(question: str, repo_url: str, mode: str = "chat") -> None:
         status_text = st.empty()
         
         try:
-            from src.agent.ai_agent import ask_question
+            from src.agent.ai_agent import ask_repository_question
             from src.servers.server_manager import get_servers_status
             
             # Get server status for tracking
@@ -154,7 +154,7 @@ def process_question(question: str, repo_url: str, mode: str = "chat") -> None:
             progress_bar.progress(70)
             
             with st.spinner("🤖 AI is thinking..."):
-                response, tools_used = ask_question(question, repo_url)
+                response, tools_used = ask_repository_question(question, repo_url)
             
             # Stage 6: Completion
             status_text.text("✅ Response ready!")

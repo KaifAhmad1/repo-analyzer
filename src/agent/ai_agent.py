@@ -1,19 +1,22 @@
 """
-GitHub Repository Analyzer - AI Agent System
-Simple, effective AI agent for GitHub repository analysis using FastMCP v2 servers
+GitHub Repository Analyzer - Enhanced AI Agent System
+Simple but powerful agents using Agno FastMCP with all available servers
 """
 
 import os
 import json
 import asyncio
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Tuple
 from agno.agent import Agent
 from agno.models.groq import Groq
 from agno.tools.reasoning import ReasoningTools
+from agno.memory.v2.db.sqlite import SqliteMemoryDb
+from agno.memory.v2.memory import Memory
+from agno.storage.sqlite import SqliteStorage
 from fastmcp import Client
 
 class FastMCPTools:
-    """Simple tools wrapper for FastMCP v2 servers"""
+    """Enhanced tools wrapper for all FastMCP v2 servers"""
     
     def __init__(self):
         self.servers = {
@@ -52,6 +55,7 @@ class FastMCPTools:
         except Exception as e:
             return {"error": str(e), "success": False}
     
+    # File Content Tools
     def get_file_content(self, repo_url: str, file_path: str) -> str:
         """Get content of a specific file"""
         try:
@@ -76,6 +80,7 @@ class FastMCPTools:
         except Exception as e:
             return f"Error: {str(e)}"
     
+    # Repository Structure Tools
     def get_directory_tree(self, repo_url: str, max_depth: int = 3) -> str:
         """Get directory tree structure"""
         try:
@@ -100,6 +105,7 @@ class FastMCPTools:
         except Exception as e:
             return f"Error: {str(e)}"
     
+    # Commit History Tools
     def get_recent_commits(self, repo_url: str, limit: int = 20) -> str:
         """Get recent commit history"""
         try:
@@ -124,6 +130,7 @@ class FastMCPTools:
         except Exception as e:
             return f"Error: {str(e)}"
     
+    # Code Search Tools
     def search_code(self, repo_url: str, query: str, language: str = "") -> str:
         """Search for code patterns"""
         try:
@@ -164,36 +171,6 @@ class FastMCPTools:
         except Exception as e:
             return f"Error: {str(e)}"
     
-    def get_repository_overview(self, repo_url: str) -> str:
-        """Get repository overview information"""
-        try:
-            # Use multiple tools to get comprehensive overview
-            overview_data = {}
-            
-            # Get README content
-            readme_result = asyncio.run(self._call_server_tool("file_content", "get_readme_content", repo_url=repo_url))
-            if readme_result.get("success"):
-                overview_data["readme"] = readme_result.get("result", "")
-            
-            # Get file structure
-            structure_result = asyncio.run(self._call_server_tool("repository_structure", "get_file_structure", repo_url=repo_url))
-            if structure_result.get("success"):
-                overview_data["structure"] = structure_result.get("result", "")
-            
-            # Get recent commits
-            commits_result = asyncio.run(self._call_server_tool("commit_history", "get_recent_commits", repo_url=repo_url, limit=5))
-            if commits_result.get("success"):
-                overview_data["recent_commits"] = commits_result.get("result", "")
-            
-            # Get dependencies
-            deps_result = asyncio.run(self._call_server_tool("code_search", "search_dependencies", repo_url=repo_url))
-            if deps_result.get("success"):
-                overview_data["dependencies"] = deps_result.get("result", "")
-            
-            return json.dumps(overview_data, indent=2)
-        except Exception as e:
-            return f"Error: {str(e)}"
-    
     def get_tools_used(self) -> List[str]:
         """Get list of tools used in this session"""
         return self.tools_used.copy()
@@ -202,242 +179,285 @@ class FastMCPTools:
         """Get list of servers used in this session"""
         return self.servers_used.copy()
 
-def create_repository_analyzer_agent(model_name: str = "llama-3.1-70b-versatile") -> Agent:
-    """Create an AI agent for repository analysis"""
-    try:
-        # Initialize the agent with Groq model
-        agent = Agent(
-            model=Groq(model=model_name),
-            tools=ReasoningTools()
+class RepositoryAnalyzerAgent:
+    """Enhanced Repository Analyzer Agent with memory and reasoning"""
+    
+    def __init__(self, model_name: str = "llama-3.1-70b-versatile"):
+        self.model_name = model_name
+        self.tools = FastMCPTools()
+        
+        # Initialize memory and storage
+        self.memory = Memory(
+            model=Groq(id=model_name),
+            db=SqliteMemoryDb(table_name="repo_analyzer_memories", db_file="tmp/agent.db"),
+            delete_memories=True,
+            clear_memories=True,
         )
-        return agent
-    except Exception as e:
-        print(f"Error creating agent: {e}")
-        return None
+        
+        self.storage = SqliteStorage(table_name="repo_analyzer_sessions", db_file="tmp/agent.db")
+        
+        # Create the main agent
+        self.agent = Agent(
+            name="Repository Analyzer",
+            model=Groq(id=model_name),
+            tools=[ReasoningTools(add_instructions=True)],
+            instructions=[
+                "You are an expert GitHub repository analyzer.",
+                "Use the available tools to gather comprehensive information about repositories.",
+                "Provide detailed, accurate, and helpful responses.",
+                "Use tables and structured formatting when presenting data.",
+                "Always include sources and references in your responses.",
+                "Be thorough but concise in your analysis."
+            ],
+            memory=self.memory,
+            storage=self.storage,
+            enable_agentic_memory=True,
+            add_datetime_to_instructions=True,
+            add_history_to_messages=True,
+            num_history_runs=5,
+            markdown=True,
+        )
+    
+    def _create_tool_functions(self, repo_url: str):
+        """Create tool functions for the agent"""
+        tools = self.tools
+        
+        def get_file_content(file_path: str) -> str:
+            return tools.get_file_content(repo_url, file_path)
+        
+        def list_directory(path: str = "") -> str:
+            return tools.list_directory(repo_url, path)
+        
+        def get_readme_content() -> str:
+            return tools.get_readme_content(repo_url)
+        
+        def get_directory_tree(max_depth: int = 3) -> str:
+            return tools.get_directory_tree(repo_url, max_depth)
+        
+        def get_file_structure() -> str:
+            return tools.get_file_structure(repo_url)
+        
+        def analyze_project_structure() -> str:
+            return tools.analyze_project_structure(repo_url)
+        
+        def get_recent_commits(limit: int = 20) -> str:
+            return tools.get_recent_commits(repo_url, limit)
+        
+        def get_commit_details(commit_sha: str) -> str:
+            return tools.get_commit_details(repo_url, commit_sha)
+        
+        def get_commit_statistics(days: int = 30) -> str:
+            return tools.get_commit_statistics(repo_url, days)
+        
+        def search_code(query: str, language: str = "") -> str:
+            return tools.search_code(repo_url, query, language)
+        
+        def search_files(filename_pattern: str) -> str:
+            return tools.search_files(repo_url, filename_pattern)
+        
+        def find_functions(function_name: str, language: str = "") -> str:
+            return tools.find_functions(repo_url, function_name, language)
+        
+        def get_code_metrics() -> str:
+            return tools.get_code_metrics(repo_url)
+        
+        def search_dependencies() -> str:
+            return tools.search_dependencies(repo_url)
+        
+        return {
+            "get_file_content": get_file_content,
+            "list_directory": list_directory,
+            "get_readme_content": get_readme_content,
+            "get_directory_tree": get_directory_tree,
+            "get_file_structure": get_file_structure,
+            "analyze_project_structure": analyze_project_structure,
+            "get_recent_commits": get_recent_commits,
+            "get_commit_details": get_commit_details,
+            "get_commit_statistics": get_commit_statistics,
+            "search_code": search_code,
+            "search_files": search_files,
+            "find_functions": find_functions,
+            "get_code_metrics": get_code_metrics,
+            "search_dependencies": search_dependencies,
+        }
+    
+    def ask_question(self, question: str, repo_url: str, user_id: str = "default") -> Tuple[str, List[str]]:
+        """Ask a question about the repository"""
+        try:
+            # Set user ID for memory
+            self.agent.user_id = user_id
+            
+            # Create tool functions for this repository
+            tool_functions = self._create_tool_functions(repo_url)
+            
+            # Add tools to agent temporarily
+            original_tools = self.agent.tools
+            self.agent.tools = list(original_tools) + list(tool_functions.values())
+            
+            # Get response
+            response = self.agent.run_response(question, stream=False)
+            
+            # Restore original tools
+            self.agent.tools = original_tools
+            
+            return response.content, self.tools.get_tools_used()
+        except Exception as e:
+            return f"Error: {str(e)}", []
+    
+    def generate_summary(self, repo_url: str, user_id: str = "default") -> Tuple[str, List[str]]:
+        """Generate a comprehensive repository summary"""
+        try:
+            # Set user ID for memory
+            self.agent.user_id = user_id
+            
+            # Create tool functions for this repository
+            tool_functions = self._create_tool_functions(repo_url)
+            
+            # Add tools to agent temporarily
+            original_tools = self.agent.tools
+            self.agent.tools = list(original_tools) + list(tool_functions.values())
+            
+            # Create comprehensive summary prompt
+            summary_prompt = """
+            Generate a comprehensive summary of this GitHub repository. Include:
+            
+            1. **Repository Overview**: Purpose, main features, and key components
+            2. **Project Structure**: Architecture and organization
+            3. **Technology Stack**: Languages, frameworks, and dependencies
+            4. **Code Quality**: Metrics, patterns, and best practices
+            5. **Development Activity**: Recent commits and activity patterns
+            6. **Key Files**: Important configuration and source files
+            7. **Recommendations**: Suggestions for improvement or exploration
+            
+            Use the available tools to gather all necessary information and present it in a well-structured format.
+            """
+            
+            # Get response
+            response = self.agent.run_response(summary_prompt, stream=False)
+            
+            # Restore original tools
+            self.agent.tools = original_tools
+            
+            return response.content, self.tools.get_tools_used()
+        except Exception as e:
+            return f"Error: {str(e)}", []
+    
+    def analyze_code_patterns(self, repo_url: str, user_id: str = "default") -> Tuple[str, List[str]]:
+        """Analyze code patterns and architecture"""
+        try:
+            # Set user ID for memory
+            self.agent.user_id = user_id
+            
+            # Create tool functions for this repository
+            tool_functions = self._create_tool_functions(repo_url)
+            
+            # Add tools to agent temporarily
+            original_tools = self.agent.tools
+            self.agent.tools = list(original_tools) + list(tool_functions.values())
+            
+            # Create analysis prompt
+            analysis_prompt = """
+            Analyze the code patterns and architecture of this repository. Focus on:
+            
+            1. **Design Patterns**: Identify common design patterns used
+            2. **Code Organization**: How the code is structured and organized
+            3. **Dependencies**: External libraries and their purposes
+            4. **Code Quality**: Metrics, complexity, and maintainability
+            5. **Testing**: Test coverage and testing strategies
+            6. **Documentation**: Code documentation and README quality
+            7. **Best Practices**: Adherence to language-specific best practices
+            
+            Provide actionable insights and recommendations.
+            """
+            
+            # Get response
+            response = self.agent.run_response(analysis_prompt, stream=False)
+            
+            # Restore original tools
+            self.agent.tools = original_tools
+            
+            return response.content, self.tools.get_tools_used()
+        except Exception as e:
+            return f"Error: {str(e)}", []
+    
+    def get_repository_overview(self, repo_url: str) -> str:
+        """Get basic repository overview"""
+        try:
+            # Use multiple tools to get comprehensive overview
+            overview_data = {}
+            
+            # Get README content
+            readme_result = asyncio.run(self.tools._call_server_tool("file_content", "get_readme_content", repo_url=repo_url))
+            if readme_result.get("success"):
+                overview_data["readme"] = readme_result.get("result", "")
+            
+            # Get file structure
+            structure_result = asyncio.run(self.tools._call_server_tool("repository_structure", "get_file_structure", repo_url=repo_url))
+            if structure_result.get("success"):
+                overview_data["structure"] = structure_result.get("result", "")
+            
+            # Get recent commits
+            commits_result = asyncio.run(self.tools._call_server_tool("commit_history", "get_recent_commits", repo_url=repo_url, limit=5))
+            if commits_result.get("success"):
+                overview_data["recent_commits"] = commits_result.get("result", "")
+            
+            # Get dependencies
+            deps_result = asyncio.run(self.tools._call_server_tool("code_search", "search_dependencies", repo_url=repo_url))
+            if deps_result.get("success"):
+                overview_data["dependencies"] = deps_result.get("result", "")
+            
+            return json.dumps(overview_data, indent=2)
+        except Exception as e:
+            return f"Error: {str(e)}"
 
+# Convenience functions for easy integration with UI
+def create_analyzer_agent(model_name: str = "llama-3.1-70b-versatile") -> RepositoryAnalyzerAgent:
+    """Create a new repository analyzer agent"""
+    return RepositoryAnalyzerAgent(model_name)
+
+def ask_repository_question(question: str, repo_url: str, model_name: str = "llama-3.1-70b-versatile", user_id: str = "default") -> Tuple[str, List[str]]:
+    """Ask a question about a repository"""
+    agent = RepositoryAnalyzerAgent(model_name)
+    return agent.ask_question(question, repo_url, user_id)
+
+def generate_repository_summary(repo_url: str, model_name: str = "llama-3.1-70b-versatile", user_id: str = "default") -> Tuple[str, List[str]]:
+    """Generate a comprehensive repository summary"""
+    agent = RepositoryAnalyzerAgent(model_name)
+    return agent.generate_summary(repo_url, user_id)
+
+def analyze_repository_patterns(repo_url: str, model_name: str = "llama-3.1-70b-versatile", user_id: str = "default") -> Tuple[str, List[str]]:
+    """Analyze repository code patterns"""
+    agent = RepositoryAnalyzerAgent(model_name)
+    return agent.analyze_code_patterns(repo_url, user_id)
+
+def get_repository_overview(repo_url: str) -> str:
+    """Get basic repository overview"""
+    agent = RepositoryAnalyzerAgent()
+    return agent.get_repository_overview(repo_url)
+
+# Legacy functions for backward compatibility
 def ask_question(question: str, repository_url: str) -> tuple[str, list[str]]:
-    """Ask a question about a repository and get AI response with tool tracking"""
-    try:
-        # Create tools instance for tracking
-        tools = FastMCPTools()
-        
-        def create_tracking_agent():
-            """Create agent with tracking capabilities"""
-            agent = create_repository_analyzer_agent()
-            if not agent:
-                return None
-            
-            # Add tracked tool functions
-            def tracked_get_file_content(repo_url: str, file_path: str) -> str:
-                return tools.get_file_content(repo_url, file_path)
-            
-            def tracked_list_directory(repo_url: str, path: str = "") -> str:
-                return tools.list_directory(repo_url, path)
-            
-            def tracked_get_readme_content(repo_url: str) -> str:
-                return tools.get_readme_content(repo_url)
-            
-            def tracked_get_directory_tree(repo_url: str, max_depth: int = 3) -> str:
-                return tools.get_directory_tree(repo_url, max_depth)
-            
-            def tracked_get_file_structure(repo_url: str) -> str:
-                return tools.get_file_structure(repo_url)
-            
-            def tracked_analyze_project_structure(repo_url: str) -> str:
-                return tools.analyze_project_structure(repo_url)
-            
-            def tracked_get_recent_commits(repo_url: str, limit: int = 20) -> str:
-                return tools.get_recent_commits(repo_url, limit)
-            
-            def tracked_get_commit_details(repo_url: str, commit_sha: str) -> str:
-                return tools.get_commit_details(repo_url, commit_sha)
-            
-            def tracked_get_commit_statistics(repo_url: str, days: int = 30) -> str:
-                return tools.get_commit_statistics(repo_url, days)
-            
-            def tracked_search_code(repo_url: str, query: str, language: str = "") -> str:
-                return tools.search_code(repo_url, query, language)
-            
-            def tracked_search_files(repo_url: str, filename_pattern: str) -> str:
-                return tools.search_files(repo_url, filename_pattern)
-            
-            def tracked_find_functions(repo_url: str, function_name: str, language: str = "") -> str:
-                return tools.find_functions(repo_url, function_name, language)
-            
-            def tracked_get_code_metrics(repo_url: str) -> str:
-                return tools.get_code_metrics(repo_url)
-            
-            def tracked_search_dependencies(repo_url: str) -> str:
-                return tools.search_dependencies(repo_url)
-            
-            # Add tools to agent
-            agent.add_tool(tracked_get_file_content)
-            agent.add_tool(tracked_list_directory)
-            agent.add_tool(tracked_get_readme_content)
-            agent.add_tool(tracked_get_directory_tree)
-            agent.add_tool(tracked_get_file_structure)
-            agent.add_tool(tracked_analyze_project_structure)
-            agent.add_tool(tracked_get_recent_commits)
-            agent.add_tool(tracked_get_commit_details)
-            agent.add_tool(tracked_get_commit_statistics)
-            agent.add_tool(tracked_search_code)
-            agent.add_tool(tracked_search_files)
-            agent.add_tool(tracked_find_functions)
-            agent.add_tool(tracked_get_code_metrics)
-            agent.add_tool(tracked_search_dependencies)
-            
-            return agent
-        
-        # Create agent with tracking
-        agent = create_tracking_agent()
-        if not agent:
-            return "Error: Could not create AI agent", []
-        
-        # Create prompt with repository context
-        prompt = f"""
-        You are an AI assistant specialized in analyzing GitHub repositories. 
-        The user is asking about this repository: {repository_url}
-        
-        Question: {question}
-        
-        Please analyze the repository using the available tools and provide a comprehensive answer.
-        Use the tools to gather information about the repository structure, code, dependencies, and recent activity.
-        
-        Provide a detailed, well-structured response that directly answers the user's question.
-        """
-        
-        # Get response from agent
-        response = agent.run(prompt)
-        
-        # Get tools and servers used
-        tools_used = tools.get_tools_used()
-        servers_used = tools.get_servers_used()
-        
-        return response, tools_used
-        
-    except Exception as e:
-        return f"Error analyzing repository: {str(e)}", []
+    """Legacy function for backward compatibility"""
+    return ask_repository_question(question, repository_url)
 
 def analyze_repository(repository_url: str) -> tuple[str, list[str]]:
-    """Analyze a repository and provide comprehensive overview"""
-    try:
-        tools = FastMCPTools()
-        
-        # Get comprehensive repository analysis
-        overview = tools.get_repository_overview(repository_url)
-        
-        # Create analysis prompt
-        prompt = f"""
-        Please provide a comprehensive analysis of this GitHub repository: {repository_url}
-        
-        Repository data: {overview}
-        
-        Please provide:
-        1. What this repository is about
-        2. Main technologies and dependencies used
-        3. Project structure and key files
-        4. Recent activity and development status
-        5. Key features and functionality
-        
-        Format your response in a clear, structured manner.
-        """
-        
-        # Get AI analysis
-        agent = create_repository_analyzer_agent()
-        if agent:
-            response = agent.run(prompt)
-            tools_used = tools.get_tools_used()
-            return response, tools_used
-        else:
-            return f"Repository Overview: {overview}", tools.get_tools_used()
-            
-    except Exception as e:
-        return f"Error analyzing repository: {str(e)}", []
-
-def get_repository_overview(repository_url: str) -> str:
-    """Get basic repository overview"""
-    try:
-        tools = FastMCPTools()
-        return tools.get_repository_overview(repository_url)
-    except Exception as e:
-        return f"Error getting repository overview: {str(e)}"
+    """Legacy function for backward compatibility"""
+    return generate_repository_summary(repository_url)
 
 def search_repository_code(repository_url: str, search_query: str) -> str:
-    """Search for code in repository"""
-    try:
-        tools = FastMCPTools()
-        return tools.search_code(repository_url, search_query)
-    except Exception as e:
-        return f"Error searching code: {str(e)}"
+    """Legacy function for backward compatibility"""
+    agent = RepositoryAnalyzerAgent()
+    tools = agent.tools
+    return tools.search_code(repository_url, search_query)
 
 def analyze_repository_structure(repository_url: str) -> str:
-    """Analyze repository structure"""
-    try:
-        tools = FastMCPTools()
-        return tools.analyze_project_structure(repository_url)
-    except Exception as e:
-        return f"Error analyzing structure: {str(e)}"
+    """Legacy function for backward compatibility"""
+    agent = RepositoryAnalyzerAgent()
+    tools = agent.tools
+    return tools.analyze_project_structure(repository_url)
 
 def get_recent_activity(repository_url: str) -> str:
-    """Get recent repository activity"""
-    try:
-        tools = FastMCPTools()
-        commits = tools.get_recent_commits(repository_url, limit=10)
-        return commits
-    except Exception as e:
-        return f"Error getting recent activity: {str(e)}"
-
-def create_ai_agent(model_name: str, config: Dict[str, Any]) -> Dict[str, Any]:
-    """Create AI agent with configuration"""
-    try:
-        agent = create_repository_analyzer_agent(model_name)
-        return {"success": True, "agent": agent}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
-def ask_question_advanced(question: str, repository_url: str, use_team: bool = False) -> str:
-    """Advanced question asking with team support"""
-    return ask_question(question, repository_url)[0]
-
-def analyze_repository_advanced(repository_url: str) -> str:
-    """Advanced repository analysis"""
-    return analyze_repository(repository_url)[0]
-
-def test_fastmcp_connection() -> Dict[str, Any]:
-    """Test FastMCP connection"""
-    try:
-        tools = FastMCPTools()
-        # Test a simple operation
-        test_result = tools.get_file_structure("https://github.com/test/test")
-        return {
-            "success": True,
-            "message": "FastMCP connection successful",
-            "test_result": test_result
-        }
-    except Exception as e:
-        return {
-            "success": False,
-            "error": str(e),
-            "message": "FastMCP connection failed"
-        }
-
-def list_available_tools() -> List[str]:
-    """List all available tools"""
-    tools = FastMCPTools()
-    return [
-        "get_file_content",
-        "list_directory", 
-        "get_readme_content",
-        "get_directory_tree",
-        "get_file_structure",
-        "analyze_project_structure",
-        "get_recent_commits",
-        "get_commit_details",
-        "get_commit_statistics",
-        "search_code",
-        "search_files",
-        "find_functions",
-        "get_code_metrics",
-        "search_dependencies",
-        "get_repository_overview"
-    ] 
+    """Legacy function for backward compatibility"""
+    agent = RepositoryAnalyzerAgent()
+    tools = agent.tools
+    return tools.get_recent_commits(repository_url, limit=10) 

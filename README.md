@@ -5,9 +5,10 @@ A streamlined, AI-powered GitHub repository analysis tool with a clean, modern i
 ## ✨ Features
 
 ### 🎯 Core Functionality
-- **💬 Q&A Chat Interface** - Ask natural language questions about any GitHub repository
+- **💬 Q&A Chat Interface** - Ask natural language questions about any GitHub repository with enhanced AI agents
 - **🔍 Quick Analysis** - Get structured insights about repository structure, dependencies, and code patterns
-- **📊 Smart Summary** - Generate comprehensive AI-powered reports
+- **📊 Smart Summary** - Generate comprehensive AI-powered reports with memory and reasoning
+- **🧠 Enhanced AI Agents** - Advanced agents with memory, storage, and reasoning capabilities
 
 ### 🛠️ Technical Capabilities
 - **File Content Analysis** - Read and analyze repository files
@@ -15,6 +16,9 @@ A streamlined, AI-powered GitHub repository analysis tool with a clean, modern i
 - **Commit History** - Track recent changes and development activity
 - **Code Search** - Find specific code patterns and functions
 - **Dependency Analysis** - Identify project dependencies and requirements
+- **AI Memory & Storage** - Persistent conversation history and user preferences
+- **Reasoning Tools** - Advanced reasoning capabilities for better analysis
+- **Multi-Server Integration** - Seamless use of all available MCP servers
 
 ### 🎨 Clean UI
 - **Modern Design** - Clean, responsive interface with excellent UX

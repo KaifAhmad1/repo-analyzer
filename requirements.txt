@@ -8,6 +8,9 @@ requests>=2.31.0
 # AI & MCP
 agno>=0.1.0
 fastmcp>=2.0.0
+lancedb>=0.5.0
+tantivy>=0.20.0
+sqlalchemy>=2.0.0
 
 # Data Visualization
 plotly>=5.17.0

@@ -8,7 +8,15 @@ import os
 from datetime import datetime
 from src.ui.repository_selector import render_repository_selector
 from src.ui.chat_interface import render_chat_interface
-from src.agent.ai_agent import get_repository_overview, analyze_repository, FastMCPTools
+from src.agent.ai_agent import (
+    get_repository_overview, 
+    analyze_repository, 
+    FastMCPTools,
+    ask_repository_question,
+    generate_repository_summary,
+    analyze_repository_patterns,
+    create_analyzer_agent
+)
 from src.servers.server_manager import get_servers_status, start_mcp_servers
 
 # Page config
