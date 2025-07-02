@@ -85,25 +85,18 @@ A clean, modern interface for analyzing GitHub repositories using FastMCP v2 ser
 
 ```mermaid
 flowchart TD
-    A["User (Web UI)"] --> B["Streamlit App"]
-    B --> C["Settings Sidebar & Server Status"]
-    B --> D["Repository Selector"]
-    B --> E["Q&A Chat / Analysis Tabs"]
-    C --> F["MCP Server Manager"]
-    F --> G1["File Content Server 📁"]
-    F --> G2["Repository Structure Server 🌳"]
-    F --> G3["Commit History Server 📝"]
-    F --> G4["Code Search Server 🔍"]
-    E --> F
-    G1 --> I["GitHub API"]
-    G2 --> I
-    G3 --> I
-    G4 --> I
-    E --> H["Groq AI Backend"]
-    H --> E
-    F --> C
-    C --> F
-    B --> A
+    A["User Interface"] --> B["Streamlit App"]
+    B --> C["MCP Server Manager"]
+    C --> D["File Content Server 📁"]
+    C --> E["Repository Structure Server 🌳"]
+    C --> F["Commit History Server 📝"]
+    C --> G["Code Search Server 🔍"]
+    D --> H["GitHub API"]
+    E --> H
+    F --> H
+    G --> H
+    B --> I["Groq AI Backend"]
+    I --> B
 ```
 
 ### MCP Server Roles
