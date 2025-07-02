@@ -565,25 +565,7 @@
     letter-spacing: -0.2px;
 }
 
-/* Enhanced API Configuration Display */
-.api-config {
-    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-    border: 2px solid #e2e8f0;
-    border-radius: var(--border-radius);
-    padding: 1.5rem;
-    margin: 1rem 0;
-    box-shadow: var(--box-shadow);
-}
 
-.api-config.success {
-    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-    border-color: #bbf7d0;
-}
-
-.api-config.error {
-    background: linear-gradient(135deg, #fef2f2, #fee2e2);
-    border-color: #fecaca;
-}
 
 /* Enhanced Text Visibility */
 .stMarkdown p, .stMarkdown div, .stMarkdown span {
