@@ -1,6 +1,6 @@
 # 🚀 GitHub Repository Analyzer - Simplified UI
 
-A clean, modern interface for analyzing GitHub repositories using FastMCP v2 servers and Groq AI.
+A clean, modern interface for analyzing GitHub repositories using MCP servers, AI Agents and Groq AI.
 
 ## ✨ Features
 
@@ -19,13 +19,7 @@ A clean, modern interface for analyzing GitHub repositories using FastMCP v2 ser
    pip install -r requirements.txt
    ```
 
-2. **Configure Environment**:
-   - Create a `.env` file in the project root with your Groq API key:
-     ```
-     GROQ_API_KEY=your_groq_api_key_here
-     ```
-
-3. **Start MCP Servers** (Required):
+2. **Start MCP Servers** (Required):
    ```bash
    # Option 1: Use the startup script
    python start_servers.py
@@ -34,12 +28,12 @@ A clean, modern interface for analyzing GitHub repositories using FastMCP v2 ser
    python src/servers/server_manager.py start
    ```
 
-4. **Run the Application**:
+3. **Run the Application**:
    ```bash
    streamlit run app.py
    ```
 
-5. **Start Analyzing**:
+4. **Start Analyzing**:
    - Enter a GitHub repository URL (e.g., `https://github.com/microsoft/vscode`)
    - Use the Q&A chat or quick analysis features
    - Monitor server status in the sidebar
@@ -108,18 +102,6 @@ flowchart TD
 
 ---
 
-## 🔑 API Key Setup
-
-To use the AI features, you need a Groq API key.
-
-1. **Get your API key:**  
-   - Sign up or log in at [Groq Console](https://console.groq.com/keys)
-   - Copy your API key
-
-2. **Create a `.env` file in your project root:**  
-   ```
-   GROQ_API_KEY=your_groq_api_key_here
-   ```
 
 > **Note:**  
 > Never share your API key publicly or commit it to version control.
