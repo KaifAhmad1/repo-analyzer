@@ -165,12 +165,13 @@ for i, (server_name, server_info) in enumerate(server_status['servers'].items())
         
         status_icon = "✅" if server_info['running'] else "❌"
         status_color = "green" if server_info['running'] else "red"
+        status_text = "Running" if server_info['running'] else "Offline"
         
         st.markdown(f"""
         <div style="text-align: center; padding: 10px; border: 1px solid #ddd; border-radius: 8px; background-color: {'#f0f9ff' if server_info['running'] else '#fef2f2'};">
             <div style="font-size: 24px;">{server_icon}</div>
             <div style="font-weight: bold; margin: 5px 0;">{server_name.replace('_', ' ').title()}</div>
-            <div style="color: {status_color}; font-weight: bold;">{status_icon} {server_info['status']}</div>
+            <div style="color: {status_color}; font-weight: bold;">{status_icon} {status_text}</div>
         </div>
         """, unsafe_allow_html=True)
 
