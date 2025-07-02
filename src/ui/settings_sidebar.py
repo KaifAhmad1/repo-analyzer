@@ -10,13 +10,16 @@ from src.utils.config import get_groq_api_key, has_required_keys
 def render_settings_sidebar():
     """Render the enhanced settings sidebar with only essential settings"""
     
-    # API Configuration Status - Enhanced display
+    # API Configuration Status - Enhanced display with actual key info
     st.markdown("### 🔑 API Configuration")
     groq_api_key = get_groq_api_key()
     
     if groq_api_key:
+        # Show partial key for security
+        masked_key = groq_api_key[:8] + "..." + groq_api_key[-4:] if len(groq_api_key) > 12 else "***"
         st.success("✅ **Groq API Configured**")
-        st.info("**Status:** Ready for analysis")
+        st.info(f"**Key:** `{masked_key}`")
+        st.success("**Status:** Ready for analysis")
     else:
         st.error("❌ **Groq API Key Required**")
         st.markdown("""
@@ -24,6 +27,13 @@ def render_settings_sidebar():
         1. Get your key from: [Groq Console](https://console.groq.com/keys)
         2. Add to `.env` file: `GROQ_API_KEY=your_key_here`
         3. Restart the application
+        """)
+        
+        # Show example .env format
+        st.markdown("**Example .env file:**")
+        st.code("""
+# Groq API Configuration
+GROQ_API_KEY=gsk_your_actual_api_key_here
         """)
     
     st.markdown("---")
@@ -42,24 +52,14 @@ def render_settings_sidebar():
     )
     st.session_state.analysis_depth = analysis_depth
     
-    # Model selection with enhanced display
-    st.markdown("**🤖 AI Model Selection**")
-    groq_models = [
-        "llama-3.1-70b-versatile",
-        "llama-3.1-8b-instant", 
-        "llama-3.1-405b-reasoning"
-    ]
-    
-    selected_model = st.selectbox(
-        "Choose AI Model:",
-        groq_models,
-        index=0,
-        help="Select the Groq model for analysis"
-    )
+    # Model selection - Fixed to llama-3.1-70b-versatile
+    st.markdown("**🤖 AI Model**")
+    selected_model = "llama-3.1-70b-versatile"
     st.session_state.selected_model = selected_model
     
     # Show current model info
     st.info(f"**Current Model:** {selected_model}")
+    st.markdown("*This is the default and recommended model for best performance.*")
     
     # Show tool usage with enhanced styling
     st.markdown("**🔧 Tool Usage Display**")

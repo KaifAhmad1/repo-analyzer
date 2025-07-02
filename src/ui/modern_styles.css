@@ -2,38 +2,40 @@
 
 /* Global Styles */
 :root {
-    --primary-color: #1f77b4;
-    --secondary-color: #ff7f0e;
-    --success-color: #2ca02c;
-    --warning-color: #d62728;
-    --info-color: #17a2b8;
-    --light-color: #f8f9fa;
-    --dark-color: #343a40;
+    --primary-color: #2563eb;
+    --secondary-color: #f59e0b;
+    --success-color: #059669;
+    --warning-color: #dc2626;
+    --info-color: #0891b2;
+    --light-color: #f8fafc;
+    --dark-color: #1e293b;
     --border-radius: 12px;
     --box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     --transition: all 0.3s ease;
-    --sidebar-bg: #f8f9fa;
+    --sidebar-bg: #f1f5f9;
     --card-bg: #ffffff;
-    --text-primary: #2c3e50;
-    --text-secondary: #6c757d;
-    --accent-color: #667eea;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --accent-color: #3b82f6;
+    --sidebar-width: 350px;
 }
 
-/* Enhanced Typography */
+/* Enhanced Typography with better visibility */
 * {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
     line-height: 1.6;
+    color: var(--text-primary);
 }
 
-/* Header Styles */
+/* Enhanced Header Styles */
 .header-container {
     text-align: center;
     padding: 3rem 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     color: white;
     border-radius: 20px;
     margin-bottom: 3rem;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
 }
 
 .header-title {
@@ -43,6 +45,7 @@
     text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     letter-spacing: -1px;
     line-height: 1.2;
+    color: white !important;
 }
 
 .header-subtitle {
@@ -51,31 +54,33 @@
     margin-bottom: 0 !important;
     font-weight: 400;
     letter-spacing: 0.5px;
+    color: white !important;
 }
 
 /* Enhanced Tab Styling */
 .stSelectbox > div > div > div {
     border-radius: var(--border-radius);
-    border: 3px solid #e9ecef;
+    border: 3px solid #e2e8f0;
     transition: var(--transition);
     font-size: 16px;
     font-weight: 600;
     padding: 12px 16px;
     background: var(--card-bg);
     box-shadow: var(--box-shadow);
+    color: var(--text-primary);
 }
 
 .stSelectbox > div > div > div:focus-within {
     border-color: var(--accent-color);
-    box-shadow: 0 0 0 0.3rem rgba(102, 126, 234, 0.25);
+    box-shadow: 0 0 0 0.3rem rgba(59, 130, 246, 0.25);
     transform: translateY(-2px);
 }
 
-/* Section Headers */
+/* Section Headers with better visibility */
 .stMarkdown h2 {
     font-size: 2.2rem !important;
     font-weight: 700 !important;
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
     margin-bottom: 1rem !important;
     padding-bottom: 0.5rem;
     border-bottom: 3px solid var(--accent-color);
@@ -85,7 +90,7 @@
 .stMarkdown h3 {
     font-size: 1.5rem !important;
     font-weight: 600 !important;
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
     margin-bottom: 1rem !important;
     padding: 0.5rem 0;
     background: linear-gradient(90deg, var(--accent-color), transparent);
@@ -93,17 +98,19 @@
     border-radius: 8px;
 }
 
-/* Sidebar Organization */
+/* Enhanced Sidebar Organization - Broader */
 .sidebar {
     background: var(--sidebar-bg);
     border-radius: 20px;
-    padding: 1.5rem;
+    padding: 2rem;
     margin: 1rem 0;
     box-shadow: var(--box-shadow);
+    min-width: var(--sidebar-width);
+    max-width: var(--sidebar-width);
 }
 
 .sidebar h2, .sidebar h3 {
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
     font-weight: 700;
     margin-bottom: 1.5rem;
     font-size: 1.4rem;
@@ -117,7 +124,7 @@
     padding: 2rem;
     margin-bottom: 1.5rem;
     box-shadow: var(--box-shadow);
-    border: 1px solid #e9ecef;
+    border: 1px solid #e2e8f0;
     transition: var(--transition);
 }
 
@@ -126,7 +133,7 @@
     transform: translateY(-3px);
 }
 
-/* Enhanced Button Styles */
+/* Enhanced Button Styles with better contrast */
 .stButton > button {
     border-radius: 12px;
     font-weight: 700;
@@ -137,6 +144,7 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     letter-spacing: 0.3px;
     text-transform: none;
+    color: white;
 }
 
 .stButton > button:hover {
@@ -144,7 +152,7 @@
     box-shadow: 0 12px 30px rgba(0,0,0,0.2);
 }
 
-/* Primary buttons */
+/* Primary buttons with better colors */
 .stButton > button[data-baseweb="button"] {
     font-size: 18px !important;
     padding: 16px 32px !important;
@@ -152,10 +160,10 @@
     font-weight: 700 !important;
     letter-spacing: 0.5px !important;
     background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
-    color: white;
+    color: white !important;
 }
 
-/* Sidebar Button Organization */
+/* Sidebar Button Organization - Enhanced */
 .sidebar .stButton > button {
     margin-bottom: 0.75rem;
     width: 100%;
@@ -163,36 +171,42 @@
     padding: 12px 16px !important;
     min-height: 50px !important;
     border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+    color: white !important;
 }
 
-/* Enhanced Input Styles */
+/* Enhanced Input Styles with better visibility */
 .stTextInput > div > div > input {
     border-radius: var(--border-radius);
-    border: 3px solid #e9ecef;
+    border: 3px solid #e2e8f0;
     transition: var(--transition);
     font-size: 16px;
     padding: 14px 16px;
     font-weight: 500;
+    color: var(--text-primary);
+    background: var(--card-bg);
 }
 
 .stTextInput > div > div > input:focus {
     border-color: var(--accent-color);
-    box-shadow: 0 0 0 0.3rem rgba(102, 126, 234, 0.25);
+    box-shadow: 0 0 0 0.3rem rgba(59, 130, 246, 0.25);
     transform: translateY(-2px);
 }
 
 .stTextArea > div > div > textarea {
     border-radius: var(--border-radius);
-    border: 3px solid #e9ecef;
+    border: 3px solid #e2e8f0;
     transition: var(--transition);
     font-size: 16px;
     padding: 14px 16px;
     font-weight: 500;
+    color: var(--text-primary);
+    background: var(--card-bg);
 }
 
 .stTextArea > div > div > textarea:focus {
     border-color: var(--accent-color);
-    box-shadow: 0 0 0 0.3rem rgba(102, 126, 234, 0.25);
+    box-shadow: 0 0 0 0.3rem rgba(59, 130, 246, 0.25);
     transform: translateY(-2px);
 }
 
@@ -218,7 +232,7 @@
     padding: 1.5rem;
     margin-bottom: 1.5rem;
     box-shadow: var(--box-shadow);
-    border: 1px solid #e9ecef;
+    border: 1px solid #e2e8f0;
 }
 
 .chat-message {
@@ -236,19 +250,21 @@
 }
 
 .chat-message.user {
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
     border-left-color: var(--info-color);
+    color: var(--text-primary);
 }
 
 .chat-message.ai {
-    background: linear-gradient(135deg, #f0f8ff, #e6f3ff);
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
     border-left-color: var(--primary-color);
+    color: var(--text-primary);
 }
 
 /* Enhanced Quick Questions */
 .quick-question {
-    background: linear-gradient(135deg, var(--light-color), #e9ecef);
-    border: 2px solid #e9ecef;
+    background: linear-gradient(135deg, var(--light-color), #e2e8f0);
+    border: 2px solid #e2e8f0;
     border-radius: var(--border-radius);
     padding: 1rem;
     margin-bottom: 0.75rem;
@@ -256,6 +272,7 @@
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
+    color: var(--text-primary);
 }
 
 .quick-question:hover {
@@ -267,7 +284,7 @@
 
 /* Enhanced Progress and Status */
 .progress-container {
-    background: linear-gradient(135deg, var(--light-color), #e9ecef);
+    background: linear-gradient(135deg, var(--light-color), #e2e8f0);
     border-radius: var(--border-radius);
     padding: 1.5rem;
     margin: 1.5rem 0;
@@ -275,11 +292,11 @@
     box-shadow: var(--box-shadow);
 }
 
-/* Enhanced Messages */
+/* Enhanced Messages with better contrast */
 .error-message {
-    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
-    color: #721c24;
-    border: 2px solid #f5c6cb;
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    color: #991b1b;
+    border: 2px solid #fecaca;
     border-radius: var(--border-radius);
     padding: 1.5rem;
     margin: 1.5rem 0;
@@ -288,9 +305,9 @@
 }
 
 .success-message {
-    background: linear-gradient(135deg, #d4edda, #c3e6cb);
-    color: #155724;
-    border: 2px solid #c3e6cb;
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    color: #166534;
+    border: 2px solid #bbf7d0;
     border-radius: var(--border-radius);
     padding: 1.5rem;
     margin: 1.5rem 0;
@@ -299,9 +316,9 @@
 }
 
 .warning-message {
-    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
-    color: #856404;
-    border: 2px solid #ffeaa7;
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    color: #92400e;
+    border: 2px solid #fde68a;
     border-radius: var(--border-radius);
     padding: 1.5rem;
     margin: 1.5rem 0;
@@ -310,9 +327,9 @@
 }
 
 .info-message {
-    background: linear-gradient(135deg, #d1ecf1, #bee5eb);
-    color: #0c5460;
-    border: 2px solid #bee5eb;
+    background: linear-gradient(135deg, #ecfeff, #cffafe);
+    color: #164e63;
+    border: 2px solid #a5f3fc;
     border-radius: var(--border-radius);
     padding: 1.5rem;
     margin: 1.5rem 0;
@@ -331,18 +348,18 @@
 }
 
 .server-status.running {
-    background: linear-gradient(135deg, #d4edda, #c3e6cb);
-    color: #155724;
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    color: #166534;
 }
 
 .server-status.stopped {
-    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
-    color: #721c24;
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    color: #991b1b;
 }
 
 /* Enhanced Spinner */
 .stSpinner > div {
-    border: 4px solid #f3f3f3;
+    border: 4px solid #e2e8f0;
     border-top: 4px solid var(--accent-color);
     border-radius: 50%;
     width: 40px;
@@ -355,13 +372,13 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Enhanced Metrics */
+/* Enhanced Metrics with better visibility */
 .stMetric {
     background: var(--card-bg);
     border-radius: var(--border-radius);
     padding: 1.5rem;
     box-shadow: var(--box-shadow);
-    border: 1px solid #e9ecef;
+    border: 1px solid #e2e8f0;
     text-align: center;
     transition: var(--transition);
 }
@@ -374,37 +391,39 @@
 .stMetric > div > div > div {
     font-size: 2rem !important;
     font-weight: 700 !important;
-    color: var(--accent-color);
+    color: var(--accent-color) !important;
 }
 
 .stMetric > div > div > div + div {
     font-size: 1rem !important;
     font-weight: 600 !important;
-    color: var(--text-secondary);
+    color: var(--text-secondary) !important;
 }
 
 /* Enhanced Code Blocks */
 .stCodeBlock {
-    background: #f8f9fa;
-    border: 2px solid #e9ecef;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
     border-radius: var(--border-radius);
     padding: 1rem;
     font-family: 'Courier New', monospace;
     font-size: 14px;
     overflow-x: auto;
     box-shadow: var(--box-shadow);
+    color: var(--text-primary);
 }
 
 /* Enhanced JSON Display */
 .stJson {
-    background: #f8f9fa;
-    border: 2px solid #e9ecef;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
     border-radius: var(--border-radius);
     padding: 1rem;
     font-family: 'Courier New', monospace;
     font-size: 13px;
     overflow-x: auto;
     box-shadow: var(--box-shadow);
+    color: var(--text-primary);
 }
 
 /* Enhanced Responsive Design */
@@ -429,6 +448,11 @@
     .stMarkdown h3 {
         font-size: 1.3rem !important;
     }
+    
+    .sidebar {
+        min-width: 100%;
+        max-width: 100%;
+    }
 }
 
 /* Enhanced Utility Classes */
@@ -448,7 +472,7 @@
 .p-2 { padding: 1.5rem; }
 .p-3 { padding: 2rem; }
 
-/* Enhanced Status Colors */
+/* Enhanced Status Colors with better contrast */
 .status-success {
     color: var(--success-color);
     font-weight: 700;
@@ -483,14 +507,14 @@
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: #f1f5f9;
     border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
     background: var(--accent-color);
     border-radius: 6px;
-    border: 2px solid #f1f1f1;
+    border: 2px solid #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -509,13 +533,14 @@
 
 /* Enhanced Tool Usage Display */
 .tool-usage {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(23, 162, 184, 0.1));
-    border: 2px solid rgba(102, 126, 234, 0.3);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(8, 145, 178, 0.1));
+    border: 2px solid rgba(59, 130, 246, 0.3);
     border-radius: var(--border-radius);
     padding: 1rem;
     margin: 1rem 0;
     font-size: 14px;
     font-weight: 600;
+    color: var(--text-primary);
 }
 
 .tool-usage strong {
@@ -529,7 +554,7 @@
     padding: 1.5rem;
     margin: 1rem 0;
     box-shadow: var(--box-shadow);
-    border: 2px solid #e9ecef;
+    border: 2px solid #e2e8f0;
 }
 
 .config-section h4 {
@@ -538,4 +563,51 @@
     margin-bottom: 1rem;
     font-size: 1.2rem;
     letter-spacing: -0.2px;
+}
+
+/* Enhanced API Configuration Display */
+.api-config {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    border: 2px solid #e2e8f0;
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin: 1rem 0;
+    box-shadow: var(--box-shadow);
+}
+
+.api-config.success {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border-color: #bbf7d0;
+}
+
+.api-config.error {
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    border-color: #fecaca;
+}
+
+/* Enhanced Text Visibility */
+.stMarkdown p, .stMarkdown div, .stMarkdown span {
+    color: var(--text-primary) !important;
+}
+
+.stMarkdown strong, .stMarkdown b {
+    color: var(--text-primary) !important;
+    font-weight: 700 !important;
+}
+
+.stMarkdown em, .stMarkdown i {
+    color: var(--text-secondary) !important;
+    font-style: italic !important;
+}
+
+/* Enhanced Checkbox Styling */
+.stCheckbox > div > div > div {
+    color: var(--text-primary) !important;
+    font-weight: 500 !important;
+}
+
+/* Enhanced Label Styling */
+.stMarkdown label {
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
 } 
