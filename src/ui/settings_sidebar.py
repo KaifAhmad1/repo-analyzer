@@ -9,118 +9,133 @@ from src.utils.config import get_groq_api_key, has_required_keys
 from src.servers.server_manager import get_servers_status, start_mcp_servers, stop_mcp_servers, restart_mcp_servers
 
 def render_settings_sidebar():
-    """Render the clean settings sidebar with essential controls"""
+    """Render the enhanced settings sidebar with system status"""
+    st.markdown("## ⚙️ Settings & Status")
     
-    # Essential Settings with enhanced organization
-    st.markdown("### ⚙️ Analysis Settings")
+    # System Health Section
+    st.markdown("### 🏥 System Health")
     
-    # Analysis depth with enhanced slider
-    st.markdown("**🔍 Analysis Depth**")
+    try:
+        server_status = get_servers_status()
+        
+        # Calculate health percentage
+        health_percentage = (server_status['running_servers'] / server_status['total_servers']) * 100 if server_status['total_servers'] > 0 else 0
+        
+        # Health indicator
+        if health_percentage >= 80:
+            health_color = "green"
+            health_icon = "✅"
+        elif health_percentage >= 50:
+            health_color = "orange"
+            health_icon = "⚠️"
+        else:
+            health_color = "red"
+            health_icon = "❌"
+        
+        st.markdown(f"""
+        <div style="text-align: center; padding: 15px; border: 2px solid {health_color}; border-radius: 10px; background-color: #f8f9fa;">
+            <div style="font-size: 32px; margin-bottom: 10px;">{health_icon}</div>
+            <div style="font-size: 24px; font-weight: bold; color: {health_color}; margin-bottom: 5px;">{health_percentage:.0f}%</div>
+            <div style="font-size: 14px; color: #666;">System Health</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Server status details
+        st.markdown("#### 📊 Server Details")
+        for server_name, server_info in server_status['servers'].items():
+            server_icon = {
+                'file_content': '📄',
+                'repository_structure': '📁',
+                'commit_history': '📝',
+                'code_search': '🔍'
+            }.get(server_name, '🖥️')
+            
+            status_icon = "✅" if server_info['running'] else "❌"
+            status_color = "green" if server_info['running'] else "red"
+            
+            st.markdown(f"{server_icon} **{server_name.replace('_', ' ').title()}:** {status_icon} {server_info['status']}")
+        
+        # Store health percentage for other components
+        st.session_state.system_health = health_percentage
+        
+    except Exception as e:
+        st.error(f"❌ Error getting server status: {str(e)}")
+        st.session_state.system_health = 0
+    
+    st.markdown("---")
+    
+    # Analysis Settings
+    st.markdown("### 🔍 Analysis Settings")
+    
+    # Analysis depth
     analysis_depth = st.slider(
-        "How deep to analyze:",
+        "Analysis Depth:",
         min_value=1,
         max_value=5,
-        value=3,
-        help="Controls how deep the analysis explores the repository structure"
+        value=st.session_state.get("analysis_depth", 3),
+        help="How deep to analyze the repository structure"
     )
     st.session_state.analysis_depth = analysis_depth
     
-    # Model selection - Fixed to llama-3.1-70b-versatile
-    st.markdown("**🤖 AI Model**")
-    selected_model = "llama-3.1-70b-versatile"
+    # Model selection
+    model_options = [
+        "llama-3.1-70b-versatile",
+        "llama-3.1-8b-versatile",
+        "mixtral-8x7b-32768",
+        "gemma-7b-it"
+    ]
+    
+    selected_model = st.selectbox(
+        "AI Model:",
+        model_options,
+        index=0,
+        help="Select the AI model for analysis"
+    )
     st.session_state.selected_model = selected_model
     
-    # Show current model info
-    st.info(f"**Current Model:** {selected_model}")
-    st.markdown("*This is the default and recommended model for best performance.*")
-    
-    # Show tool usage with enhanced styling
-    st.markdown("**🔧 Tool Usage Display**")
+    # Show tool usage toggle
     show_tool_usage = st.checkbox(
-        "Show which tools were used",
-        value=True,
-        help="Display which MCP tools were used in AI responses"
+        "Show Tool Usage",
+        value=st.session_state.get("show_tool_usage", True),
+        help="Display which tools were used in each analysis"
     )
     st.session_state.show_tool_usage = show_tool_usage
     
-    # Server Management Section
+    # Auto-start servers toggle
+    auto_start_servers = st.checkbox(
+        "Auto-start Servers",
+        value=st.session_state.get("auto_start_servers", True),
+        help="Automatically start MCP servers if they're offline"
+    )
+    st.session_state.auto_start_servers = auto_start_servers
+    
     st.markdown("---")
-    st.markdown("### 🖥️ Server Management")
     
-    # Get current server status
-    server_status = get_servers_status()
+    # Quick Actions
+    st.markdown("### ⚡ Quick Actions")
     
-    # Server status overview
-    st.markdown(f"**📊 Server Status:** {server_status['running_servers']}/{server_status['total_servers']} Active")
-    
-    # Individual server controls
-    for server_name, server_info in server_status["servers"].items():
-        col1, col2 = st.columns([3, 1])
-        
-        with col1:
-            status_icon = "🟢" if server_info["running"] else "🔴"
-            st.write(f"{status_icon} {server_info['name']}")
-        
-        with col2:
-            if server_info["running"]:
-                if st.button("⏹️", key=f"stop_{server_name}", help=f"Stop {server_info['name']}"):
-                    stop_mcp_servers([server_name])
-                    st.rerun()
-            else:
-                if st.button("▶️", key=f"start_{server_name}", help=f"Start {server_info['name']}"):
-                    start_mcp_servers([server_name])
-                    st.rerun()
-    
-    # Bulk server controls
-    st.markdown("**⚡ Quick Actions:**")
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
     
     with col1:
-        if st.button("▶️ Start All", use_container_width=True):
-            start_mcp_servers()
+        if st.button("🔄 Refresh Status", use_container_width=True):
             st.rerun()
     
     with col2:
-        if st.button("⏹️ Stop All", use_container_width=True):
-            stop_mcp_servers()
-            st.rerun()
+        if st.button("🚀 Start All Servers", use_container_width=True):
+            try:
+                start_mcp_servers()
+                st.success("✅ All servers started!")
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ Error starting servers: {str(e)}")
     
-    with col3:
-        if st.button("🔄 Restart All", use_container_width=True):
-            restart_mcp_servers()
-            st.rerun()
-    
-    # System Information
-    st.markdown("---")
-    st.markdown("### ℹ️ System Info")
-    
-    # API Key Status
-    api_key_status = "✅ Configured" if has_required_keys() else "❌ Missing"
-    st.markdown(f"**🔑 API Keys:** {api_key_status}")
-    
-    # Server Health
-    total_servers = server_status['total_servers']
-    running_servers = server_status['running_servers']
-    health_percentage = (running_servers / total_servers) * 100 if total_servers > 0 else 0
-    
-    st.markdown(f"**🏥 System Health:** {health_percentage:.0f}%")
-    
-    if health_percentage == 100:
-        st.success("✅ All systems operational")
-    elif health_percentage > 50:
-        st.warning("⚠️ Some servers offline")
-    else:
-        st.error("❌ Multiple servers offline")
-    
-    # Return current configuration
+    # Return settings for use in main app
     return {
-        "groq_api_key": get_groq_api_key(),
-        "config_valid": has_required_keys(),
-        "selected_model": st.session_state.get("selected_model", "llama-3.1-70b-versatile"),
-        "analysis_depth": st.session_state.get("analysis_depth", 3),
-        "show_tool_usage": st.session_state.get("show_tool_usage", True),
-        "server_status": server_status,
-        "system_health": health_percentage
+        "analysis_depth": analysis_depth,
+        "selected_model": selected_model,
+        "show_tool_usage": show_tool_usage,
+        "auto_start_servers": auto_start_servers,
+        "system_health": st.session_state.get("system_health", 0)
     }
 
 def validate_api_keys():

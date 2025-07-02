@@ -105,7 +105,7 @@ def render_chat_interface(repo_url: Optional[str] = None) -> None:
 
 # --- Process Question with enhanced spinners ---
 def process_question(question: str, repo_url: str, mode: str = "chat") -> None:
-    """Process a question and get AI response with enhanced progress tracking"""
+    """Process a question and get AI response with enhanced progress tracking and tool status updates"""
     st.session_state.chat_history.append({
         "role": "user",
         "content": question,
@@ -153,8 +153,11 @@ def process_question(question: str, repo_url: str, mode: str = "chat") -> None:
             status_text.text("🧠 Generating comprehensive response...")
             progress_bar.progress(70)
             
+            def status_callback(msg):
+                status_text.text(f"🛠️ {msg}")
+            
             with st.spinner("🤖 AI is thinking..."):
-                response, tools_used = ask_repository_question(question, repo_url)
+                response, tools_used = ask_repository_question(question, repo_url, status_callback=status_callback)
             
             # Stage 6: Completion
             status_text.text("✅ Response ready!")
@@ -259,14 +262,45 @@ def display_chat_history() -> None:
                 
                 # Enhanced tool and server usage display
                 if message.get("tools_used") and st.session_state.get("show_tool_usage", True):
-                    st.markdown("**🔧 Tools Used:**")
+                    st.markdown("**🔧 Analysis Tools Used:**")
+                    # Group tools by server
+                    server_tools = {}
                     for tool in message["tools_used"]:
-                        st.write(f"• {tool}")
+                        if '.' in tool:
+                            server, tool_name = tool.split('.', 1)
+                            if server not in server_tools:
+                                server_tools[server] = []
+                            server_tools[server].append(tool_name)
+                        else:
+                            if 'unknown' not in server_tools:
+                                server_tools['unknown'] = []
+                            server_tools['unknown'].append(tool)
+                    
+                    # Display grouped by server
+                    for server, tools in server_tools.items():
+                        server_icon = {
+                            'file_content': '📄',
+                            'repository_structure': '📁',
+                            'commit_history': '📝',
+                            'code_search': '🔍',
+                            'unknown': '❓'
+                        }.get(server, '🔧')
+                        
+                        st.markdown(f"**{server_icon} {server.replace('_', ' ').title()} Server:**")
+                        for tool in tools:
+                            st.write(f"  - {tool}")
+                        st.markdown("")
                 
                 if message.get("servers_used"):
-                    st.markdown("**🖥️ MCP Servers Used:**")
+                    st.markdown("**🖥️ Active MCP Servers:**")
                     for server in message["servers_used"]:
-                        st.write(f"• {server}")
+                        server_icon = {
+                            'file_content': '📄',
+                            'repository_structure': '📁',
+                            'commit_history': '📝',
+                            'code_search': '🔍'
+                        }.get(server, '🖥️')
+                        st.write(f"• {server_icon} {server.replace('_', ' ').title()}")
 
 def format_timestamp(timestamp: str) -> str:
     """Format timestamp for display"""

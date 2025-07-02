@@ -15,9 +15,44 @@ from src.agent.ai_agent import (
     ask_repository_question,
     generate_repository_summary,
     analyze_repository_patterns,
-    create_analyzer_agent
+    create_analyzer_agent,
+    quick_repository_analysis
 )
 from src.servers.server_manager import get_servers_status, start_mcp_servers
+
+def display_tools_used(tools_used):
+    """Helper function to display tools used grouped by server"""
+    if not tools_used:
+        return
+    
+    st.markdown("#### 🔧 Analysis Tools Used:")
+    # Group tools by server
+    server_tools = {}
+    for tool in tools_used:
+        if '.' in tool:
+            server, tool_name = tool.split('.', 1)
+            if server not in server_tools:
+                server_tools[server] = []
+            server_tools[server].append(tool_name)
+        else:
+            if 'unknown' not in server_tools:
+                server_tools['unknown'] = []
+            server_tools['unknown'].append(tool)
+    
+    # Display grouped by server
+    for server, tools in server_tools.items():
+        server_icon = {
+            'file_content': '📄',
+            'repository_structure': '📁',
+            'commit_history': '📝',
+            'code_search': '🔍',
+            'unknown': '❓'
+        }.get(server, '🔧')
+        
+        st.markdown(f"**{server_icon} {server.replace('_', ' ').title()} Server:**")
+        for tool in tools:
+            st.markdown(f"  - {tool}")
+        st.markdown("")
 
 # Page config
 st.set_page_config(
@@ -102,6 +137,45 @@ server_status = get_servers_status()
 if server_status['running_servers'] < server_status['total_servers']:
     st.warning(f"⚠️ {server_status['total_servers'] - server_status['running_servers']} MCP servers are offline. Some features may be limited.")
 
+# Enhanced System Status Display
+st.markdown("### 🔧 System Status")
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.metric("🖥️ Total Servers", server_status['total_servers'])
+with col2:
+    st.metric("✅ Running", server_status['running_servers'])
+with col3:
+    st.metric("❌ Offline", server_status['total_servers'] - server_status['running_servers'])
+with col4:
+    health_percentage = (server_status['running_servers'] / server_status['total_servers']) * 100
+    st.metric("🏥 Health", f"{health_percentage:.0f}%")
+
+# Show individual server status
+st.markdown("#### 📊 MCP Server Status")
+server_cols = st.columns(len(server_status['servers']))
+for i, (server_name, server_info) in enumerate(server_status['servers'].items()):
+    with server_cols[i]:
+        server_icon = {
+            'file_content': '📄',
+            'repository_structure': '📁',
+            'commit_history': '📝',
+            'code_search': '🔍'
+        }.get(server_name, '🖥️')
+        
+        status_icon = "✅" if server_info['running'] else "❌"
+        status_color = "green" if server_info['running'] else "red"
+        
+        st.markdown(f"""
+        <div style="text-align: center; padding: 10px; border: 1px solid #ddd; border-radius: 8px; background-color: {'#f0f9ff' if server_info['running'] else '#fef2f2'};">
+            <div style="font-size: 24px;">{server_icon}</div>
+            <div style="font-weight: bold; margin: 5px 0;">{server_name.replace('_', ' ').title()}</div>
+            <div style="color: {status_color}; font-weight: bold;">{status_icon} {server_info['status']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+st.markdown("---")
+
 # Simplified tabs - only core functionality
 st.markdown("### 🎯 Choose Your Analysis Tool")
 st.markdown("Select the feature you want to use for repository analysis:")
@@ -164,80 +238,125 @@ elif tab_index == 1:
         # Run analysis if requested
         if st.session_state.get("run_analysis", False):
             st.session_state.run_analysis = False
-            tools = FastMCPTools()
             
             # Enhanced progress display
-            with st.spinner("🔄 Initializing analysis..."):
+            with st.spinner("🔄 Initializing AI analysis..."):
                 progress_container = st.container()
                 with progress_container:
                     progress_bar = st.progress(0)
                     status_text = st.empty()
                     
                     try:
+                        status_text.text("🔍 AI agent is analyzing repository...")
+                        progress_bar.progress(25)
+                        
+                        # Use enhanced AI agent for analysis
                         if analysis_type == "Repository Overview":
-                            status_text.text("📊 Analyzing repository overview...")
-                            progress_bar.progress(25)
+                            status_text.text("📊 Generating comprehensive overview...")
+                            progress_bar.progress(50)
                             
-                            with st.spinner("🔍 Gathering repository information..."):
-                                overview = tools.get_repository_overview(repo_url)
+                            def status_callback(msg):
+                                status_text.text(msg)
+                            
+                            with st.spinner("🤖 AI is analyzing repository structure..."):
+                                analysis_result, tools_used = quick_repository_analysis(repo_url, status_callback=status_callback)
                             
                             progress_bar.progress(100)
                             st.success("✅ Repository overview complete!")
                             
                             st.markdown("### 📊 Repository Overview")
-                            st.json(overview)
+                            st.markdown(analysis_result)
                             
+                            # Show tools used
+                            display_tools_used(tools_used)
+                        
                         elif analysis_type == "File Structure":
                             status_text.text("📁 Analyzing file structure...")
-                            progress_bar.progress(25)
+                            progress_bar.progress(50)
                             
-                            with st.spinner("📂 Exploring directory structure..."):
-                                structure = tools.get_file_structure(repo_url)
+                            def status_callback(msg):
+                                status_text.text(msg)
+                            
+                            with st.spinner("🤖 AI is analyzing file organization..."):
+                                analysis_result, tools_used = ask_repository_question(
+                                    "Analyze the file structure and explain how the project is organized. What are the main directories and their purposes?", 
+                                    repo_url,
+                                    status_callback=status_callback
+                                )
                             
                             progress_bar.progress(100)
                             st.success("✅ File structure analysis complete!")
                             
-                            st.markdown("### 📁 File Structure")
-                            st.json(structure)
+                            st.markdown("### 📁 File Structure Analysis")
+                            st.markdown(analysis_result)
                             
+                            # Show tools used
+                            display_tools_used(tools_used)
+                        
                         elif analysis_type == "Dependencies":
                             status_text.text("📦 Analyzing dependencies...")
-                            progress_bar.progress(25)
+                            progress_bar.progress(50)
                             
-                            with st.spinner("🔗 Scanning project dependencies..."):
-                                deps = tools.search_dependencies(repo_url)
+                            def status_callback(msg):
+                                status_text.text(msg)
+                            
+                            with st.spinner("🤖 AI is analyzing project dependencies..."):
+                                analysis_result, tools_used = ask_repository_question(
+                                    "What dependencies does this project use? Analyze the package files and explain the purpose of key dependencies.", 
+                                    repo_url,
+                                    status_callback=status_callback
+                                )
                             
                             progress_bar.progress(100)
                             st.success("✅ Dependency analysis complete!")
                             
-                            st.markdown("### 📦 Dependencies")
-                            st.json(deps)
+                            st.markdown("### 📦 Dependencies Analysis")
+                            st.markdown(analysis_result)
                             
+                            # Show tools used
+                            display_tools_used(tools_used)
+                        
                         elif analysis_type == "Code Patterns":
                             status_text.text("🔍 Analyzing code patterns...")
-                            progress_bar.progress(25)
+                            progress_bar.progress(50)
                             
-                            with st.spinner("🔎 Searching for code patterns..."):
-                                patterns = tools.get_code_metrics(repo_url)
+                            def status_callback(msg):
+                                status_text.text(msg)
+                            
+                            with st.spinner("🤖 AI is analyzing code patterns and architecture..."):
+                                analysis_result, tools_used = analyze_repository_patterns(repo_url, status_callback=status_callback)
                             
                             progress_bar.progress(100)
                             st.success("✅ Code pattern analysis complete!")
                             
-                            st.markdown("### 🔍 Code Patterns")
-                            st.json(patterns)
+                            st.markdown("### 🔍 Code Patterns Analysis")
+                            st.markdown(analysis_result)
                             
+                            # Show tools used
+                            display_tools_used(tools_used)
+                        
                         elif analysis_type == "Commit History":
                             status_text.text("📝 Analyzing commit history...")
-                            progress_bar.progress(25)
+                            progress_bar.progress(50)
                             
-                            with st.spinner("📊 Gathering commit data..."):
-                                commits = tools.get_recent_commits(repo_url, limit=20)
+                            def status_callback(msg):
+                                status_text.text(msg)
+                            
+                            with st.spinner("🤖 AI is analyzing development activity..."):
+                                analysis_result, tools_used = ask_repository_question(
+                                    "Analyze the recent commit history. What are the main development activities, who are the contributors, and what patterns do you see in the commits?", 
+                                    repo_url,
+                                    status_callback=status_callback
+                                )
                             
                             progress_bar.progress(100)
                             st.success("✅ Commit history analysis complete!")
                             
-                            st.markdown("### 📝 Recent Commits")
-                            st.json(commits)
+                            st.markdown("### 📝 Commit History Analysis")
+                            st.markdown(analysis_result)
+                            
+                            # Show tools used
+                            display_tools_used(tools_used)
                         
                         # Clear progress indicators
                         progress_bar.empty()
@@ -289,26 +408,38 @@ elif tab_index == 2:
                         
                         # Generate summary based on type
                         if summary_type == "Complete Overview":
-                            summary = analyze_repository(repo_url)
+                            def status_callback(msg):
+                                status_text.text(msg)
+                            summary_result, tools_used = generate_repository_summary(repo_url, status_callback=status_callback)
                         elif summary_type == "Technical Analysis":
-                            tools = FastMCPTools()
-                            summary = tools.get_code_metrics(repo_url)
+                            def status_callback(msg):
+                                status_text.text(msg)
+                            summary_result, tools_used = analyze_repository_patterns(repo_url, status_callback=status_callback)
                         elif summary_type == "Code Quality Report":
-                            tools = FastMCPTools()
-                            summary = tools.get_code_metrics(repo_url)
+                            def status_callback(msg):
+                                status_text.text(msg)
+                            summary_result, tools_used = ask_repository_question(
+                                "Generate a comprehensive code quality report. Analyze code metrics, complexity, maintainability, testing coverage, and provide specific recommendations for improvement.", 
+                                repo_url,
+                                status_callback=status_callback
+                            )
                         else:  # Architecture Review
-                            tools = FastMCPTools()
-                            summary = tools.analyze_project_structure(repo_url)
+                            def status_callback(msg):
+                                status_text.text(msg)
+                            summary_result, tools_used = ask_repository_question(
+                                "Provide a detailed architecture review. Analyze the system design, component relationships, design patterns used, scalability considerations, and architectural recommendations.", 
+                                repo_url,
+                                status_callback=status_callback
+                            )
                         
                         status_text.text("✅ Summary complete!")
                         progress_bar.progress(100)
                         
                         st.markdown(f"### 📊 {summary_type}")
-                        st.markdown(f"""
-                        <div style="background-color: #f0f9ff; border-left: 4px solid #10b981; padding: 1rem; border-radius: 8px; margin: 0.5rem 0;">
-                            {summary}
-                        </div>
-                        """, unsafe_allow_html=True)
+                        st.markdown(summary_result)
+                        
+                        # Show tools used with enhanced display
+                        display_tools_used(tools_used)
                         
                         progress_bar.empty()
                         status_text.empty()

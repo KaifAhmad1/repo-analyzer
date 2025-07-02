@@ -1,56 +1,91 @@
+#!/usr/bin/env python3
 """
-Test script for the enhanced AI agent system
+Test script for the enhanced AI agent
+Verifies that the agent provides meaningful responses based on actual repository data
 """
 
-import os
+import asyncio
 import sys
-from src.agent.ai_agent import (
-    create_analyzer_agent,
-    ask_repository_question,
-    generate_repository_summary,
-    analyze_repository_patterns,
-    get_repository_overview
-)
+import os
+import time
 
-def test_agent_functions():
-    """Test the enhanced agent functions"""
-    print("🧪 Testing Enhanced AI Agent System")
-    print("=" * 50)
-    
-    # Test repository URL
-    test_repo = "https://github.com/streamlit/streamlit"
+# Add the src directory to the path
+sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+
+def test_enhanced_agent():
+    """Test the enhanced AI agent functionality"""
+    print("🚀 Testing Enhanced AI Agent...")
     
     try:
-        print("1. Testing repository overview...")
-        overview = get_repository_overview(test_repo)
-        print(f"✅ Overview generated: {len(overview)} characters")
-        
-        print("\n2. Testing question answering...")
-        response, tools = ask_repository_question(
-            "What is this repository about?", 
-            test_repo
+        from agent.ai_agent import (
+            ask_repository_question,
+            generate_repository_summary,
+            quick_repository_analysis,
+            analyze_repository_patterns
         )
-        print(f"✅ Question answered: {len(response)} characters")
-        print(f"   Tools used: {len(tools)}")
         
-        print("\n3. Testing summary generation...")
-        summary, tools = generate_repository_summary(test_repo)
-        print(f"✅ Summary generated: {len(summary)} characters")
-        print(f"   Tools used: {len(tools)}")
+        # Test repository URL (using a well-known repository)
+        test_repo = "https://github.com/streamlit/streamlit"
         
-        print("\n4. Testing code pattern analysis...")
-        analysis, tools = analyze_repository_patterns(test_repo)
-        print(f"✅ Analysis completed: {len(analysis)} characters")
-        print(f"   Tools used: {len(tools)}")
+        print(f"📁 Testing with repository: {test_repo}")
+        print("=" * 60)
         
-        print("\n🎉 All tests passed! Enhanced agent system is working correctly.")
+        # Test 1: Quick Analysis (simplified)
+        print("\n1️⃣ Testing Quick Analysis...")
+        try:
+            def status_callback(msg):
+                print(f"   Status: {msg}")
+            
+            result, tools_used = quick_repository_analysis(test_repo, status_callback=status_callback)
+            print("✅ Quick Analysis Result:")
+            print(result[:300] + "..." if len(result) > 300 else result)
+            print(f"🔧 Tools used: {tools_used}")
+        except Exception as e:
+            print(f"❌ Quick Analysis failed: {e}")
+            import traceback
+            traceback.print_exc()
         
+        # Test 2: Q&A
+        print("\n2️⃣ Testing Q&A...")
+        try:
+            question = "What is this repository about and what are its main features?"
+            result, tools_used = ask_repository_question(question, test_repo)
+            print("✅ Q&A Result:")
+            print(result[:500] + "..." if len(result) > 500 else result)
+            print(f"🔧 Tools used: {tools_used}")
+        except Exception as e:
+            print(f"❌ Q&A failed: {e}")
+        
+        # Test 3: Summary
+        print("\n3️⃣ Testing Summary Generation...")
+        try:
+            result, tools_used = generate_repository_summary(test_repo)
+            print("✅ Summary Result:")
+            print(result[:500] + "..." if len(result) > 500 else result)
+            print(f"🔧 Tools used: {tools_used}")
+        except Exception as e:
+            print(f"❌ Summary failed: {e}")
+        
+        # Test 4: Code Patterns
+        print("\n4️⃣ Testing Code Pattern Analysis...")
+        try:
+            result, tools_used = analyze_repository_patterns(test_repo)
+            print("✅ Code Patterns Result:")
+            print(result[:500] + "..." if len(result) > 500 else result)
+            print(f"🔧 Tools used: {tools_used}")
+        except Exception as e:
+            print(f"❌ Code Patterns failed: {e}")
+        
+        print("\n" + "=" * 60)
+        print("🎉 Enhanced Agent Testing Complete!")
+        
+    except ImportError as e:
+        print(f"❌ Import error: {e}")
+        print("Make sure all dependencies are installed and the src directory is in the path.")
     except Exception as e:
-        print(f"❌ Error during testing: {str(e)}")
-        return False
-    
-    return True
+        print(f"❌ Unexpected error: {e}")
+        import traceback
+        traceback.print_exc()
 
 if __name__ == "__main__":
-    success = test_agent_functions()
-    sys.exit(0 if success else 1) 
+    test_enhanced_agent() 

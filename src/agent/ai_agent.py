@@ -196,26 +196,28 @@ class RepositoryAnalyzerAgent:
         
         self.storage = SqliteStorage(table_name="repo_analyzer_sessions", db_file="tmp/agent.db")
         
-        # Create the main agent
+        # Create the main agent with enhanced configuration
         self.agent = Agent(
-            name="Repository Analyzer",
             model=Groq(id=model_name),
-            tools=[ReasoningTools(add_instructions=True)],
-            instructions=[
-                "You are an expert GitHub repository analyzer.",
-                "Use the available tools to gather comprehensive information about repositories.",
-                "Provide detailed, accurate, and helpful responses.",
-                "Use tables and structured formatting when presenting data.",
-                "Always include sources and references in your responses.",
-                "Be thorough but concise in your analysis."
-            ],
             memory=self.memory,
             storage=self.storage,
-            enable_agentic_memory=True,
-            add_datetime_to_instructions=True,
-            add_history_to_messages=True,
-            num_history_runs=5,
-            markdown=True,
+            tools=[ReasoningTools()],
+            instructions=[
+                """You are an expert repository analyst with deep knowledge of software development, 
+                code architecture, and best practices. Your role is to analyze GitHub repositories and provide 
+                comprehensive, accurate, and actionable insights.
+
+                When analyzing repositories:
+                1. Always use the available tools to gather real data
+                2. Provide specific examples from the codebase
+                3. Structure your responses clearly with headers and bullet points
+                4. Include actionable recommendations
+                5. Be thorough but concise
+                6. Focus on practical insights that would be valuable to developers
+
+                Never provide generic or placeholder responses. Always base your analysis on actual repository data.
+                """
+            ]
         )
     
     def _create_tool_functions(self, repo_url: str):
@@ -281,11 +283,98 @@ class RepositoryAnalyzerAgent:
             "search_dependencies": search_dependencies,
         }
     
-    def ask_question(self, question: str, repo_url: str, user_id: str = "default") -> Tuple[str, List[str]]:
-        """Ask a question about the repository"""
+    def _gather_repository_data(self, repo_url: str, status_callback=None) -> str:
+        """Gather comprehensive repository data for analysis, with optional status updates"""
+        try:
+            data = {}
+            
+            def update_status(msg):
+                if status_callback:
+                    status_callback(msg)
+            
+            # Get README content
+            update_status("Fetching README content...")
+            readme_result = asyncio.run(self.tools._call_server_tool("file_content", "get_readme_content", repo_url=repo_url))
+            if readme_result.get("success"):
+                data["readme"] = readme_result.get("result", "")
+            
+            # Get file structure
+            update_status("Analyzing file structure...")
+            structure_result = asyncio.run(self.tools._call_server_tool("repository_structure", "get_file_structure", repo_url=repo_url))
+            if structure_result.get("success"):
+                data["file_structure"] = structure_result.get("result", "")
+            
+            # Get directory tree
+            update_status("Building directory tree...")
+            tree_result = asyncio.run(self.tools._call_server_tool("repository_structure", "get_directory_tree", repo_url=repo_url, max_depth=3))
+            if tree_result.get("success"):
+                data["directory_tree"] = tree_result.get("result", "")
+            
+            # Get project structure analysis
+            update_status("Analyzing project structure...")
+            project_result = asyncio.run(self.tools._call_server_tool("repository_structure", "analyze_project_structure", repo_url=repo_url))
+            if project_result.get("success"):
+                data["project_analysis"] = project_result.get("result", "")
+            
+            # Get recent commits
+            update_status("Fetching recent commits...")
+            commits_result = asyncio.run(self.tools._call_server_tool("commit_history", "get_recent_commits", repo_url=repo_url, limit=10))
+            if commits_result.get("success"):
+                data["recent_commits"] = commits_result.get("result", "")
+            
+            # Get commit statistics
+            update_status("Analyzing commit statistics...")
+            stats_result = asyncio.run(self.tools._call_server_tool("commit_history", "get_commit_statistics", repo_url=repo_url, days=30))
+            if stats_result.get("success"):
+                data["commit_statistics"] = stats_result.get("result", "")
+            
+            # Get dependencies
+            update_status("Scanning dependencies...")
+            deps_result = asyncio.run(self.tools._call_server_tool("code_search", "search_dependencies", repo_url=repo_url))
+            if deps_result.get("success"):
+                data["dependencies"] = deps_result.get("result", "")
+            
+            # Get code metrics
+            update_status("Gathering code metrics...")
+            metrics_result = asyncio.run(self.tools._call_server_tool("code_search", "get_code_metrics", repo_url=repo_url))
+            if metrics_result.get("success"):
+                data["code_metrics"] = metrics_result.get("result", "")
+            
+            update_status("Repository data gathering complete.")
+            return json.dumps(data, indent=2)
+        except Exception as e:
+            if status_callback:
+                status_callback(f"Error: {str(e)}")
+            return f"Error gathering repository data: {str(e)}"
+    
+    def ask_question(self, question: str, repo_url: str, user_id: str = "default", status_callback=None) -> Tuple[str, List[str]]:
+        """Ask a question about the repository with enhanced analysis"""
         try:
             # Set user ID for memory
             self.agent.user_id = user_id
+            
+            # First, gather comprehensive repository data
+            repo_data = self._gather_repository_data(repo_url, status_callback=status_callback)
+            
+            # Create enhanced prompt with context
+            enhanced_prompt = f"""
+            You are an expert repository analyst. Use the following repository data to answer the user's question comprehensively.
+
+            REPOSITORY DATA:
+            {repo_data}
+
+            USER QUESTION: {question}
+
+            INSTRUCTIONS:
+            1. Analyze the repository data thoroughly
+            2. Use specific examples from the codebase when relevant
+            3. Provide actionable insights and recommendations
+            4. Structure your response clearly with headers and bullet points
+            5. If the question requires additional data, use the available tools to gather it
+            6. Be specific and avoid generic responses
+
+            Please provide a detailed, well-structured answer based on the actual repository content.
+            """
             
             # Create tool functions for this repository
             tool_functions = self._create_tool_functions(repo_url)
@@ -295,20 +384,54 @@ class RepositoryAnalyzerAgent:
             self.agent.tools = list(original_tools) + list(tool_functions.values())
             
             # Get response
-            response = self.agent.run_response(question, stream=False)
+            response = self.agent.run_response(enhanced_prompt, stream=False)
             
             # Restore original tools
             self.agent.tools = original_tools
             
             return response.content, self.tools.get_tools_used()
         except Exception as e:
-            return f"Error: {str(e)}", []
+            return f"Error analyzing repository: {str(e)}", []
     
-    def generate_summary(self, repo_url: str, user_id: str = "default") -> Tuple[str, List[str]]:
-        """Generate a comprehensive repository summary"""
+    def generate_summary(self, repo_url: str, user_id: str = "default", status_callback=None) -> Tuple[str, List[str]]:
+        """Generate a comprehensive repository summary with enhanced analysis"""
         try:
             # Set user ID for memory
             self.agent.user_id = user_id
+            
+            # Gather comprehensive repository data
+            repo_data = self._gather_repository_data(repo_url, status_callback=status_callback)
+            
+            # Create comprehensive summary prompt
+            summary_prompt = f"""
+            Generate a comprehensive, well-structured summary of this GitHub repository based on the following data:
+
+            REPOSITORY DATA:
+            {repo_data}
+
+            REQUIREMENTS:
+            1. **Repository Overview**: Purpose, main features, and key components
+            2. **Project Structure**: Architecture and organization with specific file examples
+            3. **Technology Stack**: Languages, frameworks, and dependencies with versions
+            4. **Code Quality**: Metrics, patterns, and best practices observed
+            5. **Development Activity**: Recent commits and activity patterns
+            6. **Key Files**: Important configuration and source files with their purposes
+            7. **Architecture Insights**: Design patterns and code organization
+            8. **Dependencies Analysis**: External libraries and their purposes
+            9. **Testing Strategy**: Test coverage and testing approaches
+            10. **Documentation Quality**: README and code documentation assessment
+            11. **Recommendations**: Specific suggestions for improvement or exploration
+
+            FORMAT:
+            - Use clear headers and subheaders
+            - Include specific examples from the codebase
+            - Provide actionable insights
+            - Use bullet points for better readability
+            - Include relevant metrics and statistics
+            - Be specific and avoid generic statements
+
+            Please provide a detailed, professional summary that would be useful for developers and stakeholders.
+            """
             
             # Create tool functions for this repository
             tool_functions = self._create_tool_functions(repo_url)
@@ -316,21 +439,6 @@ class RepositoryAnalyzerAgent:
             # Add tools to agent temporarily
             original_tools = self.agent.tools
             self.agent.tools = list(original_tools) + list(tool_functions.values())
-            
-            # Create comprehensive summary prompt
-            summary_prompt = """
-            Generate a comprehensive summary of this GitHub repository. Include:
-            
-            1. **Repository Overview**: Purpose, main features, and key components
-            2. **Project Structure**: Architecture and organization
-            3. **Technology Stack**: Languages, frameworks, and dependencies
-            4. **Code Quality**: Metrics, patterns, and best practices
-            5. **Development Activity**: Recent commits and activity patterns
-            6. **Key Files**: Important configuration and source files
-            7. **Recommendations**: Suggestions for improvement or exploration
-            
-            Use the available tools to gather all necessary information and present it in a well-structured format.
-            """
             
             # Get response
             response = self.agent.run_response(summary_prompt, stream=False)
@@ -340,13 +448,48 @@ class RepositoryAnalyzerAgent:
             
             return response.content, self.tools.get_tools_used()
         except Exception as e:
-            return f"Error: {str(e)}", []
+            return f"Error generating summary: {str(e)}", []
     
-    def analyze_code_patterns(self, repo_url: str, user_id: str = "default") -> Tuple[str, List[str]]:
-        """Analyze code patterns and architecture"""
+    def analyze_code_patterns(self, repo_url: str, user_id: str = "default", status_callback=None) -> Tuple[str, List[str]]:
+        """Analyze code patterns and architecture with enhanced insights"""
         try:
             # Set user ID for memory
             self.agent.user_id = user_id
+            
+            # Gather comprehensive repository data
+            repo_data = self._gather_repository_data(repo_url, status_callback=status_callback)
+            
+            # Create analysis prompt
+            analysis_prompt = f"""
+            Perform a comprehensive code pattern and architecture analysis of this repository based on the following data:
+
+            REPOSITORY DATA:
+            {repo_data}
+
+            ANALYSIS REQUIREMENTS:
+            1. **Design Patterns**: Identify and explain common design patterns used in the codebase
+            2. **Code Organization**: Analyze how the code is structured and organized
+            3. **Dependencies**: External libraries and their purposes with version analysis
+            4. **Code Quality**: Metrics, complexity, and maintainability assessment
+            5. **Testing**: Test coverage, testing strategies, and test organization
+            6. **Documentation**: Code documentation quality and README assessment
+            7. **Best Practices**: Adherence to language-specific and general best practices
+            8. **Architecture**: Overall system architecture and component relationships
+            9. **Security**: Security considerations and potential vulnerabilities
+            10. **Performance**: Performance considerations and optimizations
+            11. **Scalability**: Scalability aspects and potential bottlenecks
+            12. **Maintainability**: Code maintainability and technical debt assessment
+
+            FORMAT:
+            - Use clear sections with headers
+            - Include specific code examples when relevant
+            - Provide actionable recommendations
+            - Use bullet points for better readability
+            - Include metrics and statistics where available
+            - Be specific and provide concrete examples
+
+            Please provide a detailed technical analysis that would be valuable for developers and architects.
+            """
             
             # Create tool functions for this repository
             tool_functions = self._create_tool_functions(repo_url)
@@ -354,21 +497,6 @@ class RepositoryAnalyzerAgent:
             # Add tools to agent temporarily
             original_tools = self.agent.tools
             self.agent.tools = list(original_tools) + list(tool_functions.values())
-            
-            # Create analysis prompt
-            analysis_prompt = """
-            Analyze the code patterns and architecture of this repository. Focus on:
-            
-            1. **Design Patterns**: Identify common design patterns used
-            2. **Code Organization**: How the code is structured and organized
-            3. **Dependencies**: External libraries and their purposes
-            4. **Code Quality**: Metrics, complexity, and maintainability
-            5. **Testing**: Test coverage and testing strategies
-            6. **Documentation**: Code documentation and README quality
-            7. **Best Practices**: Adherence to language-specific best practices
-            
-            Provide actionable insights and recommendations.
-            """
             
             # Get response
             response = self.agent.run_response(analysis_prompt, stream=False)
@@ -378,10 +506,66 @@ class RepositoryAnalyzerAgent:
             
             return response.content, self.tools.get_tools_used()
         except Exception as e:
-            return f"Error: {str(e)}", []
+            return f"Error analyzing code patterns: {str(e)}", []
     
+    def quick_analysis(self, repo_url: str, user_id: str = "default", status_callback=None) -> Tuple[str, List[str]]:
+        """Perform a quick analysis of the repository with structured insights"""
+        try:
+            # Set user ID for memory
+            self.agent.user_id = user_id
+            
+            # Gather essential repository data
+            repo_data = self._gather_repository_data(repo_url, status_callback=status_callback)
+            
+            # Create quick analysis prompt
+            quick_analysis_prompt = f"""
+            Perform a quick, structured analysis of this GitHub repository based on the following data:
+
+            REPOSITORY DATA:
+            {repo_data}
+
+            QUICK ANALYSIS REQUIREMENTS:
+            1. **Project Type**: What type of project is this? (Web app, CLI tool, library, etc.)
+            2. **Main Purpose**: What is the primary purpose of this repository?
+            3. **Technology Stack**: List the main technologies, languages, and frameworks used
+            4. **Key Features**: What are the main features or capabilities?
+            5. **Project Structure**: Brief overview of how the code is organized
+            6. **Dependencies**: Key external dependencies and their purposes
+            7. **Recent Activity**: Summary of recent development activity
+            8. **Code Quality Indicators**: Brief assessment of code quality
+            9. **Documentation**: Quality of README and documentation
+            10. **Quick Insights**: 2-3 key insights about the project
+
+            FORMAT:
+            - Use clear, concise sections
+            - Provide specific examples from the codebase
+            - Use bullet points for easy scanning
+            - Include relevant metrics and statistics
+            - Be informative but concise
+            - Focus on the most important aspects
+
+            Please provide a quick, informative analysis that gives a good overview of the repository.
+            """
+            
+            # Create tool functions for this repository
+            tool_functions = self._create_tool_functions(repo_url)
+            
+            # Add tools to agent temporarily
+            original_tools = self.agent.tools
+            self.agent.tools = list(original_tools) + list(tool_functions.values())
+            
+            # Get response
+            response = self.agent.run_response(quick_analysis_prompt, stream=False)
+            
+            # Restore original tools
+            self.agent.tools = original_tools
+            
+            return response.content, self.tools.get_tools_used()
+        except Exception as e:
+            return f"Error performing quick analysis: {str(e)}", []
+
     def get_repository_overview(self, repo_url: str) -> str:
-        """Get basic repository overview"""
+        """Get enhanced repository overview with structured data"""
         try:
             # Use multiple tools to get comprehensive overview
             overview_data = {}
@@ -406,7 +590,36 @@ class RepositoryAnalyzerAgent:
             if deps_result.get("success"):
                 overview_data["dependencies"] = deps_result.get("result", "")
             
-            return json.dumps(overview_data, indent=2)
+            # Get project structure analysis
+            project_result = asyncio.run(self.tools._call_server_tool("repository_structure", "analyze_project_structure", repo_url=repo_url))
+            if project_result.get("success"):
+                overview_data["project_analysis"] = project_result.get("result", "")
+            
+            # Extract key information for display
+            repo_info = {
+                "name": "Repository",
+                "description": "Repository analysis available",
+                "has_readme": bool(overview_data.get("readme")),
+                "has_structure": bool(overview_data.get("structure")),
+                "has_commits": bool(overview_data.get("recent_commits")),
+                "has_dependencies": bool(overview_data.get("dependencies")),
+                "has_analysis": bool(overview_data.get("project_analysis")),
+                "last_updated": "Available",
+                "stars": "Check repository",
+                "forks": "Check repository"
+            }
+            
+            # Try to extract name from README or structure
+            if overview_data.get("readme"):
+                readme_text = overview_data["readme"]
+                if "# " in readme_text:
+                    lines = readme_text.split("\n")
+                    for line in lines:
+                        if line.startswith("# "):
+                            repo_info["name"] = line.replace("# ", "").strip()
+                            break
+            
+            return json.dumps(repo_info, indent=2)
         except Exception as e:
             return f"Error: {str(e)}"
 
@@ -415,25 +628,30 @@ def create_analyzer_agent(model_name: str = "llama-3.1-70b-versatile") -> Reposi
     """Create a new repository analyzer agent"""
     return RepositoryAnalyzerAgent(model_name)
 
-def ask_repository_question(question: str, repo_url: str, model_name: str = "llama-3.1-70b-versatile", user_id: str = "default") -> Tuple[str, List[str]]:
+def ask_repository_question(question: str, repo_url: str, model_name: str = "llama-3.1-70b-versatile", user_id: str = "default", status_callback=None) -> Tuple[str, List[str]]:
     """Ask a question about a repository"""
     agent = RepositoryAnalyzerAgent(model_name)
-    return agent.ask_question(question, repo_url, user_id)
+    return agent.ask_question(question, repo_url, user_id, status_callback=status_callback)
 
-def generate_repository_summary(repo_url: str, model_name: str = "llama-3.1-70b-versatile", user_id: str = "default") -> Tuple[str, List[str]]:
+def generate_repository_summary(repo_url: str, model_name: str = "llama-3.1-70b-versatile", user_id: str = "default", status_callback=None) -> Tuple[str, List[str]]:
     """Generate a comprehensive repository summary"""
     agent = RepositoryAnalyzerAgent(model_name)
-    return agent.generate_summary(repo_url, user_id)
+    return agent.generate_summary(repo_url, user_id, status_callback=status_callback)
 
-def analyze_repository_patterns(repo_url: str, model_name: str = "llama-3.1-70b-versatile", user_id: str = "default") -> Tuple[str, List[str]]:
+def analyze_repository_patterns(repo_url: str, model_name: str = "llama-3.1-70b-versatile", user_id: str = "default", status_callback=None) -> Tuple[str, List[str]]:
     """Analyze repository code patterns"""
     agent = RepositoryAnalyzerAgent(model_name)
-    return agent.analyze_code_patterns(repo_url, user_id)
+    return agent.analyze_code_patterns(repo_url, user_id, status_callback=status_callback)
 
 def get_repository_overview(repo_url: str) -> str:
     """Get basic repository overview"""
     agent = RepositoryAnalyzerAgent()
     return agent.get_repository_overview(repo_url)
+
+def quick_repository_analysis(repo_url: str, model_name: str = "llama-3.1-70b-versatile", user_id: str = "default", status_callback=None) -> Tuple[str, List[str]]:
+    """Perform a quick analysis of a repository"""
+    agent = RepositoryAnalyzerAgent(model_name)
+    return agent.quick_analysis(repo_url, user_id, status_callback=status_callback)
 
 # Legacy functions for backward compatibility
 def ask_question(question: str, repository_url: str) -> tuple[str, list[str]]:
