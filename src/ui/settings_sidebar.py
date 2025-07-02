@@ -1,6 +1,6 @@
 """
-Enhanced Settings Sidebar UI Component
-Provides comprehensive interface for application settings and server management
+Clean Settings Sidebar UI Component
+Provides streamlined interface for application settings and server management
 """
 
 import streamlit as st
@@ -9,7 +9,7 @@ from src.utils.config import get_groq_api_key, has_required_keys
 from src.servers.server_manager import get_servers_status, start_mcp_servers, stop_mcp_servers, restart_mcp_servers
 
 def render_settings_sidebar():
-    """Render the enhanced settings sidebar with comprehensive controls"""
+    """Render the clean settings sidebar with essential controls"""
     
     # Essential Settings with enhanced organization
     st.markdown("### ⚙️ Analysis Settings")
@@ -88,56 +88,6 @@ def render_settings_sidebar():
     with col3:
         if st.button("🔄 Restart All", use_container_width=True):
             restart_mcp_servers()
-            st.rerun()
-    
-    # Advanced Tools Section
-    st.markdown("---")
-    st.markdown("### 🛠️ Advanced Tools")
-    
-    # Repository Analysis Tools
-    st.markdown("**📊 Analysis Tools:**")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        if st.button("🔍 Quick Scan", use_container_width=True):
-            st.session_state.run_quick_scan = True
-            st.rerun()
-        
-        if st.button("📈 Code Metrics", use_container_width=True):
-            st.session_state.run_code_metrics = True
-            st.rerun()
-    
-    with col2:
-        if st.button("🔗 Dependency Check", use_container_width=True):
-            st.session_state.run_dependency_check = True
-            st.rerun()
-        
-        if st.button("📝 Generate Report", use_container_width=True):
-            st.session_state.run_generate_report = True
-            st.rerun()
-    
-    # AI Tools Section
-    st.markdown("**🤖 AI Tools:**")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        if st.button("💬 Chat Mode", use_container_width=True):
-            st.session_state.ai_mode = "chat"
-            st.rerun()
-        
-        if st.button("📊 Summarize", use_container_width=True):
-            st.session_state.ai_mode = "summarize"
-            st.rerun()
-    
-    with col2:
-        if st.button("🔍 Code Review", use_container_width=True):
-            st.session_state.ai_mode = "review"
-            st.rerun()
-        
-        if st.button("📋 Documentation", use_container_width=True):
-            st.session_state.ai_mode = "documentation"
             st.rerun()
     
     # System Information

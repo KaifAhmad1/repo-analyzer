@@ -1,144 +1,143 @@
-# 🚀 GitHub Repository Analyzer - Simplified UI
+# 🚀 GitHub Repository Analyzer - Clean & Simple
 
-A clean, modern interface for analyzing GitHub repositories using MCP servers, AI Agents and Groq AI.
+A streamlined, AI-powered GitHub repository analysis tool with a clean, modern interface. Built with FastMCP v2 servers and Groq AI for comprehensive repository insights.
 
 ## ✨ Features
 
-- **💬 Q&A Chat**: Ask questions about any GitHub repository with tool usage tracking
-- **🔍 Quick Analysis**: Get repository overview, file structure, dependencies, and code patterns
-- **🗺️ Visual Repository Map**: Interactive directory trees and project structure visualization
-- **📊 Smart Summary**: AI-powered comprehensive reports and insights
-- **🤖 AI-Powered**: Uses Groq AI models for intelligent analysis
-- **📁 FastMCP v2**: Leverages Model Context Protocol for repository access
-- **🎨 Clean UI**: Simplified, focused interface with clear typography
+### 🎯 Core Functionality
+- **💬 Q&A Chat Interface** - Ask natural language questions about any GitHub repository
+- **🔍 Quick Analysis** - Get structured insights about repository structure, dependencies, and code patterns
+- **📊 Smart Summary** - Generate comprehensive AI-powered reports
+
+### 🛠️ Technical Capabilities
+- **File Content Analysis** - Read and analyze repository files
+- **Repository Structure** - Explore directory trees and file organization
+- **Commit History** - Track recent changes and development activity
+- **Code Search** - Find specific code patterns and functions
+- **Dependency Analysis** - Identify project dependencies and requirements
+
+### 🎨 Clean UI
+- **Modern Design** - Clean, responsive interface with excellent UX
+- **Real-time Progress** - See which tools and servers are being used
+- **Server Management** - Easy control over MCP server status
+- **Tool Tracking** - Visual feedback on backend operations
 
 ## 🚀 Quick Start
 
-1. **Install Dependencies**:
+### Prerequisites
+- Python 3.8+
+- Groq API key
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd repo-analyzer
+   ```
+
+2. **Install dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-2. **Start MCP Servers** (Required):
+3. **Set up environment variables**
    ```bash
-   # Option 1: Use the startup script
-   python start_servers.py
-   
-   # Option 2: Start servers manually
-   python src/servers/server_manager.py start
+   # Create .env file
+   echo "GROQ_API_KEY=your_groq_api_key_here" > .env
    ```
 
-3. **Run the Application**:
+4. **Start the application**
+   ```bash
+   python start_servers.py
+   ```
+
+   Or start manually:
    ```bash
    streamlit run app.py
    ```
 
-4. **Start Analyzing**:
-   - Enter a GitHub repository URL (e.g., `https://github.com/microsoft/vscode`)
-   - Use the Q&A chat or quick analysis features
-   - Monitor server status in the sidebar
-
 ## 🎯 How to Use
 
-### Repository Selection
-- Enter any valid GitHub repository URL
-- The app will validate and load repository information
-- Repository details will appear in the sidebar
+### 1. Select a Repository
+- Enter a GitHub repository URL in the sidebar
+- The system will automatically load repository information
 
-### Server Management
-- **Server Status**: Monitor all 4 MCP servers in the sidebar
-- **Auto-Start**: Servers can be started automatically if offline
-- **Individual Control**: Start/stop individual servers as needed
-- **Health Monitoring**: Real-time system health percentage
-- **Quick Actions**: Start all, stop all, or restart all servers
+### 2. Choose Your Analysis Tool
+- **Q&A Chat**: Ask questions about the repository
+- **Quick Analysis**: Get structured insights
+- **Smart Summary**: Generate comprehensive reports
 
-### Q&A Chat
-- Ask natural language questions about the repository
-- Use quick question buttons for common queries
-- Get AI-powered responses with repository context
+### 3. View Results
+- See real-time progress and tool usage
+- Get detailed analysis with visual formatting
+- Track which MCP servers were used
 
-### Quick Analysis
-- Choose analysis type: Repository Overview, File Structure, Dependencies, or Code Patterns
-- Adjust analysis depth as needed
-- View results in a clean, organized format
+## 🏗️ Architecture
 
-### Visual Repository Map
-- Generate directory trees and file structure visualizations
-- Explore project architecture with interactive features
-- Analyze repository structure at different depths
+### Core Components
+- **FastMCP v2 Servers**: 4 specialized servers for different analysis tasks
+- **Groq AI Integration**: Powerful AI model for natural language processing
+- **Streamlit UI**: Clean, responsive web interface
+- **Tool Tracking**: Real-time monitoring of backend operations
 
-### Smart Summary
-- Generate comprehensive AI-powered reports
-- Choose from different summary types: Overview, Code Quality, Architecture, Development Insights
-- Get detailed analysis with tool usage tracking
-
-## 🗺️ System Architecture Overview
-
-> **How it works:**  
-> The diagram below shows how the user interface, server management, MCP servers, AI backend, and GitHub API interact in the repo-analyzer system.
-
-```mermaid
-flowchart TD
-    A["User Interface"] --> B["Streamlit App"]
-    B --> C["MCP Server Manager"]
-    C --> D["File Content Server 📁"]
-    C --> E["Repository Structure Server 🌳"]
-    C --> F["Commit History Server 📝"]
-    C --> G["Code Search Server 🔍"]
-    D --> H["GitHub API"]
-    E --> H
-    F --> H
-    G --> H
-    B --> I["Groq AI Backend"]
-    I --> B
-```
-
-### MCP Server Roles
-
-- **File Content Server 📁**: Reads file contents, lists directories, and provides file info from the repository.
-- **Repository Structure Server 🌳**: Builds directory trees and gives an overview of the project's file structure.
-- **Commit History Server 📝**: Fetches commit messages, details, and statistics from the repository's history.
-- **Code Search Server 🔍**: Searches for code patterns, functions, and dependencies within the repository.
+### MCP Servers
+1. **File Content Server** - Read and analyze repository files
+2. **Repository Structure Server** - Explore directory organization
+3. **Commit History Server** - Track development activity
+4. **Code Search Server** - Find code patterns and functions
 
 ---
-
 
 > **Note:**  
 > Never share your API key publicly or commit it to version control.
 
-## 🛠️ Architecture
+## 🔧 Configuration
 
-- **Frontend**: Streamlit with custom CSS styling
-- **AI Backend**: Groq API with multiple model options
-- **Repository Access**: FastMCP v2 servers for GitHub integration
-- **Analysis Tools**: Custom tools for code analysis and metrics
-- **Server Management**: Automated MCP server lifecycle management
+### Analysis Settings
+- **Analysis Depth**: Control how deep the analysis explores (1-5 levels)
+- **AI Model**: Fixed to `llama-3.1-70b-versatile` for optimal performance
+- **Tool Usage Display**: Toggle visibility of backend tool usage
+
+### Server Management
+- **Auto-start**: Automatically start servers when needed
+- **Manual Control**: Start/stop individual servers
+- **Health Monitoring**: Real-time server status tracking
 
 ## 📁 Project Structure
 
 ```
 repo-analyzer/
 ├── app.py                 # Main Streamlit application
-├── start_servers.py       # MCP server startup script
-├── debug_servers.py       # Server testing and debugging
+├── start_servers.py       # Server startup script
+├── requirements.txt       # Python dependencies
 ├── src/
-│   ├── agent/            # AI agent and tools
-│   ├── servers/          # FastMCP v2 servers
-│   ├── ui/              # UI components
-│   └── utils/           # Configuration utilities
-├── requirements.txt      # Python dependencies
-└── README.md           # This file
+│   ├── agent/            # AI agent system
+│   ├── servers/          # MCP server implementations
+│   ├── ui/              # UI components and styles
+│   └── utils/           # Utility functions
+└── README.md            # This file
 ```
 
-## 🎨 UI Design
+## 🎯 What's New
 
-The interface has been simplified for better usability:
+### Simplified Interface
+- **Removed Advanced Tools**: Focus on core functionality
+- **Cleaner Navigation**: Streamlined tab system
+- **Better UX**: Improved user experience
+- **Reduced Complexity**: Easier to understand and use
 
-- **Clean Typography**: Modern, readable fonts throughout
-- **Focused Layout**: Essential features only, no unnecessary complexity
-- **Clear Navigation**: Simple tabs for main features
-- **Responsive Design**: Works well on different screen sizes
-- **Consistent Styling**: Unified color scheme and spacing
+### Enhanced Backend
+- **Tool Tracking**: See which tools are being used
+- **Server Monitoring**: Real-time server status
+- **Progress Feedback**: Multi-stage progress indicators
+- **Error Handling**: Better error messages and recovery
+
+### Improved UI
+- **Modern Design**: Clean, professional appearance
+- **Responsive Layout**: Works on all devices
+- **Better Typography**: Improved readability
+- **Enhanced Components**: Better buttons, forms, and inputs
 
 ## 🔧 Configuration
 
@@ -157,50 +156,40 @@ The application uses Groq AI models for analysis:
 - **Health Monitoring**: Real-time system health percentage and status indicators
 - **Auto-Start**: Automatic server startup when the application detects offline servers
 
-## 🖥️ Server Management
+## 🚀 Performance
 
-### MCP Servers Overview
-The application uses 4 core FastMCP v2 servers for repository analysis:
+### Optimizations
+- **Efficient Tool Usage**: Only use necessary tools
+- **Caching**: Smart caching of repository data
+- **Async Operations**: Non-blocking server communication
+- **Resource Management**: Proper cleanup and memory usage
 
-1. **File Content Server 📁** - Retrieves and reads file contents
-2. **Repository Structure Server 🌳** - Gets directory trees and file listings  
-3. **Commit History Server 📝** - Accesses commit messages and changes
-4. **Code Search Server 🔍** - Searches for specific code patterns
+### Scalability
+- **Modular Design**: Easy to add new analysis tools
+- **Server Independence**: Each MCP server operates independently
+- **Configurable Depth**: Adjustable analysis levels
+- **Extensible Architecture**: Easy to extend with new features
 
-### Starting Servers
-```bash
-# Quick start (recommended)
-python start_servers.py
+## 🤝 Contributing
 
-# Manual start
-python src/servers/server_manager.py start
-```
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
-### Server Status Monitoring
-- **Sidebar Display**: Real-time status of all servers in the application sidebar
-- **Health Indicators**: Green (🟢) for running, Red (🔴) for stopped
-- **System Health**: Overall health percentage based on running servers
-- **Quick Actions**: Buttons to start/stop/restart servers directly from the UI
-
-### Troubleshooting
-```bash
-# Test server connections
-python debug_servers.py
-
-# Check server status
-python src/servers/server_manager.py status
-
-# Restart all servers
-python src/servers/server_manager.py restart
-```
-
-## 🚀 Powered By
-
-- **FastMCP v2**: Model Context Protocol for repository access
-- **Groq AI**: High-performance AI models
-- **Streamlit**: Modern web app framework
-- **GitHub API**: Repository data and analysis
-
-## 📝 License
+## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🆘 Support
+
+If you encounter any issues:
+1. Check the server status in the sidebar
+2. Ensure your Groq API key is configured
+3. Restart the application if needed
+4. Check the console for error messages
+
+---
+
+**🚀 GitHub Repository Analyzer** - Making repository analysis simple, clean, and effective!

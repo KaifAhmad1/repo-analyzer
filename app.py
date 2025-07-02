@@ -1,6 +1,6 @@
 """
-🚀 GitHub Repository Analyzer - Enhanced UI
-A clean, modern interface for analyzing GitHub repositories using FastMCP v2 servers and Groq AI
+🚀 GitHub Repository Analyzer - Clean & Simple
+A streamlined interface for analyzing GitHub repositories using FastMCP v2 servers and Groq AI
 """
 
 import streamlit as st
@@ -94,17 +94,15 @@ server_status = get_servers_status()
 if server_status['running_servers'] < server_status['total_servers']:
     st.warning(f"⚠️ {server_status['total_servers'] - server_status['running_servers']} MCP servers are offline. Some features may be limited.")
 
-# Enhanced tabs with better visual appeal
+# Simplified tabs - only core functionality
 st.markdown("### 🎯 Choose Your Analysis Tool")
 st.markdown("Select the feature you want to use for repository analysis:")
 
-# Create custom styled tabs
+# Create simplified tabs
 TABS = [
     {"icon": "💬", "title": "Q&A Chat", "desc": "Ask questions about the repository"},
     {"icon": "🔍", "title": "Quick Analysis", "desc": "Get structured repository insights"},
-    {"icon": "🗺️", "title": "Visual Repo Map", "desc": "Explore repository structure visually"},
-    {"icon": "📊", "title": "Smart Summary", "desc": "Generate comprehensive AI reports"},
-    {"icon": "🛠️", "title": "Advanced Tools", "desc": "Use specialized analysis tools"}
+    {"icon": "📊", "title": "Smart Summary", "desc": "Generate comprehensive AI reports"}
 ]
 
 # Create tab selection
@@ -245,23 +243,6 @@ elif tab_index == 1:
         st.info("🎯 Please select a repository to perform analysis.")
 
 elif tab_index == 2:
-    st.markdown("## 🗺️ Visual Repository Map")
-    st.markdown("Explore the repository structure with an interactive visual map.")
-    
-    if repo_url:
-        tools = FastMCPTools()
-        
-        with st.spinner("🗺️ Generating repository map..."):
-            try:
-                tree = tools.get_directory_tree(repo_url, max_depth=settings.get("analysis_depth", 3))
-                st.markdown("### 📁 Repository Structure")
-                st.code(tree, language="text")
-            except Exception as e:
-                st.error(f"❌ Error generating repository map: {str(e)}")
-    else:
-        st.info("🎯 Please select a repository to view its structure.")
-
-elif tab_index == 3:
     st.markdown("## 📊 Smart Summary")
     st.markdown("Generate comprehensive AI-powered reports about the repository.")
     
@@ -330,101 +311,6 @@ elif tab_index == 3:
                         status_text.empty()
     else:
         st.info("🎯 Please select a repository to generate a summary.")
-
-elif tab_index == 4:
-    st.markdown("## 🛠️ Advanced Tools")
-    st.markdown("Use specialized tools for advanced repository analysis.")
-    
-    if repo_url:
-        # Check for advanced tool triggers from sidebar
-        tools = FastMCPTools()
-        
-        if st.session_state.get("run_quick_scan", False):
-            st.session_state.run_quick_scan = False
-            with st.spinner("🔍 Running quick scan..."):
-                try:
-                    scan_result = tools.get_repository_overview(repo_url)
-                    st.markdown("### 🔍 Quick Scan Results")
-                    st.json(scan_result)
-                except Exception as e:
-                    st.error(f"❌ Quick scan failed: {str(e)}")
-        
-        elif st.session_state.get("run_code_metrics", False):
-            st.session_state.run_code_metrics = False
-            with st.spinner("📈 Analyzing code metrics..."):
-                try:
-                    metrics = tools.get_code_metrics(repo_url)
-                    st.markdown("### 📈 Code Metrics")
-                    st.json(metrics)
-                except Exception as e:
-                    st.error(f"❌ Code metrics analysis failed: {str(e)}")
-        
-        elif st.session_state.get("run_dependency_check", False):
-            st.session_state.run_dependency_check = False
-            with st.spinner("🔗 Checking dependencies..."):
-                try:
-                    deps = tools.search_dependencies(repo_url)
-                    st.markdown("### 🔗 Dependencies")
-                    st.json(deps)
-                except Exception as e:
-                    st.error(f"❌ Dependency check failed: {str(e)}")
-        
-        elif st.session_state.get("run_generate_report", False):
-            st.session_state.run_generate_report = False
-            with st.spinner("📝 Generating comprehensive report..."):
-                try:
-                    report = analyze_repository(repo_url)
-                    st.markdown("### 📝 Comprehensive Report")
-                    st.markdown(f"""
-                    <div style="background-color: #f0f9ff; border-left: 4px solid #10b981; padding: 1rem; border-radius: 8px; margin: 0.5rem 0;">
-                        {report}
-                    </div>
-                    """, unsafe_allow_html=True)
-                except Exception as e:
-                    st.error(f"❌ Report generation failed: {str(e)}")
-        
-        # Advanced Tools Interface
-        st.markdown("### 🛠️ Available Tools")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            if st.button("🔍 Quick Scan", use_container_width=True):
-                st.session_state.run_quick_scan = True
-                st.rerun()
-            
-            if st.button("📈 Code Metrics", use_container_width=True):
-                st.session_state.run_code_metrics = True
-                st.rerun()
-            
-            if st.button("🔗 Dependency Check", use_container_width=True):
-                st.session_state.run_dependency_check = True
-                st.rerun()
-        
-        with col2:
-            if st.button("📝 Generate Report", use_container_width=True):
-                st.session_state.run_generate_report = True
-                st.rerun()
-            
-            if st.button("🌳 Structure Analysis", use_container_width=True):
-                with st.spinner("🌳 Analyzing structure..."):
-                    try:
-                        structure = tools.analyze_project_structure(repo_url)
-                        st.markdown("### 🌳 Project Structure Analysis")
-                        st.json(structure)
-                    except Exception as e:
-                        st.error(f"❌ Structure analysis failed: {str(e)}")
-            
-            if st.button("📊 Commit Stats", use_container_width=True):
-                with st.spinner("📊 Gathering commit statistics..."):
-                    try:
-                        stats = tools.get_commit_statistics(repo_url)
-                        st.markdown("### 📊 Commit Statistics")
-                        st.json(stats)
-                    except Exception as e:
-                        st.error(f"❌ Commit statistics failed: {str(e)}")
-    else:
-        st.info("🎯 Please select a repository to use advanced tools.")
 
 # Footer
 st.markdown("---")
