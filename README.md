@@ -78,6 +78,61 @@ A clean, modern interface for analyzing GitHub repositories using FastMCP v2 ser
 - Choose from different summary types: Overview, Code Quality, Architecture, Development Insights
 - Get detailed analysis with tool usage tracking
 
+## 🗺️ System Architecture Overview
+
+> **How it works:**  
+> The diagram below shows how the user interface, server management, MCP servers, AI backend, and GitHub API interact in the repo-analyzer system.
+
+```mermaid
+flowchart TD
+    A["User (Web UI)"] --> B["Streamlit App"]
+    B --> C["Settings Sidebar & Server Status"]
+    B --> D["Repository Selector"]
+    B --> E["Q&A Chat / Analysis Tabs"]
+    C --> F["MCP Server Manager"]
+    F --> G1["File Content Server 📁"]
+    F --> G2["Repository Structure Server 🌳"]
+    F --> G3["Commit History Server 📝"]
+    F --> G4["Code Search Server 🔍"]
+    E --> F
+    G1 --> I["GitHub API"]
+    G2 --> I
+    G3 --> I
+    G4 --> I
+    E --> H["Groq AI Backend"]
+    H --> E
+    F --> C
+    C --> F
+    B --> A
+    classDef server fill:#e0f7fa,stroke:#00796b,stroke-width:2px;
+    class G1,G2,G3,G4 server;
+```
+
+### MCP Server Roles
+
+- **File Content Server 📁**: Reads file contents, lists directories, and provides file info from the repository.
+- **Repository Structure Server 🌳**: Builds directory trees and gives an overview of the project's file structure.
+- **Commit History Server 📝**: Fetches commit messages, details, and statistics from the repository's history.
+- **Code Search Server 🔍**: Searches for code patterns, functions, and dependencies within the repository.
+
+---
+
+## 🔑 API Key Setup
+
+To use the AI features, you need a Groq API key.
+
+1. **Get your API key:**  
+   - Sign up or log in at [Groq Console](https://console.groq.com/keys)
+   - Copy your API key
+
+2. **Create a `.env` file in your project root:**  
+   ```
+   GROQ_API_KEY=your_groq_api_key_here
+   ```
+
+> **Note:**  
+> Never share your API key publicly or commit it to version control.
+
 ## 🛠️ Architecture
 
 - **Frontend**: Streamlit with custom CSS styling
