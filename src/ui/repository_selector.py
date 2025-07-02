@@ -59,12 +59,24 @@ def render_repository_selector() -> Optional[str]:
             help="Enter a valid GitHub repository URL to analyze"
         )
         
-        # Enhanced button layout
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            submit_button = st.form_submit_button("🔍 Analyze Repository", type="primary", use_container_width=True)
-        with col2:
-            clear_button = st.form_submit_button("🗑️ Clear", use_container_width=True)
+        # Enhanced button layout with better spacing
+        st.markdown("#### 🚀 Actions")
+        
+        # Primary action button - full width
+        submit_button = st.form_submit_button(
+            "🔍 Analyze Repository", 
+            type="primary", 
+            use_container_width=True,
+            help="Click to analyze the repository with AI tools"
+        )
+        
+        # Secondary action button - full width with spacing
+        st.markdown("<br>", unsafe_allow_html=True)
+        clear_button = st.form_submit_button(
+            "🗑️ Clear Repository", 
+            use_container_width=True,
+            help="Clear the current repository selection"
+        )
     
     # Handle form submissions with enhanced feedback
     if clear_button:

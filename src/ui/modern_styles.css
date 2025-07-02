@@ -1,112 +1,586 @@
-/* Enhanced Modern Styles for GitHub Repository Analyzer */
+/* Complete Light UI Theme for GitHub Repository Analyzer - Maximum Visibility */
 
-/* Global Styles */
+/* Global Styles - Everything Light with Maximum Visibility */
 :root {
     --primary-color: #2563eb;
-    --secondary-color: #f59e0b;
+    --secondary-color: #dc2626;
     --success-color: #059669;
-    --warning-color: #dc2626;
+    --warning-color: #d97706;
     --info-color: #0891b2;
-    --light-color: #f8fafc;
-    --dark-color: #1e293b;
-    --border-radius: 12px;
-    --box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    --transition: all 0.3s ease;
-    --sidebar-bg: #f1f5f9;
-    --card-bg: #ffffff;
+    
+    /* Complete Light Background Colors - Everything Light */
+    --bg-main: #f8fafc;
+    --bg-primary: #f1f5f9;
+    --bg-secondary: #e2e8f0;
+    --bg-card: #ffffff;
+    --bg-sidebar: #f8fafc;
+    --bg-header: #f1f5f9;
+    --bg-content: #f8fafc;
+    --bg-form: #ffffff;
+    --bg-input: #ffffff;
+    --bg-button: #ffffff;
+    --bg-message: #ffffff;
+    --bg-panel: #f8fafc;
+    
+    /* Dark Text Colors for Maximum Visibility */
     --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --accent-color: #3b82f6;
-    --sidebar-width: 350px;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
+    --text-light: #475569;
+    --text-dark: #1e293b;
+    
+    /* Light Accent Colors */
+    --accent-light: #dbeafe;
+    --accent-blue: #3b82f6;
+    --accent-green: #10b981;
+    --accent-orange: #f59e0b;
+    --accent-red: #ef4444;
+    --accent-purple: #8b5cf6;
+    
+    /* Light Border Colors */
+    --border-light: #e2e8f0;
+    --border-medium: #cbd5e1;
+    --border-dark: #94a3b8;
+    --border-accent: #3b82f6;
+    
+    /* Enhanced Spacing */
+    --border-radius: 12px;
+    --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --box-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.12);
+    --transition: all 0.3s ease;
+    --sidebar-width: 420px;
 }
 
-/* Enhanced Typography with better visibility */
+/* Enhanced Typography with Maximum Visibility */
 * {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
     line-height: 1.6;
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
 }
 
-/* Enhanced Header Styles */
+/* Main Background - Light Theme */
+.main .block-container {
+    background: var(--bg-main) !important;
+    padding: 2rem !important;
+}
+
+/* Streamlit Main Background */
+.stApp {
+    background: var(--bg-main) !important;
+}
+
+/* All Streamlit Elements - Light Theme */
+.stMarkdown, .stText, .stWrite, .stDataFrame, .stPlotlyChart, .stPyplot, .stBokehChart, .stAltairChart, .stVegaLiteChart, .stGraphvizChart, .stMap, .stImage, .stVideo, .stAudio, .stFileUploader, .stDownloadButton, .stCameraInput, .stColorPicker, .stDateInput, .stTimeInput, .stMultiselect, .stRadio, .stCheckbox, .stSelectSlider, .stNumberInput, .stTextArea, .stTextInput, .stSelectbox, .stSlider, .stButton, .stForm, .stExpander, .stTabs, .stSidebar, .stContainer, .stColumn, .stDiv, .stSection, .stPanel, .stAlert, .stInfo, .stWarning, .stError, .stSuccess, .stBalloons, .stSnow, .stProgress, .stSpinner, .stEmpty, .stException, .stHelp, .stJson, .stCode, .stCodeBlock, .stLatex, .stMath, .stMetric, .stMetricLabel, .stMetricValue, .stMetricDelta, .stMetricDeltaIndicator, .stMetricDeltaText, .stMetricDeltaIcon, .stMetricDeltaColor, .stMetricDeltaBackground, .stMetricDeltaBorder, .stMetricDeltaShadow, .stMetricDeltaHover, .stMetricDeltaFocus, .stMetricDeltaActive, .stMetricDeltaDisabled, .stMetricDeltaLoading, .stMetricDeltaError, .stMetricDeltaSuccess, .stMetricDeltaWarning, .stMetricDeltaInfo {
+    background: var(--bg-content) !important;
+    color: var(--text-primary) !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+    line-height: 1.6;
+}
+
+/* Enhanced Typography for All Elements */
+.stMarkdown *, .stText *, .stWrite *, .stDataFrame *, .stPlotlyChart *, .stPyplot *, .stBokehChart *, .stAltairChart *, .stVegaLiteChart *, .stGraphvizChart *, .stMap *, .stImage *, .stVideo *, .stAudio *, .stFileUploader *, .stDownloadButton *, .stCameraInput *, .stColorPicker *, .stDateInput *, .stTimeInput *, .stMultiselect *, .stRadio *, .stCheckbox *, .stSelectSlider *, .stNumberInput *, .stTextArea *, .stTextInput *, .stSelectbox *, .stSlider *, .stButton *, .stForm *, .stExpander *, .stTabs *, .stSidebar *, .stContainer *, .stColumn *, .stDiv *, .stSection *, .stPanel *, .stAlert *, .stInfo *, .stWarning *, .stError *, .stSuccess *, .stBalloons *, .stSnow *, .stProgress *, .stSpinner *, .stEmpty *, .stException *, .stHelp *, .stJson *, .stCode *, .stCodeBlock *, .stLatex *, .stMath *, .stMetric *, .stMetricLabel *, .stMetricValue *, .stMetricDelta *, .stMetricDeltaIndicator *, .stMetricDeltaText *, .stMetricDeltaIcon *, .stMetricDeltaColor *, .stMetricDeltaBackground *, .stMetricDeltaBorder *, .stMetricDeltaShadow *, .stMetricDeltaHover *, .stMetricDeltaFocus *, .stMetricDeltaActive *, .stMetricDeltaDisabled *, .stMetricDeltaLoading *, .stMetricDeltaError *, .stMetricDeltaSuccess *, .stMetricDeltaWarning *, .stMetricDeltaInfo {
+    color: var(--text-primary) !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+}
+
+/* Enhanced Background for All Containers */
+div[data-testid="stAppViewContainer"], div[data-testid="stAppViewBlockContainer"], div[data-testid="stHorizontalBlock"], div[data-testid="stVerticalBlock"], div[data-testid="stVerticalBlockBorderWrapper"], div[data-testid="stHorizontalBlockBorderWrapper"] {
+    background: var(--bg-main) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Form Backgrounds */
+.stForm > div, .stForm > div > div, .stForm > div > div > div {
+    background: var(--bg-form) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Input Backgrounds */
+.stTextInput > div, .stTextArea > div, .stSelectbox > div, .stSlider > div, .stNumberInput > div, .stMultiselect > div, .stRadio > div, .stCheckbox > div, .stDateInput > div, .stTimeInput > div, .stColorPicker > div, .stFileUploader > div, .stCameraInput > div, .stDownloadButton > div {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Message Backgrounds */
+.stAlert > div, .stInfo > div, .stWarning > div, .stError > div, .stSuccess > div, .stException > div, .stHelp > div {
+    background: var(--bg-message) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Panel Backgrounds */
+.stExpander > div, .stTabs > div, .stContainer > div, .stColumn > div, .stDiv > div, .stSection > div, .stPanel > div {
+    background: var(--bg-panel) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Main Content Area */
+.main .block-container {
+    background: var(--bg-main) !important;
+    padding: 2rem !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced All Streamlit Widgets */
+.stWidget > div, .stWidget > div > div, .stWidget > div > div > div {
+    background: var(--bg-content) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Chat Interface Background */
+.stChatMessage {
+    background: var(--bg-message) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Data Display Backgrounds */
+.stDataFrame, .stTable, .stJson, .stCode, .stCodeBlock {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Progress and Status Backgrounds */
+.stProgress > div, .stSpinner > div, .stEmpty > div {
+    background: var(--bg-content) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Navigation and Layout */
+.stSidebar > div, .stSidebar > div > div {
+    background: var(--bg-sidebar) !important;
+    color: var(--text-primary) !important;
+    padding: 1rem !important;
+}
+
+/* Enhanced Sidebar Navigation */
+section[data-testid="stSidebar"] {
+    background: var(--bg-sidebar) !important;
+    border-right: 3px solid var(--border-light) !important;
+    padding: 1rem !important;
+    min-width: var(--sidebar-width) !important;
+    max-width: var(--sidebar-width) !important;
+}
+
+/* Enhanced Sidebar Content */
+section[data-testid="stSidebar"] > div {
+    background: var(--bg-sidebar) !important;
+    padding: 1rem !important;
+    border-radius: 15px !important;
+    box-shadow: var(--box-shadow) !important;
+}
+
+/* Enhanced Sidebar Sections */
+section[data-testid="stSidebar"] h1, 
+section[data-testid="stSidebar"] h2, 
+section[data-testid="stSidebar"] h3, 
+section[data-testid="stSidebar"] h4 {
+    color: var(--text-primary) !important;
+    font-weight: 700 !important;
+    margin-bottom: 1.5rem !important;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 2px solid var(--border-light) !important;
+}
+
+/* Enhanced Footer and Header */
+.stFooter, .stHeader {
+    background: var(--bg-secondary) !important;
+    color: var(--text-secondary) !important;
+}
+
+/* Enhanced Typography Override for Maximum Visibility */
+p, h1, h2, h3, h4, h5, h6, span, div, label, input, textarea, select, button, a {
+    color: var(--text-primary) !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+}
+
+/* Enhanced Focus States for Better UX */
+input:focus, textarea:focus, select:focus, button:focus {
+    outline: 3px solid var(--accent-blue) !important;
+    outline-offset: 2px !important;
+    border-color: var(--accent-blue) !important;
+}
+
+/* Enhanced Hover States */
+button:hover, input:hover, textarea:hover, select:hover {
+    border-color: var(--accent-blue) !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Enhanced Header Styles - Light Background */
 .header-container {
     text-align: center;
-    padding: 3rem 0;
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-    color: white;
+    padding: 2.5rem 0;
+    background: linear-gradient(135deg, var(--bg-header) 0%, var(--bg-secondary) 100%);
+    color: var(--text-primary);
     border-radius: 20px;
-    margin-bottom: 3rem;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    margin-bottom: 2rem;
+    box-shadow: var(--box-shadow);
+    border: 2px solid var(--border-light);
 }
 
 .header-title {
-    font-size: 3.5rem !important;
+    font-size: 3rem !important;
     font-weight: 800 !important;
     margin-bottom: 1rem !important;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    color: var(--text-primary) !important;
     letter-spacing: -1px;
     line-height: 1.2;
-    color: white !important;
+    text-shadow: none;
 }
 
 .header-subtitle {
-    font-size: 1.3rem !important;
-    opacity: 0.95;
+    font-size: 1.2rem !important;
+    color: var(--text-secondary) !important;
     margin-bottom: 0 !important;
-    font-weight: 400;
-    letter-spacing: 0.5px;
-    color: white !important;
+    font-weight: 500;
+    letter-spacing: 0.3px;
 }
 
-/* Enhanced Tab Styling */
+/* Enhanced Tab Styling - Light Theme */
 .stSelectbox > div > div > div {
     border-radius: var(--border-radius);
-    border: 3px solid #e2e8f0;
+    border: 2px solid var(--border-medium);
     transition: var(--transition);
     font-size: 16px;
     font-weight: 600;
-    padding: 12px 16px;
-    background: var(--card-bg);
+    padding: 14px 18px;
+    background: var(--bg-input) !important;
     box-shadow: var(--box-shadow);
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
 }
 
 .stSelectbox > div > div > div:focus-within {
-    border-color: var(--accent-color);
-    box-shadow: 0 0 0 0.3rem rgba(59, 130, 246, 0.25);
-    transform: translateY(-2px);
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    transform: translateY(-1px);
 }
 
-/* Section Headers with better visibility */
+/* Enhanced Selectbox Dropdown - Light Theme */
+.stSelectbox > div > div > div > div {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Options - Light Theme */
+.stSelectbox > div > div > div > div > div {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+.stSelectbox > div > div > div > div > div:hover {
+    background: var(--accent-light) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Selected Option - Light Theme */
+.stSelectbox > div > div > div > div > div[data-baseweb="option"] {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+.stSelectbox > div > div > div > div > div[data-baseweb="option"]:hover {
+    background: var(--accent-light) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Dropdown Container - Light Theme */
+.stSelectbox > div > div > div > div[data-baseweb="popover"] {
+    background: var(--bg-input) !important;
+    border: 2px solid var(--border-medium) !important;
+    box-shadow: var(--box-shadow) !important;
+}
+
+/* Enhanced Selectbox Label - Light Theme */
+.stSelectbox > div > div > div > div > div > div {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Icon - Light Theme */
+.stSelectbox > div > div > div > div > div > svg {
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Placeholder - Light Theme */
+.stSelectbox > div > div > div > div > div > div[data-baseweb="placeholder"] {
+    color: var(--text-muted) !important;
+    background: var(--bg-input) !important;
+}
+
+/* Enhanced All Selectbox Elements - Light Theme */
+.stSelectbox, .stSelectbox *, .stSelectbox * * {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Value Display - Light Theme */
+.stSelectbox > div > div > div > div > div > div[data-baseweb="value"] {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Control - Light Theme */
+.stSelectbox > div > div > div > div > div[data-baseweb="control"] {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border: 2px solid var(--border-medium) !important;
+}
+
+/* Enhanced Selectbox List - Light Theme */
+.stSelectbox > div > div > div > div > div[data-baseweb="list"] {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border: 2px solid var(--border-medium) !important;
+}
+
+/* Enhanced Selectbox Option List - Light Theme */
+.stSelectbox > div > div > div > div > div > div[data-baseweb="list"] {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Dropdown Arrow - Light Theme */
+.stSelectbox > div > div > div > div > div > div > svg {
+    color: var(--text-primary) !important;
+    background: var(--bg-input) !important;
+}
+
+/* Enhanced Selectbox Input - Light Theme */
+.stSelectbox input {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border: none !important;
+}
+
+/* Enhanced Selectbox Focus State - Light Theme */
+.stSelectbox:focus-within {
+    border-color: var(--accent-blue) !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+}
+
+/* Enhanced Selectbox Dropdown Options - Light Theme */
+.stSelectbox > div > div > div > div > div > div > div {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Dropdown Menu - Light Theme */
+.stSelectbox > div > div > div > div > div > div > div > div {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Dropdown List - Light Theme */
+.stSelectbox > div > div > div > div > div > div > div > div > div {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Dropdown Items - Light Theme */
+.stSelectbox > div > div > div > div > div > div > div > div > div > div {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Dropdown Item Hover - Light Theme */
+.stSelectbox > div > div > div > div > div > div > div > div > div > div:hover {
+    background: var(--accent-light) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Dropdown Item Selected - Light Theme */
+.stSelectbox > div > div > div > div > div > div > div > div > div > div[aria-selected="true"] {
+    background: var(--accent-blue) !important;
+    color: white !important;
+}
+
+/* Enhanced Selectbox Dropdown Item Focus - Light Theme */
+.stSelectbox > div > div > div > div > div > div > div > div > div > div:focus {
+    background: var(--accent-light) !important;
+    color: var(--text-primary) !important;
+    outline: 2px solid var(--accent-blue) !important;
+}
+
+/* Enhanced Selectbox Dropdown Container - Light Theme */
+.stSelectbox > div > div > div > div > div > div > div > div {
+    background: var(--bg-input) !important;
+    border: 2px solid var(--border-medium) !important;
+    border-radius: var(--border-radius) !important;
+    box-shadow: var(--box-shadow) !important;
+}
+
+/* Enhanced Selectbox Dropdown Scrollbar - Light Theme */
+.stSelectbox > div > div > div > div > div > div > div > div > div::-webkit-scrollbar {
+    width: 8px;
+}
+
+.stSelectbox > div > div > div > div > div > div > div > div > div::-webkit-scrollbar-track {
+    background: var(--bg-secondary) !important;
+}
+
+.stSelectbox > div > div > div > div > div > div > div > div > div::-webkit-scrollbar-thumb {
+    background: var(--accent-blue) !important;
+    border-radius: 4px;
+}
+
+/* Enhanced Selectbox Dropdown Text - Light Theme */
+.stSelectbox > div > div > div > div > div > div > div > div > div > div > div {
+    background: transparent !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Dropdown Text Hover - Light Theme */
+.stSelectbox > div > div > div > div > div > div > div > div > div > div:hover > div {
+    background: transparent !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Dropdown Text Selected - Light Theme */
+.stSelectbox > div > div > div > div > div > div > div > div > div > div[aria-selected="true"] > div {
+    background: transparent !important;
+    color: white !important;
+}
+
+/* Enhanced All Selectbox Elements - Comprehensive Light Theme */
+.stSelectbox * {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Baseweb Elements - Light Theme */
+[data-baseweb="select"] {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-baseweb="select"] * {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Popover - Light Theme */
+[data-baseweb="popover"] {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border: 2px solid var(--border-medium) !important;
+    box-shadow: var(--box-shadow) !important;
+}
+
+[data-baseweb="popover"] * {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox List - Light Theme */
+[data-baseweb="list"] {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-baseweb="list"] * {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Option - Light Theme */
+[data-baseweb="option"] {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-baseweb="option"]:hover {
+    background: var(--accent-light) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-baseweb="option"][aria-selected="true"] {
+    background: var(--accent-blue) !important;
+    color: white !important;
+}
+
+/* Enhanced Selectbox Value - Light Theme */
+[data-baseweb="value"] {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Control - Light Theme */
+[data-baseweb="control"] {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border: 2px solid var(--border-medium) !important;
+}
+
+/* Enhanced Selectbox Placeholder - Light Theme */
+[data-baseweb="placeholder"] {
+    background: var(--bg-input) !important;
+    color: var(--text-muted) !important;
+}
+
+/* Enhanced Selectbox Icon - Light Theme */
+[data-baseweb="icon"] {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Selectbox Arrow - Light Theme */
+[data-baseweb="arrow"] {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Section Headers with Maximum Visibility */
 .stMarkdown h2 {
     font-size: 2.2rem !important;
-    font-weight: 700 !important;
+    font-weight: 800 !important;
     color: var(--text-primary) !important;
-    margin-bottom: 1rem !important;
-    padding-bottom: 0.5rem;
-    border-bottom: 3px solid var(--accent-color);
+    margin-bottom: 1.5rem !important;
+    padding-bottom: 0.75rem;
+    border-bottom: 3px solid var(--accent-blue);
     letter-spacing: -0.5px;
+    line-height: 1.3;
 }
 
 .stMarkdown h3 {
     font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: var(--text-primary) !important;
+    margin-bottom: 1.2rem !important;
+    padding: 0.75rem 1rem;
+    background: var(--accent-light);
+    border-radius: 10px;
+    letter-spacing: -0.2px;
+}
+
+.stMarkdown h4 {
+    font-size: 1.2rem !important;
     font-weight: 600 !important;
     color: var(--text-primary) !important;
     margin-bottom: 1rem !important;
-    padding: 0.5rem 0;
-    background: linear-gradient(90deg, var(--accent-color), transparent);
-    padding-left: 1rem;
-    border-radius: 8px;
+    letter-spacing: -0.1px;
 }
 
-/* Enhanced Sidebar Organization - Broader */
+/* Enhanced Sidebar Organization - Light Theme */
 .sidebar {
-    background: var(--sidebar-bg);
+    background: var(--bg-sidebar);
     border-radius: 20px;
-    padding: 2rem;
-    margin: 1rem 0;
+    padding: 2.5rem;
+    margin: 1.5rem 0;
     box-shadow: var(--box-shadow);
     min-width: var(--sidebar-width);
     max-width: var(--sidebar-width);
+    border: 2px solid var(--border-light);
+    position: relative;
+}
+
+.sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent-blue), var(--primary-color));
+    border-radius: 20px 20px 0 0;
 }
 
 .sidebar h2, .sidebar h3 {
@@ -115,156 +589,228 @@
     margin-bottom: 1.5rem;
     font-size: 1.4rem;
     letter-spacing: -0.3px;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-light);
 }
 
-/* Enhanced Card Styles */
+.sidebar h4 {
+    color: var(--text-primary) !important;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    letter-spacing: -0.2px;
+}
+
+/* Enhanced Card Styles - Light Theme */
 .modern-card {
-    background: var(--card-bg);
+    background: var(--bg-card);
     border-radius: var(--border-radius);
     padding: 2rem;
     margin-bottom: 1.5rem;
     box-shadow: var(--box-shadow);
-    border: 1px solid #e2e8f0;
+    border: 2px solid var(--border-light);
     transition: var(--transition);
 }
 
 .modern-card:hover {
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    transform: translateY(-3px);
+    box-shadow: var(--box-shadow-hover);
+    transform: translateY(-2px);
+    border-color: var(--accent-blue);
 }
 
-/* Enhanced Button Styles with better contrast */
+/* Enhanced Button Styles with Light Theme */
 .stButton > button {
     border-radius: 12px;
     font-weight: 700;
     font-size: 16px;
     padding: 14px 28px;
     transition: all 0.3s ease;
-    border: 3px solid transparent;
+    border: 2px solid transparent;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     letter-spacing: 0.3px;
     text-transform: none;
-    color: white;
+    color: white !important;
+    box-shadow: var(--box-shadow);
+    background: var(--bg-button);
 }
 
 .stButton > button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow-hover);
 }
 
-/* Primary buttons with better colors */
+/* Primary buttons with enhanced colors */
 .stButton > button[data-baseweb="button"] {
     font-size: 18px !important;
     padding: 16px 32px !important;
     min-height: 60px !important;
     font-weight: 700 !important;
     letter-spacing: 0.5px !important;
-    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+    background: linear-gradient(135deg, var(--accent-blue), var(--primary-color));
     color: white !important;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
 }
 
-/* Sidebar Button Organization - Enhanced */
+/* Sidebar Button Organization - Enhanced Light Theme */
 .sidebar .stButton > button {
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
     width: 100%;
-    font-size: 14px !important;
-    padding: 12px 16px !important;
-    min-height: 50px !important;
-    border-radius: 10px;
-    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+    font-size: 15px !important;
+    padding: 16px 20px !important;
+    min-height: 55px !important;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--primary-color));
     color: white !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+    font-weight: 600 !important;
+    letter-spacing: 0.3px !important;
+    transition: all 0.3s ease !important;
 }
 
-/* Enhanced Input Styles with better visibility */
+.sidebar .stButton > button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35) !important;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-blue)) !important;
+}
+
+/* Enhanced Form Button Styling */
+.stForm .stButton > button {
+    margin-bottom: 1rem;
+    width: 100%;
+    font-size: 16px !important;
+    padding: 18px 24px !important;
+    min-height: 60px !important;
+    border-radius: 12px;
+    font-weight: 600 !important;
+    letter-spacing: 0.3px !important;
+    transition: all 0.3s ease !important;
+}
+
+.stForm .stButton > button[data-baseweb="button"] {
+    background: linear-gradient(135deg, var(--accent-blue), var(--primary-color)) !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3) !important;
+}
+
+.stForm .stButton > button[data-baseweb="button"]:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 25px rgba(59, 130, 246, 0.4) !important;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-blue)) !important;
+}
+
+/* Secondary Button Styling */
+.stForm .stButton > button:not([data-baseweb="button"]) {
+    background: #fffbeb !important;
+    color: #92400e !important;
+    border: 2px solid #fde68a !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05) !important;
+    font-weight: 500 !important;
+}
+
+.stForm .stButton > button:not([data-baseweb="button"]):hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1) !important;
+    border-color: #f59e0b !important;
+    background: #fef3c7 !important;
+    color: #78350f !important;
+}
+
+/* Enhanced Input Styles with Light Theme */
 .stTextInput > div > div > input {
     border-radius: var(--border-radius);
-    border: 3px solid #e2e8f0;
+    border: 2px solid var(--border-medium);
     transition: var(--transition);
     font-size: 16px;
     padding: 14px 16px;
     font-weight: 500;
-    color: var(--text-primary);
-    background: var(--card-bg);
+    color: var(--text-primary) !important;
+    background: var(--bg-input);
+    box-shadow: var(--box-shadow);
 }
 
 .stTextInput > div > div > input:focus {
-    border-color: var(--accent-color);
-    box-shadow: 0 0 0 0.3rem rgba(59, 130, 246, 0.25);
-    transform: translateY(-2px);
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    transform: translateY(-1px);
+    background: var(--bg-input);
 }
 
 .stTextArea > div > div > textarea {
     border-radius: var(--border-radius);
-    border: 3px solid #e2e8f0;
+    border: 2px solid var(--border-medium);
     transition: var(--transition);
     font-size: 16px;
     padding: 14px 16px;
     font-weight: 500;
-    color: var(--text-primary);
-    background: var(--card-bg);
+    color: var(--text-primary) !important;
+    background: var(--bg-input);
+    box-shadow: var(--box-shadow);
 }
 
 .stTextArea > div > div > textarea:focus {
-    border-color: var(--accent-color);
-    box-shadow: 0 0 0 0.3rem rgba(59, 130, 246, 0.25);
-    transform: translateY(-2px);
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    transform: translateY(-1px);
+    background: var(--bg-input);
 }
 
 /* Enhanced Slider Styles */
 .stSlider > div > div > div > div {
-    background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
+    background: linear-gradient(90deg, var(--accent-blue), var(--primary-color));
     height: 8px;
     border-radius: 4px;
 }
 
 .stSlider > div > div > div > div > div {
-    background: var(--accent-color);
+    background: var(--accent-blue);
     border: 3px solid white;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     width: 20px;
     height: 20px;
 }
 
-/* Enhanced Chat Interface Styles */
+/* Enhanced Chat Interface Styles - Light Theme */
 .chat-container {
-    background: var(--card-bg);
+    background: var(--bg-message);
     border-radius: var(--border-radius);
     padding: 1.5rem;
     margin-bottom: 1.5rem;
     box-shadow: var(--box-shadow);
-    border: 1px solid #e2e8f0;
+    border: 2px solid var(--border-light);
 }
 
 .chat-message {
     padding: 1.5rem;
     margin-bottom: 1.5rem;
     border-radius: var(--border-radius);
-    border-left: 5px solid var(--primary-color);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-left: 4px solid var(--primary-color);
+    box-shadow: var(--box-shadow);
     transition: var(--transition);
+    background: var(--bg-message);
+    color: var(--text-primary) !important;
 }
 
 .chat-message:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
+    box-shadow: var(--box-shadow-hover);
 }
 
 .chat-message.user {
-    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    background: var(--bg-secondary);
     border-left-color: var(--info-color);
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
 }
 
 .chat-message.ai {
-    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    background: var(--accent-light);
     border-left-color: var(--primary-color);
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
 }
 
-/* Enhanced Quick Questions */
+/* Enhanced Quick Questions - Light Theme */
 .quick-question {
-    background: linear-gradient(135deg, var(--light-color), #e2e8f0);
-    border: 2px solid #e2e8f0;
+    background: var(--bg-card);
+    border: 2px solid var(--border-medium);
     border-radius: var(--border-radius);
     padding: 1rem;
     margin-bottom: 0.75rem;
@@ -272,29 +818,33 @@
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
+    box-shadow: var(--box-shadow);
 }
 
 .quick-question:hover {
-    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
-    color: white;
+    background: linear-gradient(135deg, var(--accent-blue), var(--primary-color));
+    color: white !important;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    border-color: var(--accent-blue);
 }
 
-/* Enhanced Progress and Status */
+/* Enhanced Progress and Status - Light Theme */
 .progress-container {
-    background: linear-gradient(135deg, var(--light-color), #e2e8f0);
+    background: var(--bg-panel);
     border-radius: var(--border-radius);
     padding: 1.5rem;
     margin: 1.5rem 0;
     text-align: center;
     box-shadow: var(--box-shadow);
+    border: 2px solid var(--border-light);
+    color: var(--text-primary) !important;
 }
 
-/* Enhanced Messages with better contrast */
+/* Enhanced Messages with Light Theme */
 .error-message {
-    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    background: #fef2f2;
     color: #991b1b;
     border: 2px solid #fecaca;
     border-radius: var(--border-radius);
@@ -305,7 +855,7 @@
 }
 
 .success-message {
-    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    background: #f0fdf4;
     color: #166534;
     border: 2px solid #bbf7d0;
     border-radius: var(--border-radius);
@@ -316,7 +866,7 @@
 }
 
 .warning-message {
-    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    background: #fffbeb;
     color: #92400e;
     border: 2px solid #fde68a;
     border-radius: var(--border-radius);
@@ -327,7 +877,7 @@
 }
 
 .info-message {
-    background: linear-gradient(135deg, #ecfeff, #cffafe);
+    background: #ecfeff;
     color: #164e63;
     border: 2px solid #a5f3fc;
     border-radius: var(--border-radius);
@@ -337,30 +887,34 @@
     box-shadow: var(--box-shadow);
 }
 
-/* Enhanced Server Status */
+/* Enhanced Server Status - Light Theme */
 .server-status {
     padding: 0.75rem;
     border-radius: var(--border-radius);
     margin-bottom: 0.75rem;
     font-size: 14px;
     font-weight: 600;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: var(--box-shadow);
+    border: 1px solid var(--border-light);
+    color: var(--text-primary) !important;
 }
 
 .server-status.running {
-    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    background: #f0fdf4;
     color: #166534;
+    border-color: #bbf7d0;
 }
 
 .server-status.stopped {
-    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    background: #fef2f2;
     color: #991b1b;
+    border-color: #fecaca;
 }
 
 /* Enhanced Spinner */
 .stSpinner > div {
-    border: 4px solid #e2e8f0;
-    border-top: 4px solid var(--accent-color);
+    border: 4px solid var(--border-light);
+    border-top: 4px solid var(--accent-blue);
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -372,58 +926,59 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Enhanced Metrics with better visibility */
+/* Enhanced Metrics with Light Theme */
 .stMetric {
-    background: var(--card-bg);
+    background: var(--bg-card);
     border-radius: var(--border-radius);
     padding: 1.5rem;
     box-shadow: var(--box-shadow);
-    border: 1px solid #e2e8f0;
+    border: 2px solid var(--border-light);
     text-align: center;
     transition: var(--transition);
 }
 
 .stMetric:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    box-shadow: var(--box-shadow-hover);
+    border-color: var(--accent-blue);
 }
 
 .stMetric > div > div > div {
-    font-size: 2rem !important;
-    font-weight: 700 !important;
-    color: var(--accent-color) !important;
+    font-size: 2.2rem !important;
+    font-weight: 800 !important;
+    color: var(--accent-blue) !important;
 }
 
 .stMetric > div > div > div + div {
-    font-size: 1rem !important;
+    font-size: 1.1rem !important;
     font-weight: 600 !important;
     color: var(--text-secondary) !important;
 }
 
-/* Enhanced Code Blocks */
+/* Enhanced Code Blocks - Light Theme */
 .stCodeBlock {
-    background: #f8fafc;
-    border: 2px solid #e2e8f0;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-medium);
     border-radius: var(--border-radius);
     padding: 1rem;
     font-family: 'Courier New', monospace;
     font-size: 14px;
     overflow-x: auto;
     box-shadow: var(--box-shadow);
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
 }
 
-/* Enhanced JSON Display */
+/* Enhanced JSON Display - Light Theme */
 .stJson {
-    background: #f8fafc;
-    border: 2px solid #e2e8f0;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-medium);
     border-radius: var(--border-radius);
     padding: 1rem;
     font-family: 'Courier New', monospace;
     font-size: 13px;
     overflow-x: auto;
     box-shadow: var(--box-shadow);
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
 }
 
 /* Enhanced Responsive Design */
@@ -472,14 +1027,14 @@
 .p-2 { padding: 1.5rem; }
 .p-3 { padding: 2rem; }
 
-/* Enhanced Status Colors with better contrast */
+/* Enhanced Status Colors with Light Theme */
 .status-success {
     color: var(--success-color);
     font-weight: 700;
 }
 
 .status-error {
-    color: var(--warning-color);
+    color: var(--secondary-color);
     font-weight: 700;
 }
 
@@ -490,14 +1045,14 @@
 
 /* Enhanced Focus States */
 .stButton > button:focus {
-    outline: 3px solid var(--accent-color);
+    outline: 3px solid var(--accent-blue);
     outline-offset: 3px;
 }
 
 .stTextInput > div > div > input:focus,
 .stTextArea > div > div > textarea:focus,
 .stSelectbox > div > div > div:focus-within {
-    outline: 3px solid var(--accent-color);
+    outline: 3px solid var(--accent-blue);
     outline-offset: 3px;
 }
 
@@ -507,14 +1062,14 @@
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f5f9;
+    background: var(--bg-secondary);
     border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--accent-color);
+    background: var(--accent-blue);
     border-radius: 6px;
-    border: 2px solid #f1f5f9;
+    border: 2px solid var(--bg-secondary);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -524,52 +1079,54 @@
 /* Enhanced Loading Animation */
 @keyframes pulse {
     0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.7; transform: scale(1.05); }
+    50% { opacity: 0.8; transform: scale(1.02); }
 }
 
 .loading {
     animation: pulse 2s ease-in-out infinite;
 }
 
-/* Enhanced Tool Usage Display */
+/* Enhanced Tool Usage Display - Light Theme */
 .tool-usage {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(8, 145, 178, 0.1));
-    border: 2px solid rgba(59, 130, 246, 0.3);
+    background: var(--accent-light);
+    border: 2px solid rgba(59, 130, 246, 0.2);
     border-radius: var(--border-radius);
     padding: 1rem;
     margin: 1rem 0;
     font-size: 14px;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
+    box-shadow: var(--box-shadow);
 }
 
 .tool-usage strong {
-    color: var(--accent-color);
+    color: var(--accent-blue);
+    font-weight: 700;
 }
 
-/* Enhanced Configuration Section */
+/* Enhanced Configuration Section - Light Theme */
 .config-section {
-    background: var(--card-bg);
+    background: var(--bg-card);
     border-radius: var(--border-radius);
     padding: 1.5rem;
     margin: 1rem 0;
     box-shadow: var(--box-shadow);
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--border-light);
 }
 
 .config-section h4 {
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
     font-weight: 700;
     margin-bottom: 1rem;
     font-size: 1.2rem;
     letter-spacing: -0.2px;
 }
 
-
-
-/* Enhanced Text Visibility */
+/* Enhanced Text Visibility - Maximum Contrast */
 .stMarkdown p, .stMarkdown div, .stMarkdown span {
     color: var(--text-primary) !important;
+    font-weight: 400;
+    line-height: 1.7;
 }
 
 .stMarkdown strong, .stMarkdown b {
@@ -580,16 +1137,259 @@
 .stMarkdown em, .stMarkdown i {
     color: var(--text-secondary) !important;
     font-style: italic !important;
+    font-weight: 500;
 }
 
 /* Enhanced Checkbox Styling */
 .stCheckbox > div > div > div {
     color: var(--text-primary) !important;
     font-weight: 500 !important;
+    font-size: 14px;
 }
 
 /* Enhanced Label Styling */
 .stMarkdown label {
     color: var(--text-primary) !important;
     font-weight: 600 !important;
+    font-size: 14px;
+}
+
+/* Enhanced Caption Styling */
+.stMarkdown .caption {
+    color: var(--text-muted) !important;
+    font-weight: 500 !important;
+    font-size: 12px;
+}
+
+/* Enhanced Link Styling */
+.stMarkdown a {
+    color: var(--accent-blue) !important;
+    font-weight: 600 !important;
+    text-decoration: none;
+}
+
+.stMarkdown a:hover {
+    color: var(--primary-color) !important;
+    text-decoration: underline;
+}
+
+/* Enhanced List Styling */
+.stMarkdown ul, .stMarkdown ol {
+    color: var(--text-primary) !important;
+    font-weight: 400;
+    line-height: 1.7;
+}
+
+.stMarkdown li {
+    color: var(--text-primary) !important;
+    font-weight: 400;
+    margin-bottom: 0.5rem;
+}
+
+/* Enhanced Blockquote Styling */
+.stMarkdown blockquote {
+    background: var(--bg-secondary);
+    border-left: 4px solid var(--accent-blue);
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 8px;
+    color: var(--text-primary) !important;
+    font-style: italic;
+    font-weight: 500;
+}
+
+/* Enhanced Table Styling */
+.stTable {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+}
+
+.stTable th {
+    background: linear-gradient(135deg, var(--accent-blue), var(--primary-color));
+    color: white !important;
+    font-weight: 700 !important;
+    padding: 1rem;
+    text-align: left;
+}
+
+.stTable td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-primary) !important;
+    font-weight: 400;
+}
+
+.stTable tr:hover {
+    background: var(--bg-secondary);
+}
+
+/* Enhanced Info Boxes */
+.stAlert {
+    background: var(--bg-card);
+    border: 2px solid var(--border-light);
+    border-radius: var(--border-radius);
+    color: var(--text-primary) !important;
+    font-weight: 500;
+}
+
+/* Enhanced Form Elements */
+.stForm {
+    background: var(--bg-form);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--box-shadow);
+    border: 2px solid var(--border-light);
+}
+
+/* Enhanced Chat Message Styling */
+.stChatMessage {
+    background: var(--bg-message);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--box-shadow);
+    border: 1px solid var(--border-light);
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Caption Styling */
+.stCaption {
+    color: var(--text-muted) !important;
+    font-weight: 500 !important;
+    font-size: 12px;
+}
+
+/* Enhanced Info Messages */
+.stInfo {
+    background: var(--accent-light);
+    border: 2px solid var(--border-light);
+    border-radius: var(--border-radius);
+    color: var(--text-primary) !important;
+    font-weight: 500;
+}
+
+/* Enhanced Warning Messages */
+.stWarning {
+    background: #fffbeb;
+    border: 2px solid #fde68a;
+    border-radius: var(--border-radius);
+    color: #92400e !important;
+    font-weight: 500;
+}
+
+/* Enhanced Error Messages */
+.stError {
+    background: #fef2f2;
+    border: 2px solid #fecaca;
+    border-radius: var(--border-radius);
+    color: #991b1b !important;
+    font-weight: 500;
+}
+
+/* Enhanced Success Messages */
+.stSuccess {
+    background: #f0fdf4;
+    border: 2px solid #bbf7d0;
+    border-radius: var(--border-radius);
+    color: #166534 !important;
+    font-weight: 500;
+}
+
+/* Enhanced Panel Styling */
+.stPanel {
+    background: var(--bg-panel);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin: 1rem 0;
+    box-shadow: var(--box-shadow);
+    border: 2px solid var(--border-light);
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Container Styling */
+.stContainer {
+    background: var(--bg-content);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin: 1rem 0;
+    box-shadow: var(--box-shadow);
+    border: 2px solid var(--border-light);
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Div Styling */
+.stDiv {
+    background: var(--bg-content);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin: 0.5rem 0;
+    box-shadow: var(--box-shadow);
+    border: 1px solid var(--border-light);
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Section Styling */
+.stSection {
+    background: var(--bg-panel);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    margin: 1.5rem 0;
+    box-shadow: var(--box-shadow);
+    border: 2px solid var(--border-light);
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Column Styling */
+.stColumn {
+    background: var(--bg-content);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin: 0.5rem;
+    box-shadow: var(--box-shadow);
+    border: 1px solid var(--border-light);
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Expander Styling */
+.stExpander {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    border: 2px solid var(--border-light);
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Tabs Styling */
+.stTabs {
+    background: var(--bg-panel);
+    border-radius: var(--border-radius);
+    border: 2px solid var(--border-light);
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Sidebar Styling */
+section[data-testid="stSidebar"] {
+    background: var(--bg-sidebar) !important;
+    border-right: 2px solid var(--border-light);
+}
+
+/* Enhanced Main Content Styling */
+section[data-testid="stSidebar"] + div {
+    background: var(--bg-main) !important;
+}
+
+/* Enhanced Footer Styling */
+footer {
+    background: var(--bg-secondary) !important;
+    color: var(--text-secondary) !important;
+    border-top: 2px solid var(--border-light);
+}
+
+/* Enhanced Navigation Styling */
+nav {
+    background: var(--bg-header) !important;
+    border-bottom: 2px solid var(--border-light);
+    color: var(--text-primary) !important;
 } 
