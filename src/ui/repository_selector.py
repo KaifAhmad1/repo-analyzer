@@ -1,6 +1,6 @@
 """
-Streamlined Repository Selector UI Component
-Provides a clean interface for selecting and analyzing GitHub repositories
+Enhanced Repository Selector UI Component
+Clean interface for selecting GitHub repositories with improved visual appeal
 """
 
 import streamlit as st
@@ -45,113 +45,84 @@ def normalize_github_url(url: str) -> str:
     return url
 
 def render_repository_selector() -> Optional[str]:
-    """Render the repository selector component"""
+    """Render the enhanced repository selector component"""
     
-    st.markdown("### 📁 Select Repository")
+    st.markdown("### 📁 Repository Selection")
+    st.markdown("Enter a GitHub repository URL to start analyzing:")
     
-    # Add recent repositories feature
-    if "recent_repos" not in st.session_state:
-        st.session_state.recent_repos = []
-    
-    # Show recent repositories if available
-    if st.session_state.recent_repos:
-        st.markdown("#### 🕒 Recent Repositories")
-        for i, recent_repo in enumerate(st.session_state.recent_repos[-3:]):
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                st.markdown(f"📦 {recent_repo}")
-            with col2:
-                if st.button("Use", key=f"use_recent_{i}"):
-                    st.session_state.current_repo = recent_repo
-                    st.rerun()
-    
-    # Repository URL input with form for better UX
+    # Repository URL input with enhanced form styling
     with st.form(key="repo_selector_form"):
         repo_url = st.text_input(
-            "GitHub Repository URL",
+            "🔗 GitHub Repository URL",
             value=st.session_state.get("current_repo", ""),
             placeholder="https://github.com/owner/repository",
-            help="Enter a valid GitHub repository URL (press Enter to submit)"
+            help="Enter a valid GitHub repository URL to analyze"
         )
         
+        # Enhanced button layout
         col1, col2 = st.columns([2, 1])
         with col1:
             submit_button = st.form_submit_button("🔍 Analyze Repository", type="primary", use_container_width=True)
         with col2:
             clear_button = st.form_submit_button("🗑️ Clear", use_container_width=True)
     
-    # Handle form submissions
+    # Handle form submissions with enhanced feedback
     if clear_button:
         st.session_state.current_repo = ""
         st.rerun()
     
     if submit_button and repo_url:
-        # Validate and normalize URL
-        if validate_github_url(repo_url):
-            normalized_url = normalize_github_url(repo_url)
-            
-            # Add to recent repositories
-            if normalized_url not in st.session_state.recent_repos:
-                st.session_state.recent_repos.append(normalized_url)
-                # Keep only last 5 repositories
-                if len(st.session_state.recent_repos) > 5:
-                    st.session_state.recent_repos = st.session_state.recent_repos[-5:]
-            
-            # Display repository info with enhanced styling
-            st.success(f"✅ **Valid repository selected!**")
-            
-            # Extract owner and repo name
-            parts = normalized_url.replace("https://github.com/", "").split("/")
-            if len(parts) >= 2:
-                owner, repo = parts[0], parts[1]
+        # Validate and normalize URL with enhanced progress
+        with st.spinner("🔍 Validating repository URL..."):
+            if validate_github_url(repo_url):
+                normalized_url = normalize_github_url(repo_url)
                 
-                # Create a nice info box
-                st.info(f"""
-                **Repository Details:**
-                - **Owner:** {owner}
-                - **Repository:** {repo}
-                - **Full URL:** {normalized_url}
+                # Enhanced success display
+                st.success(f"✅ **Repository selected successfully!**")
+                
+                # Extract and display repository info
+                parts = normalized_url.replace("https://github.com/", "").split("/")
+                if len(parts) >= 2:
+                    owner, repo = parts[0], parts[1]
+                    
+                    # Enhanced info display
+                    st.info(f"""
+                    **📋 Repository Details:**
+                    - **👤 Owner:** `{owner}`
+                    - **📦 Repository:** `{repo}`
+                    - **🔗 Full URL:** `{normalized_url}`
+                    """)
+                
+                return normalized_url
+            else:
+                # Enhanced error display
+                st.error("❌ **Invalid GitHub repository URL**")
+                st.markdown("""
+                **Please enter a valid URL in one of these formats:**
+                - `https://github.com/owner/repository`
+                - `https://github.com/owner/repository.git`
+                - `github.com/owner/repository`
                 """)
-            
-            # Add quick actions
-            st.markdown("#### ⚡ Quick Actions")
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                if st.button("📊 Quick Overview", key="quick_overview"):
-                    st.session_state.quick_action = "overview"
-                    st.rerun()
-            with col2:
-                if st.button("📁 File Structure", key="quick_structure"):
-                    st.session_state.quick_action = "structure"
-                    st.rerun()
-            with col3:
-                if st.button("🔍 Code Search", key="quick_search"):
-                    st.session_state.quick_action = "search"
-                    st.rerun()
-            
-            return normalized_url
-        else:
-            st.error("❌ **Invalid GitHub repository URL.** Please enter a valid URL in the format: `https://github.com/owner/repository`")
-            
-            # Show examples
-            st.markdown("#### 💡 Example URLs:")
-            st.code("""
+                
+                # Show examples
+                st.markdown("**💡 Example URLs:**")
+                st.code("""
 https://github.com/microsoft/vscode
 https://github.com/facebook/react
 https://github.com/python/cpython
-            """)
-            return None
+                """)
+                return None
     
-    # Instructions for users
+    # Enhanced instructions for users
     if not repo_url:
-        st.markdown("#### 📝 Instructions")
+        st.markdown("#### 📝 How to Use")
         st.info("""
-        **How to use:**
-        1. Enter a valid GitHub repository URL
-        2. Press Enter or click "Analyze Repository"
-        3. Start exploring the repository with AI-powered tools!
+        **🚀 Getting Started:**
+        1. **Enter** a valid GitHub repository URL above
+        2. **Click** "Analyze Repository" or press Enter
+        3. **Start** exploring with AI-powered tools!
         
-        **Example format:** `https://github.com/owner/repository`
+        **💡 Tip:** You can analyze any public GitHub repository
         """)
     
     return None 
