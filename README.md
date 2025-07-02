@@ -26,14 +26,24 @@ A clean, modern interface for analyzing GitHub repositories using FastMCP v2 ser
      GROQ_API_KEY=your_groq_api_key_here
      ```
 
-3. **Run the Application**:
+3. **Start MCP Servers** (Required):
+   ```bash
+   # Option 1: Use the startup script
+   python start_servers.py
+   
+   # Option 2: Start servers manually
+   python src/servers/server_manager.py start
+   ```
+
+4. **Run the Application**:
    ```bash
    streamlit run app.py
    ```
 
-4. **Start Analyzing**:
+5. **Start Analyzing**:
    - Enter a GitHub repository URL (e.g., `https://github.com/microsoft/vscode`)
    - Use the Q&A chat or quick analysis features
+   - Monitor server status in the sidebar
 
 ## 🎯 How to Use
 
@@ -41,6 +51,13 @@ A clean, modern interface for analyzing GitHub repositories using FastMCP v2 ser
 - Enter any valid GitHub repository URL
 - The app will validate and load repository information
 - Repository details will appear in the sidebar
+
+### Server Management
+- **Server Status**: Monitor all 4 MCP servers in the sidebar
+- **Auto-Start**: Servers can be started automatically if offline
+- **Individual Control**: Start/stop individual servers as needed
+- **Health Monitoring**: Real-time system health percentage
+- **Quick Actions**: Start all, stop all, or restart all servers
 
 ### Q&A Chat
 - Ask natural language questions about the repository
@@ -68,12 +85,15 @@ A clean, modern interface for analyzing GitHub repositories using FastMCP v2 ser
 - **AI Backend**: Groq API with multiple model options
 - **Repository Access**: FastMCP v2 servers for GitHub integration
 - **Analysis Tools**: Custom tools for code analysis and metrics
+- **Server Management**: Automated MCP server lifecycle management
 
 ## 📁 Project Structure
 
 ```
 repo-analyzer/
 ├── app.py                 # Main Streamlit application
+├── start_servers.py       # MCP server startup script
+├── debug_servers.py       # Server testing and debugging
 ├── src/
 │   ├── agent/            # AI agent and tools
 │   ├── servers/          # FastMCP v2 servers
@@ -104,7 +124,50 @@ Choose from available Groq models:
 ### Analysis Settings
 - **Analysis Depth**: Control how deep to explore repository structure (1-5)
 - **Tool Usage Display**: Toggle visibility of which tools were used in responses
-- **Server Status**: Monitor FastMCP server connections
+- **Server Status**: Monitor FastMCP server connections in real-time
+
+### Server Management
+- **Individual Server Control**: Start/stop each of the 4 MCP servers independently
+- **Bulk Operations**: Start all, stop all, or restart all servers with one click
+- **Health Monitoring**: Real-time system health percentage and status indicators
+- **Auto-Start**: Automatic server startup when the application detects offline servers
+
+## 🖥️ Server Management
+
+### MCP Servers Overview
+The application uses 4 core FastMCP v2 servers for repository analysis:
+
+1. **File Content Server 📁** - Retrieves and reads file contents
+2. **Repository Structure Server 🌳** - Gets directory trees and file listings  
+3. **Commit History Server 📝** - Accesses commit messages and changes
+4. **Code Search Server 🔍** - Searches for specific code patterns
+
+### Starting Servers
+```bash
+# Quick start (recommended)
+python start_servers.py
+
+# Manual start
+python src/servers/server_manager.py start
+```
+
+### Server Status Monitoring
+- **Sidebar Display**: Real-time status of all servers in the application sidebar
+- **Health Indicators**: Green (🟢) for running, Red (🔴) for stopped
+- **System Health**: Overall health percentage based on running servers
+- **Quick Actions**: Buttons to start/stop/restart servers directly from the UI
+
+### Troubleshooting
+```bash
+# Test server connections
+python debug_servers.py
+
+# Check server status
+python src/servers/server_manager.py status
+
+# Restart all servers
+python src/servers/server_manager.py restart
+```
 
 ## 🚀 Powered By
 
