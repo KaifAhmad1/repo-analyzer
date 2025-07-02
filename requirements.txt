@@ -6,7 +6,7 @@ pydantic>=2.5.0
 requests>=2.31.0
 
 # AI & MCP
-google-generativeai>=0.3.0
+agno>=0.1.0
 fastmcp>=2.0.0
 
 # Data Visualization

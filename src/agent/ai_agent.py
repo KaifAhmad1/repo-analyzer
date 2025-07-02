@@ -205,77 +205,27 @@ class FastMCPTools:
         except Exception as e:
             return f"Error: {str(e)}"
 
-def create_repository_analyzer_agent(model_name: str = "llama-3.3-70b-versatile") -> Agent:
-    """Create a focused repository analysis agent using FastMCP v2 and Groq Llama 3.3"""
+def create_repository_analyzer_agent(model_name: str = "llama-3.1-70b-versatile") -> Agent:
+    """Create an AI agent for repository analysis using Groq"""
     
+    # Get Groq API key
+    groq_api_key = os.getenv("GROQ_API_KEY")
+    if not groq_api_key:
+        raise ValueError("GROQ_API_KEY environment variable is required")
+    
+    # Create Groq model
+    model = Groq(
+        model=model_name,
+        api_key=groq_api_key
+    )
+    
+    # Create tools instance
     tools = FastMCPTools()
     
-    # Clear, focused instructions for the agent
-    agent_instructions = [
-        "You are a GitHub Repository Analyzer powered by FastMCP v2. Your job is to answer questions about GitHub repositories using the available tools.",
-        "",
-        "Available Tools (FastMCP v2):",
-        "",
-        "📁 File Content Tools:",
-        "- get_file_content: Get content of a specific file",
-        "- list_directory: List directory contents", 
-        "- get_readme_content: Get README content from repository",
-        "",
-        "🌳 Repository Structure Tools:",
-        "- get_directory_tree: Get directory tree structure",
-        "- get_file_structure: Get flat file structure",
-        "- analyze_project_structure: Analyze project structure and identify key components",
-        "",
-        "📝 Commit History Tools:",
-        "- get_recent_commits: Get recent commit history",
-        "- get_commit_details: Get detailed commit information",
-        "- get_commit_statistics: Get commit statistics",
-        "",
-        "🔍 Code Search Tools:",
-        "- search_code: Search for code patterns",
-        "- search_files: Search for files by pattern",
-        "- find_functions: Find function definitions",
-        "- get_code_metrics: Get code metrics and statistics",
-        "- search_dependencies: Search for dependency files",
-        "- analyze_code_structure: Analyze code structure using AST and CST for Python files",
-        "- find_code_patterns: Find specific code patterns (async_functions, decorators, type_hints, exceptions)",
-        "",
-        "📊 Advanced Code Analysis Tools:",
-        "- analyze_file_content: Get file content with advanced code analysis for Python files",
-        "- get_code_summary: Get a summary of code structure and metrics for Python files",
-        "- find_code_issues: Find potential code issues and suggestions for Python files",
-        "- analyze_codebase_structure: Analyze the codebase structure with AST parsing for Python files",
-        "",
-        "How to Answer Questions:",
-        "1. Always use the appropriate tools to get accurate information",
-        "2. For 'what is this repo about' - use get_readme_content and analyze_project_structure",
-        "3. For 'main entry points' - use get_file_structure and look for main files",
-        "4. For 'recent changes' - use get_recent_commits",
-        "5. For 'find functions' - use find_functions or search_code",
-        "6. For 'dependencies' - use search_dependencies",
-        "7. For 'file structure' - use get_directory_tree or get_file_structure",
-        "8. For 'code analysis' - use analyze_code_structure, analyze_file_content, or analyze_codebase_structure",
-        "9. For 'code patterns' - use find_code_patterns with pattern_type (async_functions, decorators, type_hints, exceptions)",
-        "10. For 'code issues' - use find_code_issues to identify potential problems",
-        "11. For 'code summary' - use get_code_summary for quick overview of Python files",
-        "12. For 'code patterns' - use search_code",
-        "13. For 'project analysis' - use analyze_project_structure",
-        "",
-        "Response Format:",
-        "- Be clear and concise",
-        "- Use markdown formatting",
-        "- Include relevant code examples when helpful",
-        "- Structure answers with headers and bullet points",
-        "- Always explain what you found and how you found it",
-        "",
-        "Remember: Use FastMCP v2 tools first, then provide analysis based on the data you gather."
-    ]
-    
+    # Create agent with repository analysis prompt
     agent = Agent(
-        name="Repository Analyzer (FastMCP v2)",
-        model=Groq(id=model_name),
+        model=model,
         tools=[
-            ReasoningTools(add_instructions=True),
             tools.get_file_content,
             tools.list_directory,
             tools.get_readme_content,
@@ -290,10 +240,39 @@ def create_repository_analyzer_agent(model_name: str = "llama-3.3-70b-versatile"
             tools.find_functions,
             tools.get_code_metrics,
             tools.search_dependencies,
+            tools.analyze_code_structure,
+            tools.find_code_patterns,
+            tools.analyze_file_content,
+            tools.get_code_summary,
+            tools.find_code_issues,
+            tools.analyze_codebase_structure
         ],
-        instructions=agent_instructions,
-        markdown=True,
-        add_datetime_to_instructions=True,
+        system_prompt="""You are an expert GitHub repository analyzer. Your job is to help users understand and analyze GitHub repositories.
+
+Key capabilities:
+- Analyze repository structure and architecture
+- Search and examine code files
+- Understand dependencies and project setup
+- Analyze commit history and development patterns
+- Provide insights about code quality and patterns
+- Answer questions about the repository
+
+Guidelines:
+1. Always be helpful and thorough in your analysis
+2. Use the available tools to gather comprehensive information
+3. Provide clear, actionable insights
+4. Explain technical concepts in an accessible way
+5. Focus on what's most important for the user's needs
+6. Be systematic in your approach to analysis
+
+When analyzing repositories:
+- Start with an overview of the project structure
+- Identify key files and their purposes
+- Analyze the technology stack and dependencies
+- Look for patterns in the codebase
+- Provide recommendations for improvement if relevant
+
+Remember: You have access to powerful tools for repository analysis. Use them effectively to provide the best possible insights."""
     )
     
     return agent

@@ -1,15 +1,18 @@
 # Repository Analyzer - FastMCP v2 Edition 🚀
 
-A powerful GitHub repository analysis tool built with **FastMCP v2** for simple, effective, and modern MCP server architecture.
+A powerful GitHub repository analysis tool built with **FastMCP v2** and **Groq AI** for simple, effective, and modern repository analysis.
 
 ## ✨ Features
 
 - **FastMCP v2 Powered**: Built on the latest FastMCP framework for optimal performance
+- **Groq AI Integration**: High-performance AI analysis using Groq's LLM models
 - **4 Core Servers**: Simplified architecture with essential functionality
 - **Async Operations**: Efficient async/await patterns throughout
-- **AI-Powered Analysis**: Intelligent repository analysis using Google Gemini
+- **AI-Powered Analysis**: Intelligent repository analysis using Groq's advanced models
 - **Advanced Code Analysis**: AST/CST parsing with Tree-sitter for deep code understanding
-- **Modern UI**: Clean, responsive web interface
+- **Modern UI**: Clean, responsive web interface with organized sidebar and user controls
+- **User Controllability**: Customizable analysis settings, model selection, and UI preferences
+- **Automatic Configuration**: API key automatically loaded from .env file
 
 ## 🏗️ Architecture
 
@@ -51,21 +54,33 @@ A powerful GitHub repository analysis tool built with **FastMCP v2** for simple,
 
 ### Installation
 
-   ```bash
+```bash
 # Clone the repository
 git clone <repository-url>
-cd repo-analyzer-17
+cd repo-analyzer-19
 
 # Install dependencies
-   pip install -r requirements.txt
-   ```
+pip install -r requirements.txt
+```
+
+### Configuration
+
+1. **Get Groq API Key**: Visit [Groq Console](https://console.groq.com/keys) to get your API key
+2. **Create .env file**: Create a `.env` file in the project root:
+
+```env
+# Groq API Key (Required)
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+3. **Restart the application**: The API key will be automatically loaded
 
 ### Running the Application
 
-   ```bash
+```bash
 # Start the Streamlit application
-   streamlit run app.py
-   ```
+streamlit run app.py
+```
 
 ### Testing FastMCP v2 Implementation
 
@@ -73,6 +88,36 @@ cd repo-analyzer-17
 # Run the test script
 python test_fastmcp.py
 ```
+
+## 🎛️ User Interface & Controls
+
+### Organized Sidebar
+
+The application features a well-organized sidebar with:
+
+- **📁 Repository Section**: Repository selector and info display
+- **⚙️ Settings Section**: 
+  - **🔑 API Configuration**: Shows status of .env API key (no input required)
+  - **🤖 AI Model Settings**: Choose from available Groq models
+  - **🔍 Analysis Settings**: Customize analysis depth and preferences
+  - **🎨 UI Preferences**: Theme and interface customization
+- **⚡ Quick Actions**: Refresh, metrics, and export options
+- **📊 Status**: Real-time configuration and server status
+
+### Available Groq Models
+
+- `llama-3.1-70b-versatile` (Default) - Best for general analysis
+- `llama-3.1-8b-instant` - Fast responses
+- `llama-3.1-405b-reasoning` - Advanced reasoning capabilities
+- `mixtral-8x7b-32768` - Good balance of speed and quality
+- `gemma2-9b-it` - Efficient for specific tasks
+
+### Analysis Controls
+
+- **Analysis Depth**: Control how deep to analyze repository structure (1-5 levels)
+- **Include Patterns**: Select what types of files to include in analysis
+- **Response Style**: Choose between Detailed, Concise, Technical, or Beginner-friendly responses
+- **Tool Usage Display**: Toggle visibility of which tools were used in responses
 
 ## 🛠️ Development
 
@@ -118,7 +163,7 @@ async with Client("src/servers/file_content_server.py") as client:
 ## 📁 Project Structure
 
 ```
-repo-analyzer-17/
+repo-analyzer-19/
 ├── app.py                          # Main Streamlit application
 ├── requirements.txt                # Python dependencies
 ├── test_fastmcp.py                # FastMCP v2 test script
@@ -131,10 +176,13 @@ repo-analyzer-17/
 │   │   ├── commit_history_server.py    # Commit history
 │   │   ├── code_search_server.py       # Code search
 │   │   └── server_manager.py           # Server management
-│   └── ui/
-│       ├── chat_interface.py      # Chat UI components
-│       ├── repository_selector.py # Repository selection
-│       └── modern_styles.css      # Styling
+│   ├── ui/
+│   │   ├── chat_interface.py      # Chat UI components
+│   │   ├── repository_selector.py # Repository selection
+│   │   ├── settings_sidebar.py    # Settings and controls
+│   │   └── modern_styles.css      # Styling
+│   └── utils/
+│       └── config.py              # Configuration utilities
 ```
 
 ## 🔧 Configuration
@@ -144,12 +192,13 @@ repo-analyzer-17/
 Create a `.env` file for configuration:
 
 ```env
-# Google Gemini API Key
-GOOGLE_API_KEY=your_gemini_api_key_here
+# Groq API Key (Required)
+GROQ_API_KEY=your_groq_api_key_here
 
-# GitHub API Token (optional, for higher rate limits)
-GITHUB_TOKEN=your_github_token_here
+# Example: GROQ_API_KEY=gsk_abc123def456ghi789jkl012mno345pqr678stu901vwx234yz
 ```
+
+**Note**: The application automatically loads the API key from the `.env` file. No manual input is required in the interface.
 
 ## 🧪 Testing
 
@@ -197,50 +246,49 @@ result = tools.find_code_patterns(repo_url, "type_hints")
 
 # Get comprehensive file analysis
 result = tools.analyze_file_content(repo_url, "src/main.py")
-
-# Get code summary
-result = tools.get_code_summary(repo_url, "src/main.py")
-
-# Find potential issues
-result = tools.find_code_issues(repo_url, "src/main.py")
-
-# Analyze entire codebase
-result = tools.analyze_codebase_structure(repo_url)
 ```
 
-## 🚀 FastMCP v2 Benefits
+## 🎨 UI/UX Improvements
 
-- **Simplified Architecture**: 4 focused servers instead of complex multi-server setup
-- **Async by Default**: All operations use async/await for better performance
-- **Easy Testing**: In-memory testing with FastMCP Client
-- **Modern Patterns**: Clean, Pythonic code with type hints
-- **Better Error Handling**: Comprehensive error handling and logging
-- **Resource Management**: Automatic cleanup and resource management
-- **Advanced Analysis**: Built-in AST/CST parsing for deep code understanding
+### Systematic Organization
 
-## 📊 Performance
+- **Organized Sidebar**: Clear sections for different functionalities
+- **Expandable Settings**: Collapsible sections to reduce clutter
+- **Visual Hierarchy**: Clear typography and spacing
+- **Consistent Styling**: Unified design language throughout
 
-- **Fast Startup**: Servers start in under 2 seconds
-- **Efficient Memory**: Minimal memory footprint
-- **Scalable**: Easy to add new servers or modify existing ones
-- **Reliable**: Robust error handling and recovery
+### User Controllability
+
+- **Model Selection**: Choose the AI model that best fits your needs
+- **Analysis Customization**: Control depth, file types, and response style
+- **UI Preferences**: Customize theme and interface behavior
+- **Quick Actions**: Easy access to common operations
+- **Real-time Status**: Always know the current state of the system
+
+### Better UX
+
+- **Progressive Disclosure**: Show only what's needed when it's needed
+- **Clear Feedback**: Visual indicators for all operations
+- **Responsive Design**: Works well on different screen sizes
+- **Accessibility**: Proper contrast and keyboard navigation
+- **Automatic Configuration**: No manual API key input required
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test with `python test_fastmcp.py`
+4. Test thoroughly
 5. Submit a pull request
 
-## 📝 License
+## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 🙏 Acknowledgments
 
 - **FastMCP Team**: For the excellent FastMCP v2 framework
-- **Google Gemini**: For the AI capabilities
+- **Groq AI**: For the advanced AI capabilities
 - **GitHub API**: For repository data access
 
 ---
