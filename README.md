@@ -104,8 +104,6 @@ flowchart TD
     F --> C
     C --> F
     B --> A
-    classDef server fill:#e0f7fa,stroke:#00796b,stroke-width:2px;
-    class G1,G2,G3,G4 server;
 ```
 
 ### MCP Server Roles
