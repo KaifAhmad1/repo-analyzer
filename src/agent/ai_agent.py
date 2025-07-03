@@ -11,7 +11,6 @@ import time
 from typing import Dict, List, Any, Optional, Tuple
 from agno.agent import Agent
 from agno.models.groq import Groq
-from agno.tools.reasoning import ReasoningTools
 from agno.memory.v2.db.sqlite import SqliteMemoryDb
 from agno.memory.v2.memory import Memory
 from agno.storage.sqlite import SqliteStorage
@@ -353,7 +352,7 @@ class RepositoryAnalyzerAgent:
             model=Groq(id=model_name),
             memory=self.memory,
             storage=self.storage,
-            tools=ReasoningTools()
+            tools=[]  # No tools needed as we use our own FastMCP tools
         )
     
     def _get_system_prompt(self) -> str:

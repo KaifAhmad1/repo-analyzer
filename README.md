@@ -103,8 +103,11 @@ No additional configuration is required.
 ### 3. **Start the Application**
 
    ```bash
-# Start the Streamlit app
+# Option 1: Start the Streamlit app directly
 streamlit run app.py
+
+# Option 2: Use the helper script (recommended)
+python run_app.py
    ```
 
 ### 4. **Start MCP Servers (Recommended)**
