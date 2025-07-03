@@ -672,7 +672,7 @@ def display_analysis_entry(entry: Dict[str, Any]) -> None:
         st.json(entry["result"])
 
 def display_visualization_results(result: Dict[str, Any]) -> None:
-    """Display visualization results"""
+    """Display visualization results with enhanced error handling"""
     if "error" in result:
         st.error(f"❌ Visualization generation failed: {result['error']}")
         return
@@ -725,8 +725,13 @@ def display_visualization_results(result: Dict[str, Any]) -> None:
                     try:
                         fig = go.Figure.from_json(tree_viz["data"])
                         st.plotly_chart(fig, use_container_width=True)
-                    except:
-                        st.write("Could not display directory tree")
+                    except Exception as e:
+                        st.warning(f"⚠️ Could not display directory tree: {str(e)}")
+                        st.info("Directory tree data is available but cannot be rendered as a chart.")
+                else:
+                    st.info("📁 Directory tree data collected successfully")
+            else:
+                st.info("📁 Directory tree data not available")
             
             # File Structure
             if "file_structure" in viz_data and viz_data["file_structure"]:
@@ -736,8 +741,13 @@ def display_visualization_results(result: Dict[str, Any]) -> None:
                     try:
                         fig = go.Figure.from_json(structure_viz["data"])
                         st.plotly_chart(fig, use_container_width=True)
-                    except:
-                        st.write("Could not display file structure")
+                    except Exception as e:
+                        st.warning(f"⚠️ Could not display file structure: {str(e)}")
+                        st.info("File structure data is available but cannot be rendered as a chart.")
+                else:
+                    st.info("📊 File structure data collected successfully")
+            else:
+                st.info("📊 File structure data not available")
             
             # Dependency Graph
             if "dependency_graph" in viz_data and viz_data["dependency_graph"]:
@@ -747,8 +757,13 @@ def display_visualization_results(result: Dict[str, Any]) -> None:
                     try:
                         fig = go.Figure.from_json(dep_viz["data"])
                         st.plotly_chart(fig, use_container_width=True)
-                    except:
-                        st.write("Could not display dependency graph")
+                    except Exception as e:
+                        st.warning(f"⚠️ Could not display dependency graph: {str(e)}")
+                        st.info("Dependency data is available but cannot be rendered as a chart.")
+                else:
+                    st.info("🔗 Dependency data collected successfully")
+            else:
+                st.info("🔗 Dependency graph data not available")
             
             # Language Distribution
             if "language_distribution" in viz_data and viz_data["language_distribution"]:
@@ -758,8 +773,13 @@ def display_visualization_results(result: Dict[str, Any]) -> None:
                     try:
                         fig = go.Figure.from_json(lang_viz["data"])
                         st.plotly_chart(fig, use_container_width=True)
-                    except:
-                        st.write("Could not display language distribution")
+                    except Exception as e:
+                        st.warning(f"⚠️ Could not display language distribution: {str(e)}")
+                        st.info("Language data is available but cannot be rendered as a chart.")
+                else:
+                    st.info("🌐 Language distribution data collected successfully")
+            else:
+                st.info("🌐 Language distribution data not available")
             
             # Activity Heatmap
             if "code_heatmap" in viz_data and viz_data["code_heatmap"]:
@@ -769,8 +789,16 @@ def display_visualization_results(result: Dict[str, Any]) -> None:
                     try:
                         fig = go.Figure.from_json(heatmap_viz["data"])
                         st.plotly_chart(fig, use_container_width=True)
-                    except:
-                        st.write("Could not display activity heatmap")
+                    except Exception as e:
+                        st.warning(f"⚠️ Could not display activity heatmap: {str(e)}")
+                        st.info("Activity data is available but cannot be rendered as a chart.")
+                else:
+                    st.info("📈 Activity heatmap data collected successfully")
+            else:
+                st.info("📈 Activity heatmap data not available")
+    else:
+        st.warning("⚠️ No visualization data found in the results")
+        st.info("The analysis completed but no visualization sections were generated.")
 
 def display_smart_summary_results(result: Dict[str, Any]) -> None:
     """Display smart summarization results"""

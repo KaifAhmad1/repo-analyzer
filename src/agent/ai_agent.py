@@ -342,23 +342,34 @@ class RepositoryAnalyzerAgent:
         # Initialize tools with optimized settings
         self.tools = FastMCPTools(max_workers=12, timeout=25)  # Increased workers, reduced timeout
         
-        # Initialize memory and storage
-        self.memory = Memory(
-            model=Groq(id=model_name),
-            db=SqliteMemoryDb(table_name="repo_analyzer_memories", db_file="tmp/agent.db"),
-            delete_memories=True,
-            clear_memories=True,
-        )
-        
-        self.storage = SqliteStorage(table_name="repo_analyzer_sessions", db_file="tmp/agent.db")
-        
-        # Create the main agent with enhanced configuration
-        self.agent = Agent(
-            model=Groq(id=model_name),
-            memory=self.memory,
-            storage=self.storage,
-            tools=[]  # No tools needed as we use our own FastMCP tools
-        )
+        # Initialize memory and storage with proper error handling
+        try:
+            # Create Groq model without proxies parameter
+            groq_model = Groq(id=model_name)
+            
+            self.memory = Memory(
+                model=groq_model,
+                db=SqliteMemoryDb(table_name="repo_analyzer_memories", db_file="tmp/agent.db"),
+                delete_memories=True,
+                clear_memories=True,
+            )
+            
+            self.storage = SqliteStorage(table_name="repo_analyzer_sessions", db_file="tmp/agent.db")
+            
+            # Create the main agent with enhanced configuration
+            self.agent = Agent(
+                model=groq_model,
+                memory=self.memory,
+                storage=self.storage,
+                tools=[]  # No tools needed as we use our own FastMCP tools
+            )
+            
+        except Exception as e:
+            print(f"Warning: Could not initialize Agno agent components: {e}")
+            # Fallback: create minimal agent without memory/storage
+            self.memory = None
+            self.storage = None
+            self.agent = None
     
     def _get_system_prompt(self) -> str:
         """Get comprehensive system prompt for repository analysis"""
@@ -371,24 +382,27 @@ Your capabilities include:
 4. Code Search and Analysis: Find patterns, functions, and code metrics
 5. Dependency Analysis: Understand project dependencies and requirements
 
-                When analyzing repositories:
+When analyzing repositories:
 - Always use multiple tools to gather comprehensive data
-- Provide detailed, actionable insights
+- Provide detailed, actionable insights with specific examples
 - Consider code quality, architecture, security, and maintainability
 - Support your conclusions with specific evidence from the codebase
 - Be thorough but concise in your analysis
+- Structure your responses with clear sections and bullet points
 
 For Q&A:
 - Use all available tools to gather relevant context
 - Provide specific answers with code examples when appropriate
 - Consider the broader context of the repository
+- Format responses with clear headings and organized information
 
 For Summarization:
 - Create comprehensive summaries covering all major aspects
 - Include technical details, architecture insights, and key findings
 - Highlight important patterns and potential areas of concern
+- Use structured format with sections for Overview, Architecture, Code Quality, etc.
 
-Always strive to provide the most accurate and helpful analysis possible."""
+Always strive to provide the most accurate and helpful analysis possible with clear, well-structured responses."""
     
     def _gather_comprehensive_data(self, repo_url: str, status_callback=None, question: str = "") -> Dict[str, Any]:
         """Gather comprehensive data from all MCP servers with optimized parallel execution"""
@@ -556,7 +570,21 @@ Always strive to provide the most accurate and helpful analysis possible."""
             
             # Get AI response with system prompt
             system_prompt = self._get_system_prompt()
-            response = self.agent.run(f"{system_prompt}\n\n{prompt}")
+            
+            if self.agent is None:
+                # Fallback: use direct Groq API call
+                try:
+                    from agno.models.groq import Groq
+                    groq_model = Groq(id=self.model_name)
+                    response = groq_model.complete(f"{system_prompt}\n\n{prompt}")
+                    return response.content, comprehensive_data["tools_used"]
+                except Exception as fallback_error:
+                    error_msg = f"Error during analysis (fallback failed): {str(fallback_error)}"
+                    if status_callback:
+                        status_callback(f"❌ {error_msg}")
+                    return error_msg, []
+            else:
+                response = self.agent.run(f"{system_prompt}\n\n{prompt}")
             
             if status_callback:
                 execution_time = comprehensive_data.get("execution_time", 0)
@@ -588,7 +616,21 @@ Always strive to provide the most accurate and helpful analysis possible."""
             
             # Get AI response with system prompt
             system_prompt = self._get_system_prompt()
-            response = self.agent.run(f"{system_prompt}\n\n{summary_prompt}")
+            
+            if self.agent is None:
+                # Fallback: use direct Groq API call
+                try:
+                    from agno.models.groq import Groq
+                    groq_model = Groq(id=self.model_name)
+                    response = groq_model.complete(f"{system_prompt}\n\n{summary_prompt}")
+                    return response.content, comprehensive_data["tools_used"]
+                except Exception as fallback_error:
+                    error_msg = f"Error generating summary (fallback failed): {str(fallback_error)}"
+                    if status_callback:
+                        status_callback(f"❌ {error_msg}")
+                    return error_msg, []
+            else:
+                response = self.agent.run(f"{system_prompt}\n\n{summary_prompt}")
             
             if status_callback:
                 status_callback("✅ Summary complete!")
@@ -619,7 +661,21 @@ Always strive to provide the most accurate and helpful analysis possible."""
             
             # Get AI response with system prompt
             system_prompt = self._get_system_prompt()
-            response = self.agent.run(f"{system_prompt}\n\n{pattern_prompt}")
+            
+            if self.agent is None:
+                # Fallback: use direct Groq API call
+                try:
+                    from agno.models.groq import Groq
+                    groq_model = Groq(id=self.model_name)
+                    response = groq_model.complete(f"{system_prompt}\n\n{pattern_prompt}")
+                    return response.content, comprehensive_data["tools_used"]
+                except Exception as fallback_error:
+                    error_msg = f"Error analyzing patterns (fallback failed): {str(fallback_error)}"
+                    if status_callback:
+                        status_callback(f"❌ {error_msg}")
+                    return error_msg, []
+            else:
+                response = self.agent.run(f"{system_prompt}\n\n{pattern_prompt}")
             
             if status_callback:
                 status_callback("✅ Pattern analysis complete!")
@@ -671,7 +727,21 @@ Always strive to provide the most accurate and helpful analysis possible."""
             
             # Get AI response with system prompt
             system_prompt = self._get_system_prompt()
-            response = self.agent.run(f"{system_prompt}\n\n{quick_prompt}")
+            
+            if self.agent is None:
+                # Fallback: use direct Groq API call
+                try:
+                    from agno.models.groq import Groq
+                    groq_model = Groq(id=self.model_name)
+                    response = groq_model.complete(f"{system_prompt}\n\n{quick_prompt}")
+                    return response.content, self.tools.get_tools_used()
+                except Exception as fallback_error:
+                    error_msg = f"Error in quick analysis (fallback failed): {str(fallback_error)}"
+                    if status_callback:
+                        status_callback(f"❌ {error_msg}")
+                    return error_msg, []
+            else:
+                response = self.agent.run(f"{system_prompt}\n\n{quick_prompt}")
             
             execution_time = time.time() - start_time
             if status_callback:
@@ -706,70 +776,175 @@ Always strive to provide the most accurate and helpful analysis possible."""
         self.tools.clear_cache()
 
     def _create_comprehensive_prompt(self, question: str, data: Dict[str, Any]) -> str:
-        """Create comprehensive prompt for Q&A"""
+        """Create comprehensive prompt for Q&A with enhanced structure"""
         return f"""Based on the following comprehensive repository data, please answer this question: "{question}"
 
 Repository Data:
 {json.dumps(data, indent=2)}
 
-Please provide a detailed, accurate answer based on the available data. Use specific examples from the codebase when relevant. Consider:
-- Code structure and architecture
-- Development patterns and history
-- Dependencies and requirements
-- Code quality and complexity
-- Any relevant technical details
+Please provide a detailed, accurate answer based on the available data. Structure your response with:
 
-Answer:"""
+## Answer
+[Your main answer to the question]
+
+## Key Findings
+- [Specific findings from the codebase]
+- [Relevant patterns or insights]
+
+## Technical Details
+- [Code structure and architecture details]
+- [Development patterns and history]
+- [Dependencies and requirements]
+- [Code quality and complexity metrics]
+
+## Evidence
+- [Specific examples from the codebase]
+- [File references and code snippets when relevant]
+
+## Recommendations
+- [Any actionable insights or suggestions]
+
+Use specific examples from the codebase when relevant. Consider code structure, architecture, development patterns, dependencies, and code quality."""
     
     def _create_summary_prompt(self, data: Dict[str, Any]) -> str:
-        """Create comprehensive summary prompt"""
-        return f"""Based on the following comprehensive repository data, create a detailed summary covering:
-
-1. Project Overview and Purpose
-2. Architecture and Structure
-3. Code Quality and Complexity
-4. Development Patterns and History
-5. Dependencies and Requirements
-6. Key Features and Components
-7. Potential Areas of Interest or Concern
+        """Create comprehensive summary prompt with enhanced structure"""
+        return f"""Based on the following comprehensive repository data, create a detailed summary covering all major aspects of the repository.
 
 Repository Data:
 {json.dumps(data, indent=2)}
 
-Please provide a comprehensive, well-structured summary that would be useful for developers, maintainers, and stakeholders."""
+Please structure your response with the following sections:
+
+## 📋 Project Overview
+- **Purpose**: What does this project do?
+- **Main Technologies**: Key languages, frameworks, and tools
+- **Target Audience**: Who is this project for?
+
+## 🏗️ Architecture & Structure
+- **Project Organization**: How is the codebase structured?
+- **Key Components**: Main modules and their responsibilities
+- **Design Patterns**: Architectural patterns used
+- **File Organization**: How files are organized
+
+## 📊 Code Quality & Metrics
+- **Code Complexity**: Cyclomatic complexity and maintainability
+- **Code Coverage**: Testing approach and coverage
+- **Code Standards**: Coding conventions and style
+- **Documentation**: Quality and completeness of docs
+
+## 🔄 Development Patterns
+- **Commit History**: Development activity and patterns
+- **Branching Strategy**: Git workflow and branching
+- **Release Process**: How releases are managed
+- **Contributor Activity**: Team size and contribution patterns
+
+## 📦 Dependencies & Requirements
+- **Core Dependencies**: Main libraries and frameworks
+- **Development Dependencies**: Tools for development
+- **Version Management**: How dependencies are managed
+- **Security**: Known vulnerabilities or security considerations
+
+## 🚀 Key Features & Components
+- **Core Functionality**: Main features and capabilities
+- **Notable Components**: Standout parts of the codebase
+- **Integration Points**: APIs, services, and external connections
+- **Performance Considerations**: Optimization and scalability
+
+## ⚠️ Areas of Interest & Concerns
+- **Potential Issues**: Code quality or architectural concerns
+- **Technical Debt**: Areas that need attention
+- **Scalability**: Growth and scaling considerations
+- **Maintenance**: Long-term maintainability factors
+
+## 💡 Recommendations
+- **Improvements**: Suggested enhancements
+- **Best Practices**: Recommendations for development
+- **Future Considerations**: Long-term planning suggestions
+
+Provide specific examples and evidence from the codebase to support your analysis. Make this summary comprehensive and actionable for developers, maintainers, and stakeholders."""
     
     def _create_pattern_analysis_prompt(self, data: Dict[str, Any]) -> str:
-        """Create pattern analysis prompt"""
+        """Create pattern analysis prompt with enhanced structure"""
         return f"""Analyze the following repository data to identify code patterns, architecture decisions, and development practices:
 
 Repository Data:
 {json.dumps(data, indent=2)}
 
-Please analyze and report on:
-1. Code Architecture Patterns
-2. Design Patterns Used
-3. Code Organization and Structure
-4. Development Workflow Patterns
-5. Code Quality Patterns
-6. Potential Architectural Issues
-7. Recommendations for Improvement
+Please structure your analysis with the following sections:
 
-Provide specific examples and evidence from the codebase to support your analysis."""
+## 🏛️ Code Architecture Patterns
+- **Overall Architecture**: High-level architectural approach
+- **Module Organization**: How code is modularized
+- **Separation of Concerns**: How responsibilities are divided
+- **Layered Architecture**: Any layering patterns used
+
+## 🎨 Design Patterns
+- **Creational Patterns**: Factory, Singleton, Builder patterns
+- **Structural Patterns**: Adapter, Decorator, Facade patterns
+- **Behavioral Patterns**: Observer, Strategy, Command patterns
+- **Domain-Specific Patterns**: Custom patterns for this project
+
+## 📁 Code Organization & Structure
+- **File Structure**: How files are organized
+- **Naming Conventions**: File and function naming patterns
+- **Directory Organization**: Folder structure and purpose
+- **Import Patterns**: How modules are imported and used
+
+## 🔄 Development Workflow Patterns
+- **Git Workflow**: Branching and merging patterns
+- **Commit Patterns**: Commit message conventions
+- **Release Patterns**: How releases are managed
+- **Testing Patterns**: Testing approach and coverage
+
+## 📊 Code Quality Patterns
+- **Error Handling**: How errors are managed
+- **Logging Patterns**: Logging and debugging approaches
+- **Documentation Patterns**: Code documentation style
+- **Performance Patterns**: Optimization techniques used
+
+## ⚠️ Potential Architectural Issues
+- **Code Smells**: Anti-patterns or problematic code
+- **Technical Debt**: Areas needing refactoring
+- **Scalability Concerns**: Potential scaling issues
+- **Maintainability Issues**: Hard-to-maintain code areas
+
+## 💡 Recommendations for Improvement
+- **Architecture Improvements**: Suggested architectural changes
+- **Code Quality Enhancements**: Ways to improve code quality
+- **Performance Optimizations**: Suggested performance improvements
+- **Best Practices**: Recommendations for better practices
+
+Provide specific examples and evidence from the codebase to support your analysis. Include code snippets and file references when relevant."""
     
     def _create_quick_analysis_prompt(self, data: Dict[str, Any]) -> str:
-        """Create quick analysis prompt"""
+        """Create quick analysis prompt with enhanced structure"""
         return f"""Based on the following repository data, provide a concise but comprehensive overview:
 
 Repository Data:
 {json.dumps(data, indent=2)}
 
-Please provide:
-1. Brief project description
-2. Main technologies and architecture
-3. Key insights about the codebase
-4. Notable patterns or characteristics
+Please structure your response with:
 
-Keep it concise but informative."""
+## 🚀 Quick Overview
+- **Project Purpose**: What this project does in 1-2 sentences
+- **Main Technologies**: Key languages, frameworks, and tools
+- **Project Scale**: Size and complexity indicators
+
+## 🏗️ Architecture Highlights
+- **Structure**: Main organizational approach
+- **Key Components**: Most important modules/files
+- **Design Patterns**: Notable architectural patterns
+
+## 📊 Key Insights
+- **Code Quality**: Overall code quality indicators
+- **Development Activity**: Recent activity and patterns
+- **Notable Features**: Standout aspects of the codebase
+
+## 💡 Quick Recommendations
+- **Strengths**: What the project does well
+- **Areas for Attention**: Potential concerns or improvements
+
+Keep it concise but informative, focusing on the most important aspects for a quick understanding."""
 
 # Global agent instance
 _analyzer_agent = None
