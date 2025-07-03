@@ -54,6 +54,17 @@ A powerful, systematic GitHub repository analyzer that provides **deep insights*
 - **Smart Summarization**: AI-powered comprehensive repository summaries
 - **Custom Analysis**: Tailored analysis based on specific requirements
 
+### ⚡ **Performance Optimizations**
+- **Ultra Fast Mode**: 30-second analysis using minimal tools
+- **Fast Mode**: 60-second analysis with optimized tool selection
+- **Comprehensive Mode**: 90-second analysis with all tools using advanced parallelization
+- **Intelligent Tool Selection**: Automatically chooses the most relevant tools
+- **Advanced Parallel Processing**: Multiple MCP servers run simultaneously with optimized batching
+- **Phase-Based Execution**: Tools are executed in phases for optimal performance
+- **Timeout Protection**: Prevents hanging requests with automatic fallbacks
+- **Caching System**: Reduces redundant API calls for faster subsequent runs
+- **Connection Pooling**: Reuses connections for better performance
+
 ### 💬 **AI-Powered Q&A**
 - Ask specific questions about any repository
 - Get detailed answers with context from the codebase

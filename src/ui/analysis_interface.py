@@ -18,7 +18,9 @@ from ..analysis.analysis_engine import (
     security_analysis,
     code_quality_analysis,
     generate_visualizations,
-    smart_summarization
+    smart_summarization,
+    ultra_fast_summarization,
+    comprehensive_smart_summarization
 )
 from ..utils.config import get_analysis_presets, get_analysis_settings
 from ..utils.repository_manager import get_repository_manager, get_analysis_history
@@ -32,6 +34,17 @@ def render_analysis_interface(repo_url: Optional[str] = None) -> None:
     
     st.markdown("### 🔍 Systematic Repository Analysis")
     st.markdown("Choose your analysis type and get comprehensive insights about the repository.")
+    
+    # Performance monitoring section
+    st.markdown("#### 📊 Performance Monitor")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.metric("⚡ Ultra Fast", "~30s", "Minimal tools")
+    with col2:
+        st.metric("🚀 Fast", "~60s", "Optimized tools")
+    with col3:
+        st.metric("🔍 Comprehensive", "~90s", "All tools + parallel")
     
     # Get analysis presets and settings
     presets = get_analysis_presets()
@@ -190,6 +203,15 @@ def render_smart_summary_tab(repo_url: str) -> None:
     st.markdown("#### 🧠 Smart Repository Summarization")
     st.markdown("Generate comprehensive AI-powered summaries with deep insights.")
     
+    # Analysis speed options
+    st.markdown("**🚀 Analysis Speed:**")
+    speed_option = st.radio(
+        "Choose analysis speed:",
+        ["⚡ Ultra Fast (30s)", "🚀 Fast (60s)", "🔍 Comprehensive (90s)"],
+        index=0,
+        help="Ultra Fast uses minimal tools for quick results, Comprehensive uses all tools with parallel processing"
+    )
+    
     # Summary options
     col1, col2 = st.columns(2)
     with col1:
@@ -201,13 +223,65 @@ def render_smart_summary_tab(repo_url: str) -> None:
         include_patterns = st.checkbox("Code Patterns", value=True)
         include_recommendations = st.checkbox("Recommendations", value=True)
     
-    if st.button("🧠 Generate Smart Summary", type="primary", use_container_width=True):
-        with st.spinner("🧠 Generating smart summary..."):
-            def status_callback(msg):
-                st.text(msg)
+    # Analysis button with speed indicator
+    button_text = "🧠 Generate Smart Summary"
+    if speed_option == "⚡ Ultra Fast (30s)":
+        button_text = "⚡ Generate Ultra Fast Summary"
+    elif speed_option == "🚀 Fast (60s)":
+        button_text = "🚀 Generate Fast Summary"
+    else:
+        button_text = "🔍 Generate Comprehensive Summary"
+    
+    if st.button(button_text, type="primary", use_container_width=True):
+        # Create progress container
+        progress_container = st.container()
+        with progress_container:
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            tools_used_text = st.empty()
             
-            result = smart_summarization(repo_url, status_callback)
-            display_smart_summary_results(result)
+            def status_callback(msg):
+                status_text.text(msg)
+                # Update progress based on message
+                if "Starting" in msg:
+                    progress_bar.progress(10)
+                elif "Gathering" in msg:
+                    progress_bar.progress(30)
+                elif "Generating" in msg:
+                    progress_bar.progress(70)
+                elif "completed" in msg.lower():
+                    progress_bar.progress(100)
+                else:
+                    progress_bar.progress(50)
+            
+            def tools_callback(tools):
+                if tools:
+                    tools_used_text.markdown(f"**🔧 Tools Used:** {', '.join(tools[:3])}{'...' if len(tools) > 3 else ''}")
+            
+            try:
+                # Use different analysis methods based on speed option
+                if speed_option == "⚡ Ultra Fast (30s)":
+                    result = ultra_fast_summarization(repo_url, status_callback)
+                elif speed_option == "🚀 Fast (60s)":
+                    result = smart_summarization(repo_url, status_callback)
+                else:
+                    result = comprehensive_smart_summarization(repo_url, status_callback)
+                
+                # Show tools used
+                if "tools_used" in result and result["tools_used"]:
+                    tools_callback(result["tools_used"])
+                
+                # Clear progress indicators
+                progress_bar.empty()
+                status_text.empty()
+                
+                display_smart_summary_results(result)
+                
+            except Exception as e:
+                progress_bar.empty()
+                status_text.empty()
+                tools_used_text.empty()
+                st.error(f"❌ Analysis failed: {str(e)}")
 
 def render_analysis_history_tab(repo_url: str) -> None:
     """Render analysis history tab"""

@@ -27,7 +27,7 @@ if not os.getenv("GROQ_API_KEY"):
 class FastMCPTools:
     """Enhanced FastMCP tools with connection pooling and intelligent caching"""
     
-    def __init__(self, max_workers: int = 8, timeout: int = 30):
+    def __init__(self, max_workers: int = 12, timeout: int = 60):
         self.max_workers = max_workers
         self.timeout = timeout
         self.cache = {}
@@ -134,7 +134,7 @@ class FastMCPTools:
             }, indent=2)
     
     def _batch_call_tools(self, tool_calls: List[Tuple[str, str, dict]]) -> Dict[str, Any]:
-        """Execute multiple tool calls in parallel with optimized batching"""
+        """Execute multiple tool calls in parallel with optimized batching and timeout"""
         results = {}
         
         # Group tools by server for better connection reuse
@@ -144,7 +144,7 @@ class FastMCPTools:
                 server_groups[server_name] = []
             server_groups[server_name].append((tool_name, kwargs))
         
-        # Execute each server's tools in parallel
+        # Execute each server's tools in parallel with increased workers
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             future_to_key = {}
             
@@ -156,14 +156,23 @@ class FastMCPTools:
                     )
                     future_to_key[future] = key
             
-            # Collect results as they complete
-            for future in as_completed(future_to_key):
-                key = future_to_key[future]
-                try:
-                    result = future.result()
-                    results[key] = json.loads(result)
-                except Exception as exc:
-                    results[key] = {"error": str(exc), "success": False}
+            # Collect results as they complete with extended timeout
+            try:
+                for future in as_completed(future_to_key, timeout=self.timeout):
+                    key = future_to_key[future]
+                    try:
+                        result = future.result(timeout=30)  # Individual tool timeout
+                        results[key] = json.loads(result)
+                    except TimeoutError:
+                        results[key] = {"error": "Tool call timed out", "success": False}
+                    except Exception as exc:
+                        results[key] = {"error": str(exc), "success": False}
+            except TimeoutError:
+                # Handle overall timeout
+                for future in future_to_key:
+                    if not future.done():
+                        key = future_to_key[future]
+                        results[key] = {"error": "Batch operation timed out", "success": False}
         
         return results
     
@@ -339,7 +348,7 @@ class RepositoryAnalyzerAgent:
     def __init__(self, model_name: str = "llama-3.1-70b-versatile"):
         self.model_name = model_name
         # Initialize tools with optimized settings
-        self.tools = FastMCPTools(max_workers=12, timeout=25)  # Increased workers, reduced timeout
+        self.tools = FastMCPTools(max_workers=12, timeout=60)  # Increased workers, reduced timeout
         
         # Initialize memory and storage with proper error handling
         try:
@@ -418,61 +427,59 @@ For Summarization:
 Always strive to provide the most accurate and helpful analysis possible with clear, well-structured responses."""
     
     def _gather_comprehensive_data(self, repo_url: str, status_callback=None, question: str = "") -> Dict[str, Any]:
-        """Gather comprehensive data from all MCP servers with optimized parallel execution"""
+        """Gather comprehensive data from all MCP servers with optimized parallel execution - ALL TOOLS VERSION"""
         if status_callback:
-            status_callback("🔍 Gathering comprehensive repository data...")
+            status_callback("🔍 Gathering comprehensive repository data with all tools...")
         
         start_time = time.time()
         
-        # Use intelligent tool selection if question is provided
-        if question:
-            selected_tools = self.tools.optimize_tool_selection(question)
-            if status_callback:
-                status_callback(f"🎯 Using {len(selected_tools)} optimized tools for your question...")
-        else:
-            # Default comprehensive tool set
-            selected_tools = [
-                "get_directory_tree", "get_file_structure", "analyze_project_structure",
-                "get_readme_content", "get_code_metrics", "analyze_code_complexity",
-                "get_code_patterns", "get_recent_commits", "get_commit_statistics",
-                "get_development_patterns", "search_dependencies"
-            ]
+        # Use all available tools for comprehensive analysis
+        all_tools = [
+            "get_readme_content", "get_file_structure", "get_repository_overview",
+            "get_directory_tree", "analyze_project_structure", "get_code_metrics",
+            "analyze_code_complexity", "get_code_patterns", "get_recent_commits",
+            "get_commit_statistics", "get_development_patterns", "search_dependencies",
+            "search_code", "find_functions", "analyze_file_content"
+        ]
         
-        # Create optimized tool calls using batch processing
+        # Create comprehensive tool calls with optimized limits
         tool_calls = []
         tool_mapping = {
-            "get_directory_tree": ("repository_structure", "get_directory_tree", {"repo_url": repo_url, "max_depth": 5}),
-            "get_file_structure": ("repository_structure", "get_file_structure", {"repo_url": repo_url}),
-            "analyze_project_structure": ("repository_structure", "analyze_project_structure", {"repo_url": repo_url}),
             "get_readme_content": ("file_content", "get_readme_content", {"repo_url": repo_url}),
+            "get_file_structure": ("repository_structure", "get_file_structure", {"repo_url": repo_url}),
+            "get_repository_overview": ("repository_structure", "get_repository_overview", {"repo_url": repo_url}),
+            "get_directory_tree": ("repository_structure", "get_directory_tree", {"repo_url": repo_url, "max_depth": 4}),
+            "analyze_project_structure": ("repository_structure", "analyze_project_structure", {"repo_url": repo_url}),
             "get_code_metrics": ("code_search", "get_code_metrics", {"repo_url": repo_url}),
             "analyze_code_complexity": ("code_search", "analyze_code_complexity", {"repo_url": repo_url}),
             "get_code_patterns": ("code_search", "get_code_patterns", {"repo_url": repo_url}),
-            "get_recent_commits": ("commit_history", "get_recent_commits", {"repo_url": repo_url, "limit": 50}),
-            "get_commit_statistics": ("commit_history", "get_commit_statistics", {"repo_url": repo_url, "days": 90}),
+            "get_recent_commits": ("commit_history", "get_recent_commits", {"repo_url": repo_url, "limit": 25}),
+            "get_commit_statistics": ("commit_history", "get_commit_statistics", {"repo_url": repo_url, "days": 60}),
             "get_development_patterns": ("commit_history", "get_development_patterns", {"repo_url": repo_url}),
-            "search_dependencies": ("code_search", "search_dependencies", {"repo_url": repo_url})
+            "search_dependencies": ("code_search", "search_dependencies", {"repo_url": repo_url}),
+            "search_code": ("code_search", "search_code", {"repo_url": repo_url, "query": "def ", "language": "python"}),
+            "find_functions": ("code_search", "find_functions", {"repo_url": repo_url, "function_name": "main", "language": "python"}),
+            "analyze_file_content": ("file_content", "analyze_file_content", {"repo_url": repo_url, "file_path": "README.md"})
         }
         
-        # Add selected tools to batch
-        for tool_name in selected_tools:
+        # Add all tools to batch
+        for tool_name in all_tools:
             if tool_name in tool_mapping:
                 tool_calls.append(tool_mapping[tool_name])
         
         if status_callback:
-            status_callback(f"🚀 Executing {len(tool_calls)} tools in parallel...")
+            status_callback(f"🚀 Executing {len(tool_calls)} tools in parallel with optimized batching...")
         
-        # Execute tools using optimized batch processing
+        # Execute tools using optimized batch processing with increased workers
         tool_results = self.tools._batch_call_tools(tool_calls)
         
         # Organize results
-        data = self._organize_results(tool_results)
+        data = self._organize_comprehensive_results(tool_results)
         
-        # Analyze key files in parallel if needed
-        if "get_file_content" in selected_tools or not question:
-            if status_callback:
-                status_callback("🔍 Analyzing key files...")
-            data["code_analysis"]["key_files"] = self._analyze_key_files_parallel(repo_url)
+        # Analyze key files in parallel
+        if status_callback:
+            status_callback("🔍 Analyzing key files in parallel...")
+        data["code_analysis"]["key_files"] = self._analyze_key_files_parallel(repo_url)
         
         # Track tool utilization and performance
         data["tools_used"] = self.tools.get_tools_used()
@@ -480,51 +487,37 @@ Always strive to provide the most accurate and helpful analysis possible with cl
         data["execution_time"] = time.time() - start_time
         
         if status_callback:
-            status_callback(f"✅ Data gathering complete in {data['execution_time']:.2f}s")
+            status_callback(f"✅ Comprehensive data gathering complete in {data['execution_time']:.2f}s using all tools")
         
         return data
-    
-    def _execute_tools_parallel(self, tool_map: Dict[str, callable]) -> Dict[str, Any]:
-        """Execute tools in parallel and return results"""
-        tool_results = {}
-        
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            future_to_key = {executor.submit(func): key for key, func in tool_map.items()}
-            
-            for future in concurrent.futures.as_completed(future_to_key):
-                key = future_to_key[future]
-                try:
-                    tool_results[key] = json.loads(future.result())
-                except Exception as exc:
-                    tool_results[key] = {"error": str(exc)}
-        
-        return tool_results
-    
-    def _organize_results(self, tool_results: Dict[str, Any]) -> Dict[str, Any]:
-        """Organize tool results into structured data"""
+
+    def _organize_comprehensive_results(self, tool_results: Dict[str, Any]) -> Dict[str, Any]:
+        """Organize comprehensive tool results into structured data"""
         return {
             "file_structure": {
-                "directory_tree": tool_results.get("directory_tree", {}),
-                "file_structure": tool_results.get("file_structure", {}),
-                "project_analysis": tool_results.get("project_analysis", {})
+                "directory_tree": tool_results.get("repository_structure.get_directory_tree", {}),
+                "file_structure": tool_results.get("repository_structure.get_file_structure", {}),
+                "project_analysis": tool_results.get("repository_structure.analyze_project_structure", {}),
+                "overview": tool_results.get("repository_structure.get_repository_overview", {})
             },
             "repository_info": {
-                "readme": tool_results.get("readme", {})
+                "readme": tool_results.get("file_content.get_readme_content", {}),
+                "file_analysis": tool_results.get("file_content.analyze_file_content", {})
             },
             "code_metrics": {
-                "metrics": tool_results.get("metrics", {}),
-                "complexity": tool_results.get("complexity", {}),
-                "patterns": tool_results.get("patterns", {})
+                "metrics": tool_results.get("code_search.get_code_metrics", {}),
+                "complexity": tool_results.get("code_search.analyze_code_complexity", {}),
+                "patterns": tool_results.get("code_search.get_code_patterns", {}),
+                "code_search": tool_results.get("code_search.search_code", {}),
+                "functions": tool_results.get("code_search.find_functions", {})
             },
             "commit_history": {
-                "recent_commits": tool_results.get("recent_commits", {}),
-                "statistics": tool_results.get("commit_statistics", {})
-            },
-            "development_patterns": {
-                "patterns": tool_results.get("dev_patterns", {})
+                "recent_commits": tool_results.get("commit_history.get_recent_commits", {}),
+                "statistics": tool_results.get("commit_history.get_commit_statistics", {}),
+                "patterns": tool_results.get("commit_history.get_development_patterns", {})
             },
             "dependencies": {
-                "dependency_files": tool_results.get("dependency_files", {})
+                "dependency_files": tool_results.get("code_search.search_dependencies", {})
             },
             "code_analysis": {}
         }
@@ -572,53 +565,85 @@ Always strive to provide the most accurate and helpful analysis possible with cl
             status_callback("🤖 Preparing optimized analysis...")
         
         try:
-            # Gather data using intelligent tool selection based on the question
-            comprehensive_data = self._gather_comprehensive_data(repo_url, status_callback, question)
+            import signal
+            import threading
+            import time
             
-            if status_callback:
-                status_callback("🧠 AI agent analyzing your question...")
+            # Set a timeout for the entire operation
+            timeout_seconds = 60  # 1 minute timeout
             
-            # Create comprehensive prompt with all gathered data
-            prompt = self._create_comprehensive_prompt(question, comprehensive_data)
+            # Create a timeout handler
+            def timeout_handler():
+                raise TimeoutError("Analysis timed out after 60 seconds")
             
-            # Get AI response with system prompt
-            system_prompt = self._get_system_prompt()
+            # Set up timeout
+            timer = threading.Timer(timeout_seconds, timeout_handler)
+            timer.start()
             
-            if self.agent is None:
-                # Fallback: use direct Groq API call
-                try:
-                    from agno.models.groq import Groq
-                    groq_model = Groq(id=self.model_name)
-                    response = groq_model.complete(f"{system_prompt}\n\n{prompt}")
-                    return response.content, comprehensive_data["tools_used"]
-                except Exception as fallback_error:
-                    error_msg = f"Error during analysis (fallback failed): {str(fallback_error)}"
-                    if status_callback:
-                        status_callback(f"❌ {error_msg}")
-                    return error_msg, []
-            else:
-                try:
-                    response = self.agent.run(f"{system_prompt}\n\n{prompt}")
-                    return response.content, comprehensive_data["tools_used"]
-                except Exception as agent_error:
-                    # Try fallback if agent fails
+            try:
+                # Gather data using intelligent tool selection based on the question
+                comprehensive_data = self._gather_comprehensive_data(repo_url, status_callback, question)
+                
+                if status_callback:
+                    status_callback("🧠 AI agent analyzing your question...")
+                
+                # Create comprehensive prompt with all gathered data
+                prompt = self._create_comprehensive_prompt(question, comprehensive_data)
+                
+                # Get AI response with system prompt
+                system_prompt = self._get_system_prompt()
+                
+                if self.agent is None:
+                    # Fallback: use direct Groq API call with timeout
                     try:
                         from agno.models.groq import Groq
                         groq_model = Groq(id=self.model_name)
                         response = groq_model.complete(f"{system_prompt}\n\n{prompt}")
+                        timer.cancel()
                         return response.content, comprehensive_data["tools_used"]
                     except Exception as fallback_error:
-                        error_msg = f"Error during analysis (agent and fallback failed): {str(fallback_error)}"
+                        error_msg = f"Error during analysis (fallback failed): {str(fallback_error)}"
                         if status_callback:
                             status_callback(f"❌ {error_msg}")
+                        timer.cancel()
                         return error_msg, []
-            
-            if status_callback:
-                execution_time = comprehensive_data.get("execution_time", 0)
-                status_callback(f"✅ Analysis complete! (Data gathering: {execution_time:.2f}s)")
-            
-            return response.content, comprehensive_data["tools_used"]
-            
+                else:
+                    try:
+                        response = self.agent.run(f"{system_prompt}\n\n{prompt}")
+                        timer.cancel()
+                        return response.content, comprehensive_data["tools_used"]
+                    except Exception as agent_error:
+                        # Try fallback if agent fails
+                        try:
+                            from agno.models.groq import Groq
+                            groq_model = Groq(id=self.model_name)
+                            response = groq_model.complete(f"{system_prompt}\n\n{prompt}")
+                            timer.cancel()
+                            return response.content, comprehensive_data["tools_used"]
+                        except Exception as fallback_error:
+                            error_msg = f"Error during analysis (agent and fallback failed): {str(fallback_error)}"
+                            if status_callback:
+                                status_callback(f"❌ {error_msg}")
+                            timer.cancel()
+                            return error_msg, []
+                
+                if status_callback:
+                    execution_time = comprehensive_data.get("execution_time", 0)
+                    status_callback(f"✅ Analysis complete! (Data gathering: {execution_time:.2f}s)")
+                
+            except TimeoutError:
+                timer.cancel()
+                error_msg = "Analysis timed out. Please try a simpler question or use the Ultra Fast mode."
+                if status_callback:
+                    status_callback(f"⏰ {error_msg}")
+                return error_msg, []
+            except Exception as e:
+                timer.cancel()
+                error_msg = f"Error during analysis: {str(e)}"
+                if status_callback:
+                    status_callback(f"❌ {error_msg}")
+                return error_msg, []
+                
         except Exception as e:
             error_msg = f"Error during analysis: {str(e)}"
             if status_callback:
@@ -921,7 +946,7 @@ Please structure your response with the following sections:
 
 ## ⚠️ Areas of Interest & Concerns
 - **Potential Issues**: Code quality or architectural concerns
-- **Technical Debt**: Areas that need attention
+- **Technical Debt**: Areas needing refactoring
 - **Scalability**: Growth and scaling considerations
 - **Maintenance**: Long-term maintainability factors
 

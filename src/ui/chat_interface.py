@@ -48,6 +48,15 @@ def render_chat_interface(repo_url: Optional[str] = None) -> None:
     if "processing" not in st.session_state:
         st.session_state.processing = False
 
+    # --- Analysis Speed Options ---
+    st.markdown("#### ⚡ Analysis Speed")
+    speed_option = st.radio(
+        "Choose response speed:",
+        ["⚡ Fast Mode (30s)", "🔍 Standard Mode (60s)"],
+        index=0,
+        help="Fast Mode uses optimized tools for quicker responses, Standard Mode uses comprehensive analysis"
+    )
+
     # --- Quick Questions with enhanced layout ---
     st.markdown("#### 🚀 Quick Questions")
     st.markdown("Click on any question to get instant insights:")
@@ -57,6 +66,7 @@ def render_chat_interface(repo_url: Optional[str] = None) -> None:
     for i, (label, q) in enumerate(QUICK_QUESTIONS):
         if cols[i % 4].button(label, key=f"quick_{i}", use_container_width=True):
             st.session_state.question_input = q
+            st.session_state.speed_mode = speed_option
             st.rerun()
 
     # --- User Input with enhanced styling ---
@@ -83,14 +93,14 @@ def render_chat_interface(repo_url: Optional[str] = None) -> None:
     
     # Handle form submissions
     if submit_button and question.strip():
-        process_question(question, repo_url, "chat")
+        process_question(question, repo_url, "chat", speed_option)
         st.session_state.question_input = ""
         st.rerun()
     elif submit_button and not question.strip():
         st.warning("⚠️ Please enter a question.")
     
     if summarize_button and question.strip():
-        process_question(question, repo_url, "summarize")
+        process_question(question, repo_url, "summarize", speed_option)
         st.session_state.question_input = ""
         st.rerun()
     elif summarize_button and not question.strip():
@@ -104,13 +114,14 @@ def render_chat_interface(repo_url: Optional[str] = None) -> None:
     display_chat_history()
 
 # --- Process Question with enhanced spinners ---
-def process_question(question: str, repo_url: str, mode: str = "chat") -> None:
+def process_question(question: str, repo_url: str, mode: str = "chat", speed_mode: str = "⚡ Fast Mode (30s)") -> None:
     """Process a question and get AI response with enhanced progress tracking and tool status updates"""
     st.session_state.chat_history.append({
         "role": "user",
         "content": question,
         "timestamp": datetime.now().isoformat(),
-        "mode": mode
+        "mode": mode,
+        "speed_mode": speed_mode
     })
     
     # Set processing state
@@ -170,7 +181,8 @@ def process_question(question: str, repo_url: str, mode: str = "chat") -> None:
                 "timestamp": datetime.now().isoformat(),
                 "tools_used": tools_used,
                 "mode": mode,
-                "servers_used": active_servers
+                "servers_used": active_servers,
+                "speed_mode": speed_mode
             })
             
         except Exception as e:
@@ -183,7 +195,8 @@ def process_question(question: str, repo_url: str, mode: str = "chat") -> None:
                 "timestamp": datetime.now().isoformat(),
                 "tools_used": [],
                 "mode": mode,
-                "servers_used": []
+                "servers_used": [],
+                "speed_mode": speed_mode
             })
         
         finally:

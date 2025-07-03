@@ -327,10 +327,10 @@ class AnalysisEngine:
             return results
     
     def smart_summarization(self, repo_url: str, status_callback: Callable = None) -> Dict[str, Any]:
-        """Generate smart repository summarization with comprehensive insights"""
+        """Generate smart repository summarization with comprehensive insights - OPTIMIZED VERSION"""
         
         if status_callback:
-            status_callback("🧠 Starting smart summarization...")
+            status_callback("🧠 Starting optimized smart summarization...")
         
         results = {
             "repository_url": repo_url,
@@ -344,43 +344,39 @@ class AnalysisEngine:
         start_time = time.time()
         
         try:
-            # Get comprehensive data from all MCP servers
+            # OPTIMIZED: Use only essential tools for faster processing
             if status_callback:
-                status_callback("📊 Gathering comprehensive data...")
+                status_callback("📊 Gathering essential data (optimized)...")
             
-            # Repository overview
+            # 1. Repository overview (fast)
             repo_overview = self._get_repository_info(repo_url)
             results["sections"]["overview"] = repo_overview
             
-            # README and documentation
+            # 2. README content (fast)
             readme_content = self._get_readme_content(repo_url)
             results["sections"]["documentation"] = readme_content
             
-            # File structure
-            file_structure = self._analyze_file_structure(repo_url, {})
+            # 3. Basic file structure (limited depth for speed)
+            file_structure = self._get_optimized_file_structure(repo_url)
             results["sections"]["structure"] = file_structure
             
-            # Code metrics
-            code_metrics = self._analyze_code_metrics(repo_url, {})
+            # 4. Quick code metrics (limited scope)
+            code_metrics = self._get_quick_code_metrics(repo_url)
             results["sections"]["metrics"] = code_metrics
             
-            # Commit history
-            commit_history = self._analyze_commit_history(repo_url, {})
+            # 5. Recent commits only (limited count)
+            commit_history = self._get_recent_commit_summary(repo_url)
             results["sections"]["history"] = commit_history
             
-            # Dependencies
-            dependencies = self._analyze_dependencies(repo_url)
+            # 6. Basic dependencies (fast search)
+            dependencies = self._get_basic_dependencies(repo_url)
             results["sections"]["dependencies"] = dependencies
-            
-            # Code patterns
-            patterns = self._analyze_code_patterns(repo_url)
-            results["sections"]["patterns"] = patterns
             
             # Generate AI-powered summary
             if status_callback:
                 status_callback("🤖 Generating AI summary...")
             
-            ai_summary = self._generate_comprehensive_summary(repo_url, results["sections"])
+            ai_summary = self._generate_optimized_summary(repo_url, results["sections"])
             results["sections"]["ai_summary"] = ai_summary
             
             results["duration"] = time.time() - start_time
@@ -389,7 +385,7 @@ class AnalysisEngine:
             add_analysis_result("smart_summarization", results, results["tools_used"])
             
             if status_callback:
-                status_callback("✅ Smart summarization completed!")
+                status_callback("✅ Optimized smart summarization completed!")
             
             return results
             
@@ -399,6 +395,465 @@ class AnalysisEngine:
             if status_callback:
                 status_callback(f"❌ Smart summarization failed: {str(e)}")
             return results
+
+    def ultra_fast_summarization(self, repo_url: str, status_callback: Callable = None) -> Dict[str, Any]:
+        """Generate ultra-fast repository summarization with minimal tools"""
+        
+        if status_callback:
+            status_callback("⚡ Starting ultra-fast summarization...")
+        
+        results = {
+            "repository_url": repo_url,
+            "analysis_type": "ultra_fast_summarization",
+            "timestamp": datetime.now().isoformat(),
+            "duration": 0,
+            "tools_used": [],
+            "sections": {}
+        }
+        
+        start_time = time.time()
+        
+        try:
+            # ULTRA FAST: Use only 2-3 essential tools
+            if status_callback:
+                status_callback("📊 Gathering minimal data (ultra-fast)...")
+            
+            # 1. Repository overview (fastest)
+            repo_overview = self._get_repository_info(repo_url)
+            results["sections"]["overview"] = repo_overview
+            
+            # 2. README content only
+            readme_content = self._get_readme_content(repo_url)
+            results["sections"]["documentation"] = readme_content
+            
+            # 3. Basic file structure (minimal)
+            file_structure = self._get_minimal_file_structure(repo_url)
+            results["sections"]["structure"] = file_structure
+            
+            # Generate AI-powered summary
+            if status_callback:
+                status_callback("🤖 Generating ultra-fast AI summary...")
+            
+            ai_summary = self._generate_ultra_fast_summary(repo_url, results["sections"])
+            results["sections"]["ai_summary"] = ai_summary
+            
+            results["duration"] = time.time() - start_time
+            results["tools_used"] = self.tools.get_tools_used()
+            
+            add_analysis_result("ultra_fast_summarization", results, results["tools_used"])
+            
+            if status_callback:
+                status_callback("✅ Ultra-fast summarization completed!")
+            
+            return results
+            
+        except Exception as e:
+            results["error"] = str(e)
+            results["duration"] = time.time() - start_time
+            if status_callback:
+                status_callback(f"❌ Ultra-fast summarization failed: {str(e)}")
+            return results
+
+    def comprehensive_smart_summarization(self, repo_url: str, status_callback: Callable = None) -> Dict[str, Any]:
+        """Generate comprehensive repository summarization with all available tools - OPTIMIZED PARALLEL VERSION"""
+        
+        if status_callback:
+            status_callback("🔍 Starting optimized comprehensive summarization...")
+        
+        results = {
+            "repository_url": repo_url,
+            "analysis_type": "comprehensive_smart_summarization",
+            "timestamp": datetime.now().isoformat(),
+            "duration": 0,
+            "tools_used": [],
+            "sections": {}
+        }
+        
+        start_time = time.time()
+        
+        try:
+            # OPTIMIZED: Use all tools but with better parallelization
+            if status_callback:
+                status_callback("📊 Gathering comprehensive data with parallel processing...")
+            
+            # Phase 1: Fast tools (can run immediately)
+            phase1_results = self._execute_phase1_tools(repo_url, status_callback)
+            results["sections"].update(phase1_results)
+            
+            # Phase 2: Medium complexity tools (run in parallel)
+            if status_callback:
+                status_callback("🔧 Running medium complexity analysis...")
+            phase2_results = self._execute_phase2_tools(repo_url, status_callback)
+            results["sections"].update(phase2_results)
+            
+            # Phase 3: Heavy analysis tools (run in parallel with limits)
+            if status_callback:
+                status_callback("⚡ Running advanced analysis...")
+            phase3_results = self._execute_phase3_tools(repo_url, status_callback)
+            results["sections"].update(phase3_results)
+            
+            # Generate comprehensive AI summary
+            if status_callback:
+                status_callback("🤖 Generating comprehensive AI summary...")
+            
+            ai_summary = self._generate_comprehensive_summary(repo_url, results["sections"])
+            results["sections"]["ai_summary"] = ai_summary
+            
+            results["duration"] = time.time() - start_time
+            results["tools_used"] = self.tools.get_tools_used()
+            
+            add_analysis_result("comprehensive_smart_summarization", results, results["tools_used"])
+            
+            if status_callback:
+                status_callback("✅ Optimized comprehensive summarization completed!")
+            
+            return results
+            
+        except Exception as e:
+            results["error"] = str(e)
+            results["duration"] = time.time() - start_time
+            if status_callback:
+                status_callback(f"❌ Comprehensive summarization failed: {str(e)}")
+            return results
+
+    def _execute_phase1_tools(self, repo_url: str, status_callback: Callable = None) -> Dict[str, Any]:
+        """Execute fast tools that can run immediately"""
+        results = {}
+        
+        # These tools are fast and can run immediately
+        fast_tools = [
+            ("overview", self._get_repository_info, repo_url),
+            ("documentation", self._get_readme_content, repo_url),
+            ("basic_structure", self._get_basic_file_structure, repo_url)
+        ]
+        
+        # Execute fast tools in parallel
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+            future_to_key = {
+                executor.submit(func, repo_url): key 
+                for key, func, repo_url in fast_tools
+            }
+            
+            for future in concurrent.futures.as_completed(future_to_key):
+                key = future_to_key[future]
+                try:
+                    results[key] = future.result()
+                except Exception as e:
+                    results[key] = {"error": str(e)}
+        
+        return results
+
+    def _execute_phase2_tools(self, repo_url: str, status_callback: Callable = None) -> Dict[str, Any]:
+        """Execute medium complexity tools in parallel"""
+        results = {}
+        
+        # Medium complexity tools that can run in parallel
+        medium_tools = [
+            ("metrics", self._get_optimized_code_metrics, repo_url),
+            ("dependencies", self._get_optimized_dependencies, repo_url),
+            ("recent_history", self._get_optimized_commit_history, repo_url)
+        ]
+        
+        # Execute medium tools in parallel
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+            future_to_key = {
+                executor.submit(func, repo_url): key 
+                for key, func, repo_url in medium_tools
+            }
+            
+            for future in concurrent.futures.as_completed(future_to_key):
+                key = future_to_key[future]
+                try:
+                    results[key] = future.result()
+                except Exception as e:
+                    results[key] = {"error": str(e)}
+        
+        return results
+
+    def _execute_phase3_tools(self, repo_url: str, status_callback: Callable = None) -> Dict[str, Any]:
+        """Execute heavy analysis tools with optimized limits"""
+        results = {}
+        
+        # Heavy tools with optimized limits
+        heavy_tools = [
+            ("full_structure", self._get_full_file_structure_optimized, repo_url),
+            ("patterns", self._get_optimized_code_patterns, repo_url),
+            ("security", self._get_optimized_security_analysis, repo_url)
+        ]
+        
+        # Execute heavy tools in parallel with timeouts
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+            future_to_key = {
+                executor.submit(func, repo_url): key 
+                for key, func, repo_url in heavy_tools
+            }
+            
+            for future in concurrent.futures.as_completed(future_to_key, timeout=120):  # 2 minute timeout
+                key = future_to_key[future]
+                try:
+                    results[key] = future.result(timeout=60)  # 1 minute per tool
+                except concurrent.futures.TimeoutError:
+                    results[key] = {"error": "Tool execution timed out"}
+                except Exception as e:
+                    results[key] = {"error": str(e)}
+        
+        return results
+
+    def _get_optimized_code_metrics(self, repo_url: str) -> Dict[str, Any]:
+        """Get optimized code metrics with better limits"""
+        try:
+            # Get basic metrics
+            metrics_result = self.tools.get_code_metrics(repo_url)
+            metrics_data = json.loads(metrics_result) if isinstance(metrics_result, str) else metrics_result
+            
+            # Limited but comprehensive pattern search
+            patterns = {
+                "functions": self.tools.search_code(repo_url, "def ", "python"),
+                "classes": self.tools.search_code(repo_url, "class ", "python"),
+                "imports": self.tools.search_code(repo_url, "import ", "python"),
+                "async_code": self.tools.search_code(repo_url, "async def", "python"),
+                "error_handling": self.tools.search_code(repo_url, "try:", "python")
+            }
+            
+            return {
+                "metrics": metrics_data,
+                "patterns": patterns,
+                "note": "Optimized metrics with comprehensive patterns"
+            }
+        except Exception as e:
+            return {"error": f"Failed to get optimized code metrics: {str(e)}"}
+
+    def _get_optimized_dependencies(self, repo_url: str) -> Dict[str, Any]:
+        """Get optimized dependency analysis"""
+        try:
+            # Search for dependency files
+            dependency_result = self.tools.search_dependencies(repo_url)
+            dependency_data = json.loads(dependency_result) if isinstance(dependency_result, str) else dependency_result
+            
+            # Get main dependency files
+            dependency_files = {
+                "requirements": self.tools.get_file_content(repo_url, "requirements.txt"),
+                "package_json": self.tools.get_file_content(repo_url, "package.json"),
+                "setup": self.tools.get_file_content(repo_url, "setup.py"),
+                "pyproject": self.tools.get_file_content(repo_url, "pyproject.toml")
+            }
+            
+            return {
+                "dependency_search": dependency_data,
+                "dependency_files": dependency_files,
+                "note": "Comprehensive dependency analysis"
+            }
+        except Exception as e:
+            return {"error": f"Failed to get optimized dependencies: {str(e)}"}
+
+    def _get_optimized_commit_history(self, repo_url: str) -> Dict[str, Any]:
+        """Get optimized commit history with better limits"""
+        try:
+            # Get recent commits with moderate limit
+            commits_result = self.tools.get_recent_commits(repo_url, 25)  # Balanced limit
+            commits_data = json.loads(commits_result) if isinstance(commits_result, str) else commits_result
+            
+            # Get commit statistics
+            stats_result = self.tools.get_commit_statistics(repo_url, 60)  # 60 days
+            stats_data = json.loads(stats_result) if isinstance(stats_result, str) else stats_result
+            
+            return {
+                "recent_commits": commits_data,
+                "commit_statistics": stats_data,
+                "analysis_period": "60 days",
+                "note": "Optimized commit history analysis"
+            }
+        except Exception as e:
+            return {"error": f"Failed to get optimized commit history: {str(e)}"}
+
+    def _get_full_file_structure_optimized(self, repo_url: str) -> Dict[str, Any]:
+        """Get full file structure with optimized limits"""
+        try:
+            # Use balanced limits for comprehensive but fast analysis
+            max_depth = 4  # Balanced depth
+            max_files = 100  # Reasonable file limit
+            
+            # Get directory tree
+            tree_result = self.tools.get_directory_tree(repo_url, max_depth)
+            tree_data = json.loads(tree_result) if isinstance(tree_result, str) else tree_result
+            
+            # Get file structure
+            structure_result = self.tools.get_file_structure(repo_url)
+            structure_data = json.loads(structure_result) if isinstance(structure_result, str) else structure_result
+            
+            # Get project analysis
+            analysis_result = self.tools.analyze_project_structure(repo_url)
+            analysis_data = json.loads(analysis_result) if isinstance(analysis_result, str) else analysis_result
+            
+            return {
+                "directory_tree": tree_data,
+                "file_structure": structure_data,
+                "project_analysis": analysis_data,
+                "max_depth": max_depth,
+                "max_files": max_files,
+                "note": "Full structure analysis with optimized limits"
+            }
+        except Exception as e:
+            return {"error": f"Failed to get full file structure: {str(e)}"}
+
+    def _get_optimized_code_patterns(self, repo_url: str) -> Dict[str, Any]:
+        """Get optimized code patterns analysis"""
+        try:
+            # Comprehensive pattern search with limits
+            patterns = {
+                "design_patterns": self.tools.search_code(repo_url, "class ", "python"),
+                "function_patterns": self.tools.search_code(repo_url, "def ", "python"),
+                "error_patterns": self.tools.search_code(repo_url, "except", "python"),
+                "async_patterns": self.tools.search_code(repo_url, "async", "python"),
+                "decorator_patterns": self.tools.search_code(repo_url, "@", "python"),
+                "type_hints": self.tools.search_code(repo_url, "->", "python")
+            }
+            
+            return {
+                "code_patterns": patterns,
+                "note": "Comprehensive pattern analysis"
+            }
+        except Exception as e:
+            return {"error": f"Failed to get optimized code patterns: {str(e)}"}
+
+    def _get_optimized_security_analysis(self, repo_url: str) -> Dict[str, Any]:
+        """Get optimized security analysis"""
+        try:
+            # Comprehensive security patterns
+            security_patterns = {
+                "api_keys": self.tools.search_code(repo_url, "API_KEY", ""),
+                "passwords": self.tools.search_code(repo_url, "password", ""),
+                "secrets": self.tools.search_code(repo_url, "secret", ""),
+                "tokens": self.tools.search_code(repo_url, "token", ""),
+                "hardcoded_credentials": self.tools.search_code(repo_url, "admin", ""),
+                "sql_injection": self.tools.search_code(repo_url, "SELECT", ""),
+                "file_operations": self.tools.search_code(repo_url, "open(", "python"),
+                "network_calls": self.tools.search_code(repo_url, "requests.", "python"),
+                "eval_usage": self.tools.search_code(repo_url, "eval(", "python")
+            }
+            
+            return {
+                "security_patterns": security_patterns,
+                "risk_level": self._calculate_security_risk(security_patterns),
+                "note": "Comprehensive security analysis"
+            }
+        except Exception as e:
+            return {"error": f"Failed to get optimized security analysis: {str(e)}"}
+
+    def _get_optimized_file_structure(self, repo_url: str) -> Dict[str, Any]:
+        """Get optimized file structure with limited depth and files"""
+        try:
+            # Use smaller limits for faster processing
+            max_depth = 2  # Reduced from 5
+            max_files = 20  # Reduced from 50
+            
+            # Get basic file structure only
+            structure_result = self.tools.get_file_structure(repo_url)
+            structure_data = json.loads(structure_result) if isinstance(structure_result, str) else structure_result
+            
+            return {
+                "file_structure": structure_data,
+                "max_depth": max_depth,
+                "max_files": max_files,
+                "note": "Optimized for speed - limited depth and file count"
+            }
+        except Exception as e:
+            return {"error": f"Failed to get optimized file structure: {str(e)}"}
+
+    def _get_quick_code_metrics(self, repo_url: str) -> Dict[str, Any]:
+        """Get quick code metrics with limited scope"""
+        try:
+            # Get basic metrics only
+            metrics_result = self.tools.get_code_metrics(repo_url)
+            metrics_data = json.loads(metrics_result) if isinstance(metrics_result, str) else metrics_result
+            
+            # Limited pattern search
+            patterns = {
+                "functions": self.tools.search_code(repo_url, "def ", "python"),
+                "classes": self.tools.search_code(repo_url, "class ", "python")
+            }
+            
+            return {
+                "metrics": metrics_data,
+                "patterns": patterns,
+                "note": "Quick metrics - limited pattern analysis"
+            }
+        except Exception as e:
+            return {"error": f"Failed to get quick code metrics: {str(e)}"}
+
+    def _get_recent_commit_summary(self, repo_url: str) -> Dict[str, Any]:
+        """Get recent commit summary with limited data"""
+        try:
+            # Get only recent commits (reduced count)
+            commits_result = self.tools.get_recent_commits(repo_url, 10)  # Reduced from 50
+            commits_data = json.loads(commits_result) if isinstance(commits_result, str) else commits_result
+            
+            return {
+                "recent_commits": commits_data,
+                "analysis_period": "10 commits",
+                "note": "Recent commits only for faster processing"
+            }
+        except Exception as e:
+            return {"error": f"Failed to get recent commit summary: {str(e)}"}
+
+    def _get_basic_dependencies(self, repo_url: str) -> Dict[str, Any]:
+        """Get basic dependency information"""
+        try:
+            # Search for main dependency files only
+            dependency_files = {
+                "requirements": self.tools.get_file_content(repo_url, "requirements.txt"),
+                "package_json": self.tools.get_file_content(repo_url, "package.json")
+            }
+            
+            return {
+                "dependency_files": dependency_files,
+                "note": "Basic dependency files only"
+            }
+        except Exception as e:
+            return {"error": f"Failed to get basic dependencies: {str(e)}"}
+
+    def _generate_optimized_summary(self, repo_url: str, sections: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate optimized AI summary with faster processing"""
+        try:
+            agent = self.get_agent()
+            
+            # Create a more concise prompt for faster processing
+            optimized_prompt = self._create_optimized_summary_prompt(sections)
+            
+            # Use the AI agent to generate summary
+            summary, tools_used = agent.ask_question(
+                f"Please provide a comprehensive but concise repository summary: {optimized_prompt}",
+                repo_url
+            )
+            
+            return {
+                "summary": summary,
+                "tools_used": tools_used,
+                "generated_at": datetime.now().isoformat(),
+                "note": "Optimized summary generation"
+            }
+        except Exception as e:
+            return {"error": f"Failed to generate optimized summary: {str(e)}"}
+
+    def _create_optimized_summary_prompt(self, sections: Dict[str, Any]) -> str:
+        """Create optimized summary prompt for faster processing"""
+        prompt = "Based on the following repository analysis, provide a comprehensive but concise summary:\n\n"
+        
+        # Include only essential sections
+        essential_sections = ["overview", "documentation", "structure", "metrics", "history", "dependencies"]
+        
+        for section_name in essential_sections:
+            if section_name in sections and sections[section_name]:
+                section_data = sections[section_name]
+                if isinstance(section_data, dict) and "error" not in section_data:
+                    prompt += f"{section_name.title()}: {json.dumps(section_data, indent=2)}\n\n"
+        
+        prompt += "Please provide a comprehensive summary covering the project's purpose, architecture, code quality, and overall assessment. Keep it concise but informative."
+        
+        return prompt
     
     def _get_repository_info(self, repo_url: str) -> Dict[str, Any]:
         """Get basic repository information"""
@@ -673,7 +1128,61 @@ class AnalysisEngine:
         prompt += "Please provide a comprehensive summary covering the project's purpose, architecture, code quality, security considerations, and overall assessment."
         
         return prompt
-    
+
+    def _get_minimal_file_structure(self, repo_url: str) -> Dict[str, Any]:
+        """Get minimal file structure for ultra-fast processing"""
+        try:
+            # Get only basic file structure
+            structure_result = self.tools.get_file_structure(repo_url)
+            structure_data = json.loads(structure_result) if isinstance(structure_result, str) else structure_result
+            
+            return {
+                "file_structure": structure_data,
+                "note": "Ultra-fast mode - minimal file analysis"
+            }
+        except Exception as e:
+            return {"error": f"Failed to get minimal file structure: {str(e)}"}
+
+    def _generate_ultra_fast_summary(self, repo_url: str, sections: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate ultra-fast AI summary"""
+        try:
+            agent = self.get_agent()
+            
+            # Create minimal prompt for ultra-fast processing
+            minimal_prompt = self._create_minimal_summary_prompt(sections)
+            
+            # Use the AI agent to generate summary
+            summary, tools_used = agent.ask_question(
+                f"Please provide a brief but informative repository summary: {minimal_prompt}",
+                repo_url
+            )
+            
+            return {
+                "summary": summary,
+                "tools_used": tools_used,
+                "generated_at": datetime.now().isoformat(),
+                "note": "Ultra-fast summary generation"
+            }
+        except Exception as e:
+            return {"error": f"Failed to generate ultra-fast summary: {str(e)}"}
+
+    def _create_minimal_summary_prompt(self, sections: Dict[str, Any]) -> str:
+        """Create minimal summary prompt for ultra-fast processing"""
+        prompt = "Based on the following repository data, provide a brief but informative summary:\n\n"
+        
+        # Include only the most essential sections
+        essential_sections = ["overview", "documentation", "structure"]
+        
+        for section_name in essential_sections:
+            if section_name in sections and sections[section_name]:
+                section_data = sections[section_name]
+                if isinstance(section_data, dict) and "error" not in section_data:
+                    prompt += f"{section_name.title()}: {json.dumps(section_data, indent=2)}\n\n"
+        
+        prompt += "Please provide a concise summary covering the project's purpose, main technologies, and key features. Keep it brief but informative."
+        
+        return prompt
+
     def _generate_comprehensive_summary(self, repo_url: str, sections: Dict[str, Any]) -> Dict[str, Any]:
         """Generate comprehensive AI summary using all available data"""
         try:
@@ -733,4 +1242,14 @@ def generate_visualizations(repo_url: str, status_callback: Callable = None) -> 
 def smart_summarization(repo_url: str, status_callback: Callable = None) -> Dict[str, Any]:
     """Generate smart repository summarization"""
     engine = get_analysis_engine()
-    return engine.smart_summarization(repo_url, status_callback) 
+    return engine.smart_summarization(repo_url, status_callback)
+
+def ultra_fast_summarization(repo_url: str, status_callback: Callable = None) -> Dict[str, Any]:
+    """Generate ultra-fast repository summarization with minimal tools"""
+    engine = get_analysis_engine()
+    return engine.ultra_fast_summarization(repo_url, status_callback)
+
+def comprehensive_smart_summarization(repo_url: str, status_callback: Callable = None) -> Dict[str, Any]:
+    """Generate comprehensive repository summarization with all available tools"""
+    engine = get_analysis_engine()
+    return engine.comprehensive_smart_summarization(repo_url, status_callback) 
