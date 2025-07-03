@@ -234,6 +234,23 @@ def display_quick_analysis_results(result: Dict[str, Any]) -> None:
     
     st.success(f"✅ Quick analysis completed in {result.get('duration', 0):.2f} seconds")
     
+    # Display performance statistics if available
+    if "performance_stats" in result:
+        perf_stats = result["performance_stats"]
+        st.markdown("#### 📊 Performance Statistics")
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Total Calls", perf_stats.get("total_calls", 0))
+        with col2:
+            st.metric("Cache Hit Rate", perf_stats.get("cache_hit_rate", "0%"))
+        with col3:
+            st.metric("Avg Call Time", perf_stats.get("average_call_time", "0s"))
+        
+        # Show performance insights
+        if "execution_time" in result:
+            st.info(f"⚡ Data gathering completed in {result['execution_time']:.2f}s")
+    
     # Display tool utilization
     if "tools_used" in result and result["tools_used"]:
         st.markdown("#### 🔧 Tools Used")

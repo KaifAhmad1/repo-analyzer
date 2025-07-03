@@ -7,6 +7,7 @@ import os
 import json
 import asyncio
 import concurrent.futures
+import time
 from typing import Dict, List, Any, Optional, Tuple
 from agno.agent import Agent
 from agno.models.groq import Groq
@@ -15,11 +16,14 @@ from agno.memory.v2.db.sqlite import SqliteMemoryDb
 from agno.memory.v2.memory import Memory
 from agno.storage.sqlite import SqliteStorage
 from fastmcp import Client
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import functools
 
 class FastMCPTools:
-    """Enhanced tools wrapper for all FastMCP v2 servers with comprehensive data gathering"""
+    """Enhanced tools wrapper for all FastMCP v2 servers with comprehensive data gathering and optimized performance"""
     
-    def __init__(self):
+    def __init__(self, max_workers: int = 8, timeout: int = 30):
         self.servers = {
             "file_content": "src/servers/file_content_server.py",
             "repository_structure": "src/servers/repository_structure_server.py", 
@@ -29,9 +33,21 @@ class FastMCPTools:
         self.tools_used = []
         self.servers_used = []
         self.cache = {}
+        self.max_workers = max_workers
+        self.timeout = timeout
+        self._client_pool = {}
+        self._pool_lock = threading.Lock()
+        
+        # Performance tracking
+        self.call_times = {}
+        self.total_calls = 0
+        self.cache_hits = 0
     
     async def _call_server_tool(self, server_name: str, tool_name: str, **kwargs) -> Dict[str, Any]:
-        """Call a tool from a specific FastMCP server with enhanced error handling"""
+        """Call a tool from a specific FastMCP server with enhanced error handling and connection pooling"""
+        start_time = time.time()
+        self.total_calls += 1
+        
         try:
             script_path = self.servers[server_name]
             if not os.path.exists(script_path):
@@ -45,38 +61,108 @@ class FastMCPTools:
             # Create cache key
             cache_key = f"{server_name}.{tool_name}.{hash(str(kwargs))}"
             if cache_key in self.cache:
+                self.cache_hits += 1
                 return self.cache[cache_key]
             
-            async with Client(script_path) as client:
-                result = await client.call_tool(tool_name, kwargs)
+            # Use connection pooling for better performance
+            with self._pool_lock:
+                if server_name not in self._client_pool:
+                    self._client_pool[server_name] = Client(script_path)
+                client = self._client_pool[server_name]
+            
+            # Add timeout to prevent hanging
+            try:
+                result = await asyncio.wait_for(
+                    client.call_tool(tool_name, kwargs), 
+                    timeout=self.timeout
+                )
+                
                 if hasattr(result, 'content') and result.content:
                     response = {
                         "result": result.content[0].text if result.content else "",
                         "success": True,
                         "server": server_name,
-                        "tool": tool_name
+                        "tool": tool_name,
+                        "execution_time": time.time() - start_time
                     }
-                    self.cache[cache_key] = response
-                    return response
                 else:
                     response = {
                         "result": "No content returned",
                         "success": True,
                         "server": server_name,
-                        "tool": tool_name
+                        "tool": tool_name,
+                        "execution_time": time.time() - start_time
                     }
-                    self.cache[cache_key] = response
-                    return response
+                
+                self.cache[cache_key] = response
+                self.call_times[f"{server_name}.{tool_name}"] = time.time() - start_time
+                return response
+                
+            except asyncio.TimeoutError:
+                return {
+                    "error": f"Timeout after {self.timeout} seconds", 
+                    "success": False, 
+                    "server": server_name, 
+                    "tool": tool_name,
+                    "execution_time": time.time() - start_time
+                }
+                
         except Exception as e:
-            return {"error": str(e), "success": False, "server": server_name, "tool": tool_name}
+            return {
+                "error": str(e), 
+                "success": False, 
+                "server": server_name, 
+                "tool": tool_name,
+                "execution_time": time.time() - start_time
+            }
     
     def _sync_call(self, server_name: str, tool_name: str, **kwargs) -> str:
-        """Synchronous wrapper for async calls"""
+        """Synchronous wrapper for async calls with timeout"""
         try:
             result = asyncio.run(self._call_server_tool(server_name, tool_name, **kwargs))
             return json.dumps(result, indent=2)
         except Exception as e:
-            return f"Error: {str(e)}"
+            return json.dumps({
+                "error": str(e), 
+                "success": False, 
+                "server": server_name, 
+                "tool": tool_name,
+                "execution_time": 0
+            }, indent=2)
+    
+    def _batch_call_tools(self, tool_calls: List[Tuple[str, str, dict]]) -> Dict[str, Any]:
+        """Execute multiple tool calls in parallel with optimized batching"""
+        results = {}
+        
+        # Group tools by server for better connection reuse
+        server_groups = {}
+        for server_name, tool_name, kwargs in tool_calls:
+            if server_name not in server_groups:
+                server_groups[server_name] = []
+            server_groups[server_name].append((tool_name, kwargs))
+        
+        # Execute each server's tools in parallel
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            future_to_key = {}
+            
+            for server_name, tools in server_groups.items():
+                for tool_name, kwargs in tools:
+                    key = f"{server_name}.{tool_name}"
+                    future = executor.submit(
+                        self._sync_call, server_name, tool_name, **kwargs
+                    )
+                    future_to_key[future] = key
+            
+            # Collect results as they complete
+            for future in as_completed(future_to_key):
+                key = future_to_key[future]
+                try:
+                    result = future.result()
+                    results[key] = json.loads(result)
+                except Exception as exc:
+                    results[key] = {"error": str(exc), "success": False}
+        
+        return results
     
     # File Content Tools
     def get_file_content(self, repo_url: str, file_path: str) -> str:
@@ -173,13 +259,84 @@ class FastMCPTools:
     def clear_cache(self):
         """Clear the tool cache"""
         self.cache.clear()
+    
+    def get_performance_stats(self) -> Dict[str, Any]:
+        """Get performance statistics"""
+        avg_time = sum(self.call_times.values()) / len(self.call_times) if self.call_times else 0
+        cache_hit_rate = (self.cache_hits / self.total_calls * 100) if self.total_calls > 0 else 0
+        
+        return {
+            "total_calls": self.total_calls,
+            "cache_hits": self.cache_hits,
+            "cache_hit_rate": f"{cache_hit_rate:.1f}%",
+            "average_call_time": f"{avg_time:.2f}s",
+            "slowest_tool": max(self.call_times.items(), key=lambda x: x[1]) if self.call_times else None,
+            "fastest_tool": min(self.call_times.items(), key=lambda x: x[1]) if self.call_times else None
+        }
+    
+    def optimize_tool_selection(self, question: str) -> List[str]:
+        """Intelligently select tools based on the question type"""
+        question_lower = question.lower()
+        
+        # Define tool categories and their keywords
+        tool_categories = {
+            "structure": ["structure", "organization", "files", "directories", "layout"],
+            "content": ["content", "code", "implementation", "function", "class"],
+            "history": ["history", "commits", "changes", "development", "timeline"],
+            "search": ["search", "find", "pattern", "dependency", "import"]
+        }
+        
+        selected_tools = []
+        
+        # Determine which categories are relevant
+        for category, keywords in tool_categories.items():
+            if any(keyword in question_lower for keyword in keywords):
+                if category == "structure":
+                    selected_tools.extend(["get_directory_tree", "get_file_structure", "analyze_project_structure"])
+                elif category == "content":
+                    selected_tools.extend(["get_readme_content", "get_code_metrics", "analyze_code_complexity"])
+                elif category == "history":
+                    selected_tools.extend(["get_recent_commits", "get_commit_statistics", "get_development_patterns"])
+                elif category == "search":
+                    selected_tools.extend(["search_dependencies", "get_code_patterns"])
+        
+        # Always include essential tools if none selected
+        if not selected_tools:
+            selected_tools = ["get_readme_content", "get_file_structure", "get_repository_overview"]
+        
+        return selected_tools
+    
+    def get_performance_insights(self) -> str:
+        """Get human-readable performance insights"""
+        stats = self.get_performance_stats()
+        
+        insights = []
+        insights.append(f"🚀 **Performance Summary:**")
+        insights.append(f"• Total tool calls: {stats['total_calls']}")
+        insights.append(f"• Cache hit rate: {stats['cache_hit_rate']}")
+        insights.append(f"• Average call time: {stats['average_call_time']}")
+        
+        if stats['slowest_tool']:
+            insights.append(f"• Slowest tool: {stats['slowest_tool'][0]} ({stats['slowest_tool'][1]:.2f}s)")
+        
+        if stats['fastest_tool']:
+            insights.append(f"• Fastest tool: {stats['fastest_tool'][0]} ({stats['fastest_tool'][1]:.2f}s)")
+        
+        # Performance recommendations
+        if float(stats['average_call_time'].replace('s', '')) > 5.0:
+            insights.append(f"⚠️ **Recommendation:** Consider reducing tool complexity or increasing cache usage")
+        elif float(stats['average_call_time'].replace('s', '')) < 2.0:
+            insights.append(f"✅ **Status:** Excellent performance! Tools are responding quickly")
+        
+        return "\n".join(insights)
 
 class RepositoryAnalyzerAgent:
     """Enhanced Repository Analyzer Agent with comprehensive data gathering and analysis"""
     
     def __init__(self, model_name: str = "llama-3.1-70b-versatile"):
         self.model_name = model_name
-        self.tools = FastMCPTools()
+        # Initialize tools with optimized settings
+        self.tools = FastMCPTools(max_workers=12, timeout=25)  # Increased workers, reduced timeout
         
         # Initialize memory and storage
         self.memory = Memory(
@@ -196,8 +353,7 @@ class RepositoryAnalyzerAgent:
             model=Groq(id=model_name),
             memory=self.memory,
             storage=self.storage,
-            tools=ReasoningTools(),
-            system_prompt=self._get_system_prompt()
+            tools=ReasoningTools()
         )
     
     def _get_system_prompt(self) -> str:
@@ -230,47 +386,70 @@ For Summarization:
 
 Always strive to provide the most accurate and helpful analysis possible."""
     
-    def _gather_comprehensive_data(self, repo_url: str, status_callback=None) -> Dict[str, Any]:
-        """Gather comprehensive data from all MCP servers in parallel"""
+    def _gather_comprehensive_data(self, repo_url: str, status_callback=None, question: str = "") -> Dict[str, Any]:
+        """Gather comprehensive data from all MCP servers with optimized parallel execution"""
         if status_callback:
             status_callback("🔍 Gathering comprehensive repository data...")
         
-        # Define tool mappings
-        tool_map = {
-            # Structure tools
-            "directory_tree": lambda: self.tools.get_directory_tree(repo_url, max_depth=5),
-            "file_structure": lambda: self.tools.get_file_structure(repo_url),
-            "project_analysis": lambda: self.tools.analyze_project_structure(repo_url),
-            # Documentation
-            "readme": lambda: self.tools.get_readme_content(repo_url),
-            # Code analysis
-            "metrics": lambda: self.tools.get_code_metrics(repo_url),
-            "complexity": lambda: self.tools.analyze_code_complexity(repo_url),
-            "patterns": lambda: self.tools.get_code_patterns(repo_url),
-            # Commit history
-            "recent_commits": lambda: self.tools.get_recent_commits(repo_url, limit=50),
-            "commit_statistics": lambda: self.tools.get_commit_statistics(repo_url, days=90),
-            "dev_patterns": lambda: self.tools.get_development_patterns(repo_url),
-            # Dependencies
-            "dependency_files": lambda: self.tools.search_dependencies(repo_url),
+        start_time = time.time()
+        
+        # Use intelligent tool selection if question is provided
+        if question:
+            selected_tools = self.tools.optimize_tool_selection(question)
+            if status_callback:
+                status_callback(f"🎯 Using {len(selected_tools)} optimized tools for your question...")
+        else:
+            # Default comprehensive tool set
+            selected_tools = [
+                "get_directory_tree", "get_file_structure", "analyze_project_structure",
+                "get_readme_content", "get_code_metrics", "analyze_code_complexity",
+                "get_code_patterns", "get_recent_commits", "get_commit_statistics",
+                "get_development_patterns", "search_dependencies"
+            ]
+        
+        # Create optimized tool calls using batch processing
+        tool_calls = []
+        tool_mapping = {
+            "get_directory_tree": ("repository_structure", "get_directory_tree", {"repo_url": repo_url, "max_depth": 5}),
+            "get_file_structure": ("repository_structure", "get_file_structure", {"repo_url": repo_url}),
+            "analyze_project_structure": ("repository_structure", "analyze_project_structure", {"repo_url": repo_url}),
+            "get_readme_content": ("file_content", "get_readme_content", {"repo_url": repo_url}),
+            "get_code_metrics": ("code_search", "get_code_metrics", {"repo_url": repo_url}),
+            "analyze_code_complexity": ("code_search", "analyze_code_complexity", {"repo_url": repo_url}),
+            "get_code_patterns": ("code_search", "get_code_patterns", {"repo_url": repo_url}),
+            "get_recent_commits": ("commit_history", "get_recent_commits", {"repo_url": repo_url, "limit": 50}),
+            "get_commit_statistics": ("commit_history", "get_commit_statistics", {"repo_url": repo_url, "days": 90}),
+            "get_development_patterns": ("commit_history", "get_development_patterns", {"repo_url": repo_url}),
+            "search_dependencies": ("code_search", "search_dependencies", {"repo_url": repo_url})
         }
         
-        # Execute tools in parallel
-        if status_callback:
-            status_callback("🚀 Launching parallel tool calls...")
+        # Add selected tools to batch
+        for tool_name in selected_tools:
+            if tool_name in tool_mapping:
+                tool_calls.append(tool_mapping[tool_name])
         
-        tool_results = self._execute_tools_parallel(tool_map)
+        if status_callback:
+            status_callback(f"🚀 Executing {len(tool_calls)} tools in parallel...")
+        
+        # Execute tools using optimized batch processing
+        tool_results = self.tools._batch_call_tools(tool_calls)
         
         # Organize results
         data = self._organize_results(tool_results)
         
-        # Analyze key files
-        if status_callback:
-            status_callback("🔍 Analyzing key files...")
-        data["code_analysis"]["key_files"] = self._analyze_key_files(repo_url)
+        # Analyze key files in parallel if needed
+        if "get_file_content" in selected_tools or not question:
+            if status_callback:
+                status_callback("🔍 Analyzing key files...")
+            data["code_analysis"]["key_files"] = self._analyze_key_files_parallel(repo_url)
         
-        # Track tool utilization
+        # Track tool utilization and performance
         data["tools_used"] = self.tools.get_tools_used()
+        data["performance_stats"] = self.tools.get_performance_stats()
+        data["execution_time"] = time.time() - start_time
+        
+        if status_callback:
+            status_callback(f"✅ Data gathering complete in {data['execution_time']:.2f}s")
         
         return data
     
@@ -334,15 +513,36 @@ Always strive to provide the most accurate and helpful analysis possible."""
         
         return key_files_data
     
+    def _analyze_key_files_parallel(self, repo_url: str) -> Dict[str, Any]:
+        """Analyze key files in parallel for better performance"""
+        key_files = ["main.py", "app.py", "index.js", "package.json", "requirements.txt", "setup.py"]
+        
+        # Create parallel tool calls for key files
+        tool_calls = []
+        for file_name in key_files:
+            tool_calls.append(("file_content", "get_file_content", {"repo_url": repo_url, "file_path": file_name}))
+        
+        # Execute in parallel
+        results = self.tools._batch_call_tools(tool_calls)
+        
+        # Organize results
+        key_files_data = {}
+        for file_name in key_files:
+            result_key = f"file_content.get_file_content"
+            if result_key in results and results[result_key].get("success", False):
+                key_files_data[file_name] = results[result_key]
+        
+        return key_files_data
+    
     def ask_question(self, question: str, repo_url: str, user_id: str = "default", status_callback=None) -> Tuple[str, List[str]]:
-        """Ask a comprehensive question about the repository using all available data"""
+        """Ask a comprehensive question about the repository using optimized data gathering"""
         
         if status_callback:
-            status_callback("🤖 Preparing comprehensive analysis...")
+            status_callback("🤖 Preparing optimized analysis...")
         
         try:
-            # Gather comprehensive data from all MCP servers
-            comprehensive_data = self._gather_comprehensive_data(repo_url, status_callback)
+            # Gather data using intelligent tool selection based on the question
+            comprehensive_data = self._gather_comprehensive_data(repo_url, status_callback, question)
             
             if status_callback:
                 status_callback("🧠 AI agent analyzing your question...")
@@ -350,11 +550,13 @@ Always strive to provide the most accurate and helpful analysis possible."""
             # Create comprehensive prompt with all gathered data
             prompt = self._create_comprehensive_prompt(question, comprehensive_data)
             
-            # Get AI response
-            response = self.agent.run(prompt)
+            # Get AI response with system prompt
+            system_prompt = self._get_system_prompt()
+            response = self.agent.run(f"{system_prompt}\n\n{prompt}")
             
             if status_callback:
-                status_callback("✅ Analysis complete!")
+                execution_time = comprehensive_data.get("execution_time", 0)
+                status_callback(f"✅ Analysis complete! (Data gathering: {execution_time:.2f}s)")
             
             return response.content, comprehensive_data["tools_used"]
             
@@ -380,8 +582,9 @@ Always strive to provide the most accurate and helpful analysis possible."""
             # Create summary prompt
             summary_prompt = self._create_summary_prompt(comprehensive_data)
             
-            # Get AI response
-            response = self.agent.run(summary_prompt)
+            # Get AI response with system prompt
+            system_prompt = self._get_system_prompt()
+            response = self.agent.run(f"{system_prompt}\n\n{summary_prompt}")
             
             if status_callback:
                 status_callback("✅ Summary complete!")
@@ -410,8 +613,9 @@ Always strive to provide the most accurate and helpful analysis possible."""
             # Create pattern analysis prompt
             pattern_prompt = self._create_pattern_analysis_prompt(comprehensive_data)
             
-            # Get AI response
-            response = self.agent.run(pattern_prompt)
+            # Get AI response with system prompt
+            system_prompt = self._get_system_prompt()
+            response = self.agent.run(f"{system_prompt}\n\n{pattern_prompt}")
             
             if status_callback:
                 status_callback("✅ Pattern analysis complete!")
@@ -425,21 +629,35 @@ Always strive to provide the most accurate and helpful analysis possible."""
             return error_msg, []
     
     def quick_analysis(self, repo_url: str, user_id: str = "default", status_callback=None) -> Tuple[str, List[str]]:
-        """Perform quick but comprehensive repository analysis"""
+        """Perform quick but comprehensive repository analysis with optimized parallel execution"""
         
         if status_callback:
-            status_callback("⚡ Performing quick comprehensive analysis...")
+            status_callback("⚡ Performing optimized quick analysis...")
         
         try:
-            # Gather essential data quickly
-            if status_callback:
-                status_callback("📁 Gathering essential data...")
+            start_time = time.time()
             
-            data = {}
-            data["readme"] = json.loads(self.tools.get_readme_content(repo_url))
-            data["structure"] = json.loads(self.tools.get_file_structure(repo_url))
-            data["overview"] = json.loads(self.tools.get_repository_overview(repo_url))
-            data["recent_commits"] = json.loads(self.tools.get_recent_commits(repo_url, limit=10))
+            # Use batch processing for essential tools
+            tool_calls = [
+                ("file_content", "get_readme_content", {"repo_url": repo_url}),
+                ("repository_structure", "get_file_structure", {"repo_url": repo_url}),
+                ("repository_structure", "get_repository_overview", {"repo_url": repo_url}),
+                ("commit_history", "get_recent_commits", {"repo_url": repo_url, "limit": 10})
+            ]
+            
+            if status_callback:
+                status_callback("📁 Gathering essential data in parallel...")
+            
+            # Execute all tools in parallel
+            results = self.tools._batch_call_tools(tool_calls)
+            
+            # Organize results
+            data = {
+                "readme": results.get("file_content.get_readme_content", {}),
+                "structure": results.get("repository_structure.get_file_structure", {}),
+                "overview": results.get("repository_structure.get_repository_overview", {}),
+                "recent_commits": results.get("commit_history.get_recent_commits", {})
+            }
             
             if status_callback:
                 status_callback("🤖 AI agent creating quick overview...")
@@ -447,11 +665,13 @@ Always strive to provide the most accurate and helpful analysis possible."""
             # Create quick analysis prompt
             quick_prompt = self._create_quick_analysis_prompt(data)
             
-            # Get AI response
-            response = self.agent.run(quick_prompt)
+            # Get AI response with system prompt
+            system_prompt = self._get_system_prompt()
+            response = self.agent.run(f"{system_prompt}\n\n{quick_prompt}")
             
+            execution_time = time.time() - start_time
             if status_callback:
-                status_callback("✅ Quick analysis complete!")
+                status_callback(f"✅ Quick analysis complete! (Total time: {execution_time:.2f}s)")
             
             return response.content, self.tools.get_tools_used()
             
@@ -460,6 +680,26 @@ Always strive to provide the most accurate and helpful analysis possible."""
             if status_callback:
                 status_callback(f"❌ {error_msg}")
             return error_msg, []
+    
+    def get_tools_used(self) -> List[str]:
+        """Get list of tools used in this session"""
+        return self.tools.get_tools_used()
+    
+    def get_servers_used(self) -> List[str]:
+        """Get list of servers used in this session"""
+        return self.tools.get_servers_used()
+    
+    def get_performance_stats(self) -> Dict[str, Any]:
+        """Get performance statistics"""
+        return self.tools.get_performance_stats()
+    
+    def get_performance_insights(self) -> str:
+        """Get human-readable performance insights"""
+        return self.tools.get_performance_insights()
+    
+    def clear_cache(self):
+        """Clear the tool cache"""
+        self.tools.clear_cache()
 
     def _create_comprehensive_prompt(self, question: str, data: Dict[str, Any]) -> str:
         """Create comprehensive prompt for Q&A"""
