@@ -18,6 +18,11 @@ from fastmcp import Client
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import functools
+from src.utils.config import get_groq_api_key
+
+# Set the GROQ_API_KEY environment variable for Agno library
+if not os.getenv("GROQ_API_KEY"):
+    os.environ["GROQ_API_KEY"] = get_groq_api_key()
 
 class FastMCPTools:
     """Enhanced tools wrapper for all FastMCP v2 servers with comprehensive data gathering and optimized performance"""
