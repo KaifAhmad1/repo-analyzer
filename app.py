@@ -1,6 +1,6 @@
 """
-🚀 GitHub Repository Analyzer - Clean & Simple
-A streamlined interface for analyzing GitHub repositories using FastMCP v2 servers and Groq AI
+🚀 GitHub Repository Analyzer - Systematic & Comprehensive
+A systematic interface for analyzing GitHub repositories using FastMCP v2 servers and Groq AI
 """
 
 import streamlit as st
@@ -8,6 +8,7 @@ import os
 from datetime import datetime
 from src.ui.repository_selector import render_repository_selector
 from src.ui.chat_interface import render_chat_interface
+from src.ui.analysis_interface import render_analysis_interface
 from src.agent.ai_agent import (
     get_repository_overview, 
     analyze_repository, 
@@ -19,6 +20,26 @@ from src.agent.ai_agent import (
     quick_repository_analysis
 )
 from src.servers.server_manager import get_servers_status, start_mcp_servers
+from src.utils.config import (
+    get_ui_settings, 
+    save_ui_settings, 
+    get_analysis_settings,
+    save_analysis_settings,
+    get_analysis_presets,
+    has_required_keys,
+    get_groq_api_key,
+    save_keys_to_env
+)
+from src.utils.repository_manager import (
+    get_repository_manager,
+    set_current_repository,
+    get_current_repository,
+    get_repository_info,
+    add_analysis_result,
+    get_analysis_history,
+    export_session_data,
+    clear_current_session
+)
 
 def display_tools_used(tools_used):
     """Helper function to display tools used grouped by server"""
@@ -54,6 +75,65 @@ def display_tools_used(tools_used):
             st.markdown(f"  - {tool}")
         st.markdown("")
 
+def render_api_key_setup():
+    """Render API key setup interface"""
+    st.markdown("### 🔑 API Configuration")
+    st.markdown("Configure your Groq API key to enable AI-powered analysis.")
+    
+    with st.form("api_key_form"):
+        groq_api_key = st.text_input(
+            "Groq API Key",
+            type="password",
+            help="Get your API key from https://console.groq.com/"
+        )
+        
+        github_token = st.text_input(
+            "GitHub Token (Optional)",
+            type="password",
+            help="Optional: GitHub token for higher rate limits"
+        )
+        
+        submit_button = st.form_submit_button("💾 Save Configuration", type="primary")
+        
+        if submit_button and groq_api_key:
+            if save_keys_to_env(groq_api_key, github_token):
+                st.success("✅ API keys saved successfully!")
+                st.rerun()
+            else:
+                st.error("❌ Failed to save API keys")
+
+def render_session_management():
+    """Render session management interface"""
+    st.markdown("### 📊 Session Management")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("📥 Export Session", use_container_width=True):
+            session_data = export_session_data()
+            st.download_button(
+                label="💾 Download Session Data",
+                data=str(session_data),
+                file_name=f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                mime="application/json"
+            )
+    
+    with col2:
+        if st.button("🗑️ Clear Session", use_container_width=True):
+            clear_current_session()
+            st.success("✅ Session cleared!")
+            st.rerun()
+    
+    with col3:
+        if st.button("📈 View History", use_container_width=True):
+            history = get_analysis_history()
+            if history:
+                st.markdown("#### Analysis History")
+                for entry in reversed(history[-5:]):  # Show last 5 entries
+                    st.markdown(f"- **{entry['type']}** ({entry['timestamp']})")
+            else:
+                st.info("No analysis history found")
+
 # Page config
 st.set_page_config(
     page_title="🚀 GitHub Repository Analyzer",
@@ -75,6 +155,12 @@ if 'analysis_results' not in st.session_state:
     st.session_state.analysis_results = {}
 if 'processing' not in st.session_state:
     st.session_state.processing = False
+if 'session_id' not in st.session_state:
+    st.session_state.session_id = f"session_{int(datetime.now().timestamp())}"
+
+# Initialize repository manager
+repo_manager = get_repository_manager()
+repo_manager.set_session_id(st.session_state.session_id)
 
 # --- SIDEBAR ---
 with st.sidebar:
@@ -82,40 +168,44 @@ with st.sidebar:
     st.markdown("## 📁 Repository")
     repo_url = render_repository_selector()
     
+    # Update repository manager if URL changed
+    if repo_url and repo_url != get_current_repository():
+        if set_current_repository(repo_url):
+            st.session_state.current_repo = repo_url
+            st.success("✅ Repository set successfully!")
+        else:
+            st.error("❌ Failed to set repository")
+    
     # Repository Info
-    if repo_url and repo_url != st.session_state.get('current_repo'):
-        st.session_state.current_repo = repo_url
+    current_repo = get_current_repository()
+    if current_repo:
         try:
-            repo_info = get_repository_overview(repo_url)
-            # Handle both old string format and new tuple format
-            if isinstance(repo_info, tuple):
-                repo_info_text, tools_used = repo_info
-                if isinstance(repo_info_text, str):
-                    import json
-                    try:
-                        repo_info = json.loads(repo_info_text)
-                    except:
-                        repo_info = {"name": "Repository", "description": repo_info_text}
-            elif isinstance(repo_info, str):
-                import json
-                try:
-                    repo_info = json.loads(repo_info)
-                except:
-                    repo_info = {"name": "Repository", "description": repo_info}
-            
-            if repo_info and isinstance(repo_info, dict):
+            repo_info = get_repository_info()
+            if repo_info and isinstance(repo_info, dict) and "error" not in repo_info:
                 st.markdown("### 📋 Repository Info")
                 st.markdown(f"**{repo_info.get('name', 'Repository')}**")
                 st.caption(repo_info.get('description', 'No description'))
-                st.write(f"⭐ {repo_info.get('stars', 0)} | 🍴 {repo_info.get('forks', 0)} | 🕒 Updated: {repo_info.get('last_updated', repo_info.get('updated_at', ''))}")
+                st.write(f"⭐ {repo_info.get('stars', 0)} | 🍴 {repo_info.get('forks', 0)} | 🕒 Updated: {repo_info.get('updated_at', 'Unknown')}")
+            else:
+                st.warning("⚠️ Could not fetch repository information")
         except Exception as e:
             st.error(f"❌ Error loading repository: {str(e)}")
     
     st.markdown("---")
     
+    # API Key Setup (if not configured)
+    if not has_required_keys():
+        st.markdown("## 🔑 API Setup")
+        render_api_key_setup()
+        st.markdown("---")
+    
     # Settings Section
     from src.ui.settings_sidebar import render_settings_sidebar
     settings = render_settings_sidebar()
+    
+    # Session Management
+    st.markdown("---")
+    render_session_management()
     
     # Auto-start servers if not running
     if settings.get("system_health", 0) < 100:
@@ -128,7 +218,7 @@ with st.sidebar:
 st.markdown("""
 <div class="header-container">
     <h1 class="header-title">🚀 GitHub Repository Analyzer</h1>
-    <p class="header-subtitle">AI-Powered Repository Analysis with FastMCP v2 & Groq</p>
+    <p class="header-subtitle">Systematic AI-Powered Repository Analysis with FastMCP v2 & Groq</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -177,280 +267,117 @@ for i, (server_name, server_info) in enumerate(server_status['servers'].items())
 
 st.markdown("---")
 
-# Simplified tabs - only core functionality
-st.markdown("### 🎯 Choose Your Analysis Tool")
-st.markdown("Select the feature you want to use for repository analysis:")
-
-# Create simplified tabs
-TABS = [
-    {"icon": "💬", "title": "Q&A Chat", "desc": "Ask questions about the repository"},
-    {"icon": "🔍", "title": "Quick Analysis", "desc": "Get structured repository insights"},
-    {"icon": "📊", "title": "Smart Summary", "desc": "Generate comprehensive AI reports"}
-]
-
-# Create tab selection
-tab_options = [f"{tab['icon']} {tab['title']}" for tab in TABS]
-selected_tab = st.selectbox(
-    "Select Analysis Tool:",
-    tab_options,
-    format_func=lambda x: x,
-    help="Choose the analysis tool you want to use"
-)
-
-# Get selected tab index
-tab_index = tab_options.index(selected_tab)
-
-# Display selected tab content
-if tab_index == 0:
-    st.markdown("## 💬 Q&A Chat Interface")
-    st.markdown("Ask natural language questions about the repository and get AI-powered responses.")
-    render_chat_interface(repo_url)
-
-elif tab_index == 1:
-    st.markdown("## 🔍 Quick Analysis Dashboard")
-    st.markdown("Get structured insights about the repository with customizable analysis options.")
+# Main Analysis Interface
+if not get_current_repository():
+    st.markdown("### 🎯 Getting Started")
+    st.info("""
+    **🚀 Welcome to the GitHub Repository Analyzer!**
     
-    if repo_url:
-        # Analysis Controls with better layout
-        st.markdown("### ⚙️ Analysis Configuration")
+    **To get started:**
+    1. **Enter a GitHub repository URL** in the sidebar
+    2. **Choose your analysis type** from the options below
+    3. **Get comprehensive insights** about the repository
+    
+    **Available Analysis Types:**
+    - **🔍 Comprehensive Analysis**: Full repository analysis with multiple dimensions
+    - **⚡ Quick Overview**: Fast repository summary
+    - **🔒 Security Analysis**: Security-focused analysis
+    - **📊 Code Quality**: Code quality and best practices analysis
+    - **💬 Q&A Chat**: Ask specific questions about the repository
+    """)
+    
+    # Show example repositories
+    st.markdown("#### 💡 Example Repositories")
+    example_repos = [
+        "https://github.com/microsoft/vscode",
+        "https://github.com/facebook/react",
+        "https://github.com/python/cpython",
+        "https://github.com/tensorflow/tensorflow"
+    ]
+    
+    cols = st.columns(len(example_repos))
+    for i, repo in enumerate(example_repos):
+        with cols[i]:
+            if st.button(f"Try {repo.split('/')[-1]}", key=f"example_{i}", use_container_width=True):
+                st.session_state.current_repo = repo
+                st.rerun()
+else:
+    # Repository is selected - show analysis options
+    st.markdown("### 🎯 Choose Your Analysis Tool")
+    st.markdown("Select the analysis type you want to perform on the current repository:")
+    
+    # Create main analysis tabs
+    analysis_tab, chat_tab, settings_tab = st.tabs([
+        "🔍 Systematic Analysis",
+        "💬 Q&A Chat", 
+        "⚙️ Advanced Settings"
+    ])
+    
+    with analysis_tab:
+        render_analysis_interface(get_current_repository())
+    
+    with chat_tab:
+        render_chat_interface(get_current_repository())
+    
+    with settings_tab:
+        st.markdown("#### ⚙️ Advanced Settings")
         
-        col1, col2, col3 = st.columns([2, 1, 1])
+        # Analysis Settings
+        st.markdown("**Analysis Settings:**")
+        analysis_settings = get_analysis_settings()
         
+        col1, col2 = st.columns(2)
         with col1:
-            analysis_type = st.selectbox(
-                "📋 Analysis Type:",
-                ["Repository Overview", "File Structure", "Dependencies", "Code Patterns", "Commit History"],
-                help="Select what type of analysis you want to perform"
-            )
-        
-        with col2:
-            analysis_depth = st.slider(
-                "🔍 Depth:",
+            max_file_size = st.number_input(
+                "Max File Size (MB)",
                 min_value=1,
-                max_value=5,
-                value=settings.get("analysis_depth", 3),
-                help="Analysis depth"
+                max_value=100,
+                value=analysis_settings["max_file_size"] // (1024 * 1024),
+                help="Maximum file size to analyze"
             )
-        
-        with col3:
-            if st.button("🚀 Run Analysis", type="primary", use_container_width=True):
-                st.session_state.run_analysis = True
-        
-        # Run analysis if requested
-        if st.session_state.get("run_analysis", False):
-            st.session_state.run_analysis = False
             
-            # Enhanced progress display
-            with st.spinner("🔄 Initializing AI analysis..."):
-                progress_container = st.container()
-                with progress_container:
-                    progress_bar = st.progress(0)
-                    status_text = st.empty()
-                    
-                    try:
-                        status_text.text("🔍 AI agent is analyzing repository...")
-                        progress_bar.progress(25)
-                        
-                        # Use enhanced AI agent for analysis
-                        if analysis_type == "Repository Overview":
-                            status_text.text("📊 Generating comprehensive overview...")
-                            progress_bar.progress(50)
-                            
-                            def status_callback(msg):
-                                status_text.text(msg)
-                            
-                            with st.spinner("🤖 AI is analyzing repository structure..."):
-                                analysis_result, tools_used = quick_repository_analysis(repo_url, status_callback=status_callback)
-                            
-                            progress_bar.progress(100)
-                            st.success("✅ Repository overview complete!")
-                            
-                            st.markdown("### 📊 Repository Overview")
-                            st.markdown(analysis_result)
-                            
-                            # Show tools used
-                            display_tools_used(tools_used)
-                        
-                        elif analysis_type == "File Structure":
-                            status_text.text("📁 Analyzing file structure...")
-                            progress_bar.progress(50)
-                            
-                            def status_callback(msg):
-                                status_text.text(msg)
-                            
-                            with st.spinner("🤖 AI is analyzing file organization..."):
-                                analysis_result, tools_used = ask_repository_question(
-                                    "Analyze the file structure and explain how the project is organized. What are the main directories and their purposes?", 
-                                    repo_url,
-                                    status_callback=status_callback
-                                )
-                            
-                            progress_bar.progress(100)
-                            st.success("✅ File structure analysis complete!")
-                            
-                            st.markdown("### 📁 File Structure Analysis")
-                            st.markdown(analysis_result)
-                            
-                            # Show tools used
-                            display_tools_used(tools_used)
-                        
-                        elif analysis_type == "Dependencies":
-                            status_text.text("📦 Analyzing dependencies...")
-                            progress_bar.progress(50)
-                            
-                            def status_callback(msg):
-                                status_text.text(msg)
-                            
-                            with st.spinner("🤖 AI is analyzing project dependencies..."):
-                                analysis_result, tools_used = ask_repository_question(
-                                    "What dependencies does this project use? Analyze the package files and explain the purpose of key dependencies.", 
-                                    repo_url,
-                                    status_callback=status_callback
-                                )
-                            
-                            progress_bar.progress(100)
-                            st.success("✅ Dependency analysis complete!")
-                            
-                            st.markdown("### 📦 Dependencies Analysis")
-                            st.markdown(analysis_result)
-                            
-                            # Show tools used
-                            display_tools_used(tools_used)
-                        
-                        elif analysis_type == "Code Patterns":
-                            status_text.text("🔍 Analyzing code patterns...")
-                            progress_bar.progress(50)
-                            
-                            def status_callback(msg):
-                                status_text.text(msg)
-                            
-                            with st.spinner("🤖 AI is analyzing code patterns and architecture..."):
-                                analysis_result, tools_used = analyze_repository_patterns(repo_url, status_callback=status_callback)
-                            
-                            progress_bar.progress(100)
-                            st.success("✅ Code pattern analysis complete!")
-                            
-                            st.markdown("### 🔍 Code Patterns Analysis")
-                            st.markdown(analysis_result)
-                            
-                            # Show tools used
-                            display_tools_used(tools_used)
-                        
-                        elif analysis_type == "Commit History":
-                            status_text.text("📝 Analyzing commit history...")
-                            progress_bar.progress(50)
-                            
-                            def status_callback(msg):
-                                status_text.text(msg)
-                            
-                            with st.spinner("🤖 AI is analyzing development activity..."):
-                                analysis_result, tools_used = ask_repository_question(
-                                    "Analyze the recent commit history. What are the main development activities, who are the contributors, and what patterns do you see in the commits?", 
-                                    repo_url,
-                                    status_callback=status_callback
-                                )
-                            
-                            progress_bar.progress(100)
-                            st.success("✅ Commit history analysis complete!")
-                            
-                            st.markdown("### 📝 Commit History Analysis")
-                            st.markdown(analysis_result)
-                            
-                            # Show tools used
-                            display_tools_used(tools_used)
-                        
-                        # Clear progress indicators
-                        progress_bar.empty()
-                        status_text.empty()
-                        
-                    except Exception as e:
-                        st.error(f"❌ Analysis failed: {str(e)}")
-                        progress_bar.empty()
-                        status_text.empty()
-    else:
-        st.info("🎯 Please select a repository to perform analysis.")
-
-elif tab_index == 2:
-    st.markdown("## 📊 Smart Summary")
-    st.markdown("Generate comprehensive AI-powered reports about the repository.")
-    
-    if repo_url:
-        col1, col2 = st.columns([3, 1])
-        
-        with col1:
-            summary_type = st.selectbox(
-                "📋 Summary Type:",
-                ["Complete Overview", "Technical Analysis", "Code Quality Report", "Architecture Review"],
-                help="Select the type of summary you want to generate"
+            max_files = st.number_input(
+                "Max Files per Analysis",
+                min_value=10,
+                max_value=500,
+                value=analysis_settings["max_files_per_analysis"],
+                help="Maximum number of files to analyze"
             )
         
         with col2:
-            if st.button("📊 Generate Summary", type="primary", use_container_width=True):
-                st.session_state.generate_summary = True
-        
-        if st.session_state.get("generate_summary", False):
-            st.session_state.generate_summary = False
+            include_hidden = st.checkbox(
+                "Include Hidden Files",
+                value=analysis_settings["include_hidden_files"],
+                help="Include hidden files in analysis"
+            )
             
-            with st.spinner("📊 Generating comprehensive summary..."):
-                progress_container = st.container()
-                with progress_container:
-                    progress_bar = st.progress(0)
-                    status_text = st.empty()
-                    
-                    try:
-                        status_text.text("🔍 Analyzing repository structure...")
-                        progress_bar.progress(20)
-                        
-                        status_text.text("📊 Gathering metrics...")
-                        progress_bar.progress(40)
-                        
-                        status_text.text("🤖 AI is generating summary...")
-                        progress_bar.progress(60)
-                        
-                        # Generate summary based on type
-                        if summary_type == "Complete Overview":
-                            def status_callback(msg):
-                                status_text.text(msg)
-                            summary_result, tools_used = generate_repository_summary(repo_url, status_callback=status_callback)
-                        elif summary_type == "Technical Analysis":
-                            def status_callback(msg):
-                                status_text.text(msg)
-                            summary_result, tools_used = analyze_repository_patterns(repo_url, status_callback=status_callback)
-                        elif summary_type == "Code Quality Report":
-                            def status_callback(msg):
-                                status_text.text(msg)
-                            summary_result, tools_used = ask_repository_question(
-                                "Generate a comprehensive code quality report. Analyze code metrics, complexity, maintainability, testing coverage, and provide specific recommendations for improvement.", 
-                                repo_url,
-                                status_callback=status_callback
-                            )
-                        else:  # Architecture Review
-                            def status_callback(msg):
-                                status_text.text(msg)
-                            summary_result, tools_used = ask_repository_question(
-                                "Provide a detailed architecture review. Analyze the system design, component relationships, design patterns used, scalability considerations, and architectural recommendations.", 
-                                repo_url,
-                                status_callback=status_callback
-                            )
-                        
-                        status_text.text("✅ Summary complete!")
-                        progress_bar.progress(100)
-                        
-                        st.markdown(f"### 📊 {summary_type}")
-                        st.markdown(summary_result)
-                        
-                        # Show tools used with enhanced display
-                        display_tools_used(tools_used)
-                        
-                        progress_bar.empty()
-                        status_text.empty()
-                        
-                    except Exception as e:
-                        st.error(f"❌ Summary generation failed: {str(e)}")
-                        progress_bar.empty()
-                        status_text.empty()
-    else:
-        st.info("🎯 Please select a repository to generate a summary.")
+            enable_caching = st.checkbox(
+                "Enable Caching",
+                value=analysis_settings.get("enable_caching", True),
+                help="Cache analysis results for faster subsequent runs"
+            )
+        
+        # Save settings
+        if st.button("💾 Save Analysis Settings", type="primary"):
+            new_settings = {
+                "max_file_size": max_file_size * 1024 * 1024,
+                "max_files_per_analysis": max_files,
+                "include_hidden_files": include_hidden,
+                "enable_caching": enable_caching
+            }
+            save_analysis_settings(new_settings)
+            st.success("✅ Analysis settings saved!")
+        
+        # Analysis Presets
+        st.markdown("**Analysis Presets:**")
+        presets = get_analysis_presets()
+        for preset_id, preset in presets.items():
+            with st.expander(f"📋 {preset['name']} - {preset['description']}"):
+                st.markdown(f"**Max Files:** {preset['max_files']}")
+                st.markdown(f"**Max Depth:** {preset['max_depth']}")
+                st.markdown(f"**Include Metrics:** {'✅' if preset['include_metrics'] else '❌'}")
+                st.markdown(f"**Include Security:** {'✅' if preset['include_security'] else '❌'}")
+                st.markdown(f"**Timeout:** {preset['timeout']} seconds")
 
 # Footer
 st.markdown("---")
