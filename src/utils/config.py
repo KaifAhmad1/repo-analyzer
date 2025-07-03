@@ -10,8 +10,15 @@ from dotenv import load_dotenv
 from typing import Dict, Any, Optional, List
 from pathlib import Path
 
-# Load environment variables
-load_dotenv()
+# Load environment variables silently
+import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    try:
+        load_dotenv(verbose=False)
+    except Exception:
+        # .env file doesn't exist or can't be loaded, which is fine
+        pass
 
 # Create necessary directories
 def ensure_directories():
