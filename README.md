@@ -116,11 +116,25 @@ streamlit run app.py
 
 For full functionality and enhanced analysis, start the MCP servers:
 
-   ```bash
-# Start all servers
-   python start_servers.py
-   
-# Or start individual servers
+#### **Simple Startup Script**
+
+```bash
+# Start all MCP servers with one command
+python start_servers.py
+```
+
+**Features:**
+- ✅ Starts all 4 MCP servers automatically
+- ✅ Cross-platform (Windows, macOS, Linux)
+- ✅ Simple one-command startup
+- ✅ Graceful shutdown with Ctrl+C
+- ✅ Shows server status and PIDs
+- ✅ UTF-8 encoded for compatibility
+
+#### **Alternative: Start Individual Servers**
+
+```bash
+# Start servers individually
 python src/servers/file_content_server.py
 python src/servers/repository_structure_server.py
 python src/servers/commit_history_server.py
@@ -217,29 +231,45 @@ python test_enhanced_system.py
 ### **Core Components**
 
 ```
-src/
-├── agent/                 # AI agent implementation
-│   └── ai_agent.py       # Enhanced AI agent with comprehensive MCP integration
-├── analysis/             # Analysis engine and tools
-│   ├── analysis_engine.py # Comprehensive analysis engine
-│   ├── code_analyzer.py  # Advanced code quality and complexity analysis
-│   └── repository_visualizer.py # Interactive visualization generator
-├── servers/              # FastMCP v2 servers
-│   ├── file_content_server.py
-│   ├── repository_structure_server.py
-│   ├── commit_history_server.py
-│   ├── code_search_server.py
-│   └── server_manager.py
-├── ui/                   # User interface components
-│   ├── repository_selector.py
-│   ├── chat_interface.py
-│   ├── analysis_interface.py # Enhanced with new analysis tabs
-│   ├── settings_sidebar.py
-│   └── modern_styles.css
-└── utils/                # Utilities and configuration
-    ├── config.py         # Configuration management
-    └── repository_manager.py # Repository and session management
+repo-analyzer/
+├── start_servers.py      # 🚀 Simple MCP Server Starter
+├── app.py               # Main Streamlit application
+├── requirements.txt     # Python dependencies
+├── README.md           # Project documentation
+└── src/
+    ├── agent/                 # AI agent implementation
+    │   └── ai_agent.py       # Enhanced AI agent with comprehensive MCP integration
+    ├── analysis/             # Analysis engine and tools
+    │   ├── analysis_engine.py # Comprehensive analysis engine
+    │   ├── code_analyzer.py  # Advanced code quality and complexity analysis
+    │   └── repository_visualizer.py # Interactive visualization generator
+    ├── servers/              # FastMCP v2 servers
+    │   ├── file_content_server.py
+    │   ├── repository_structure_server.py
+    │   ├── commit_history_server.py
+    │   ├── code_search_server.py
+    │   └── server_manager.py
+    ├── ui/                   # User interface components
+    │   ├── repository_selector.py
+    │   ├── chat_interface.py
+    │   ├── analysis_interface.py # Enhanced with new analysis tabs
+    │   ├── settings_sidebar.py
+    │   └── modern_styles.css
+    └── utils/                # Utilities and configuration
+        ├── config.py         # Configuration management
+        └── repository_manager.py # Repository and session management
 ```
+
+### **Server Management**
+
+The project includes a simple server management system:
+
+- **`start_servers.py`**: Simple Python script for starting all MCP servers
+  - Cross-platform compatibility (Windows, macOS, Linux)
+  - Automatic server startup with status reporting
+  - Graceful shutdown with Ctrl+C
+  - Shows process IDs for monitoring
+  - UTF-8 encoded for maximum compatibility
 
 ### **MCP Servers**
 
