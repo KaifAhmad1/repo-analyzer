@@ -81,19 +81,21 @@ def get_default_model():
 
 def get_ui_settings():
     """Get UI settings from session state or defaults"""
-    return {
-        "theme": st.session_state.get("theme", "light"),
-        "sidebar_width": st.session_state.get("sidebar_width", "medium"),
-        "auto_analyze": st.session_state.get("auto_analyze", False),
-        "show_advanced_options": st.session_state.get("show_advanced_options", False),
-        "max_results": st.session_state.get("max_results", 10),
-        "analysis_depth": st.session_state.get("analysis_depth", "medium"),
-        "enable_caching": st.session_state.get("enable_caching", True),
-        "cache_duration": st.session_state.get("cache_duration", 3600),  # 1 hour
-        "auto_save_sessions": st.session_state.get("auto_save_sessions", True),
-        "show_tool_usage": st.session_state.get("show_tool_usage", True),
-        "enable_progress_tracking": st.session_state.get("enable_progress_tracking", True)
+    defaults = {
+        "theme": "light",
+        "sidebar_width": "medium", 
+        "auto_analyze": False,
+        "show_advanced_options": False,
+        "max_results": 10,
+        "analysis_depth": "medium",
+        "enable_caching": True,
+        "cache_duration": 3600,  # 1 hour
+        "auto_save_sessions": True,
+        "show_tool_usage": True,
+        "enable_progress_tracking": True
     }
+    
+    return {key: st.session_state.get(key, default) for key, default in defaults.items()}
 
 def save_ui_settings(settings: Dict[str, Any]):
     """Save UI settings to session state"""
@@ -102,17 +104,19 @@ def save_ui_settings(settings: Dict[str, Any]):
 
 def get_analysis_settings():
     """Get analysis-specific settings"""
-    return {
-        "max_file_size": st.session_state.get("max_file_size", 1024 * 1024),  # 1MB
-        "max_files_per_analysis": st.session_state.get("max_files_per_analysis", 100),
-        "include_hidden_files": st.session_state.get("include_hidden_files", False),
-        "analysis_timeout": st.session_state.get("analysis_timeout", 300),  # 5 minutes
-        "enable_code_metrics": st.session_state.get("enable_code_metrics", True),
-        "enable_security_analysis": st.session_state.get("enable_security_analysis", True),
-        "enable_dependency_analysis": st.session_state.get("enable_dependency_analysis", True),
-        "enable_commit_analysis": st.session_state.get("enable_commit_analysis", True),
-        "enable_structure_analysis": st.session_state.get("enable_structure_analysis", True)
+    defaults = {
+        "max_file_size": 1024 * 1024,  # 1MB
+        "max_files_per_analysis": 100,
+        "include_hidden_files": False,
+        "analysis_timeout": 300,  # 5 minutes
+        "enable_code_metrics": True,
+        "enable_security_analysis": True,
+        "enable_dependency_analysis": True,
+        "enable_commit_analysis": True,
+        "enable_structure_analysis": True
     }
+    
+    return {key: st.session_state.get(key, default) for key, default in defaults.items()}
 
 def save_analysis_settings(settings: Dict[str, Any]):
     """Save analysis settings to session state"""

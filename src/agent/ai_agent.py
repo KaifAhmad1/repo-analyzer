@@ -231,76 +231,108 @@ For Summarization:
 Always strive to provide the most accurate and helpful analysis possible."""
     
     def _gather_comprehensive_data(self, repo_url: str, status_callback=None) -> Dict[str, Any]:
-        """Gather comprehensive data from all MCP servers in parallel and track tool utilization"""
+        """Gather comprehensive data from all MCP servers in parallel"""
         if status_callback:
-            status_callback("🔍 Gathering comprehensive repository data (parallel)...")
+            status_callback("🔍 Gathering comprehensive repository data...")
         
-        data = {
-            "repository_info": {},
-            "file_structure": {},
-            "code_analysis": {},
-            "commit_history": {},
-            "dependencies": {},
-            "code_metrics": {},
-            "development_patterns": {}
-        }
-        tool_calls = []
-        tool_results = {}
+        # Define tool mappings
         tool_map = {
-            # Structure
+            # Structure tools
             "directory_tree": lambda: self.tools.get_directory_tree(repo_url, max_depth=5),
             "file_structure": lambda: self.tools.get_file_structure(repo_url),
             "project_analysis": lambda: self.tools.analyze_project_structure(repo_url),
-            # Docs
+            # Documentation
             "readme": lambda: self.tools.get_readme_content(repo_url),
-            # Code metrics
+            # Code analysis
             "metrics": lambda: self.tools.get_code_metrics(repo_url),
             "complexity": lambda: self.tools.analyze_code_complexity(repo_url),
             "patterns": lambda: self.tools.get_code_patterns(repo_url),
-            # Commits
+            # Commit history
             "recent_commits": lambda: self.tools.get_recent_commits(repo_url, limit=50),
             "commit_statistics": lambda: self.tools.get_commit_statistics(repo_url, days=90),
             "dev_patterns": lambda: self.tools.get_development_patterns(repo_url),
             # Dependencies
             "dependency_files": lambda: self.tools.search_dependencies(repo_url),
         }
+        
+        # Execute tools in parallel
         if status_callback:
             status_callback("🚀 Launching parallel tool calls...")
+        
+        tool_results = self._execute_tools_parallel(tool_map)
+        
+        # Organize results
+        data = self._organize_results(tool_results)
+        
+        # Analyze key files
+        if status_callback:
+            status_callback("🔍 Analyzing key files...")
+        data["code_analysis"]["key_files"] = self._analyze_key_files(repo_url)
+        
+        # Track tool utilization
+        data["tools_used"] = self.tools.get_tools_used()
+        
+        return data
+    
+    def _execute_tools_parallel(self, tool_map: Dict[str, callable]) -> Dict[str, Any]:
+        """Execute tools in parallel and return results"""
+        tool_results = {}
+        
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future_to_key = {executor.submit(func): key for key, func in tool_map.items()}
+            
             for future in concurrent.futures.as_completed(future_to_key):
                 key = future_to_key[future]
                 try:
                     tool_results[key] = json.loads(future.result())
                 except Exception as exc:
                     tool_results[key] = {"error": str(exc)}
-        # Assign results
-        data["file_structure"]["directory_tree"] = tool_results.get("directory_tree", {})
-        data["file_structure"]["file_structure"] = tool_results.get("file_structure", {})
-        data["file_structure"]["project_analysis"] = tool_results.get("project_analysis", {})
-        data["repository_info"]["readme"] = tool_results.get("readme", {})
-        data["code_metrics"]["metrics"] = tool_results.get("metrics", {})
-        data["code_metrics"]["complexity"] = tool_results.get("complexity", {})
-        data["code_metrics"]["patterns"] = tool_results.get("patterns", {})
-        data["commit_history"]["recent_commits"] = tool_results.get("recent_commits", {})
-        data["commit_history"]["statistics"] = tool_results.get("commit_statistics", {})
-        data["development_patterns"]["patterns"] = tool_results.get("dev_patterns", {})
-        data["dependencies"]["dependency_files"] = tool_results.get("dependency_files", {})
-        # Key files (sequential, since few)
-        if status_callback:
-            status_callback("🔍 Analyzing key files...")
+        
+        return tool_results
+    
+    def _organize_results(self, tool_results: Dict[str, Any]) -> Dict[str, Any]:
+        """Organize tool results into structured data"""
+        return {
+            "file_structure": {
+                "directory_tree": tool_results.get("directory_tree", {}),
+                "file_structure": tool_results.get("file_structure", {}),
+                "project_analysis": tool_results.get("project_analysis", {})
+            },
+            "repository_info": {
+                "readme": tool_results.get("readme", {})
+            },
+            "code_metrics": {
+                "metrics": tool_results.get("metrics", {}),
+                "complexity": tool_results.get("complexity", {}),
+                "patterns": tool_results.get("patterns", {})
+            },
+            "commit_history": {
+                "recent_commits": tool_results.get("recent_commits", {}),
+                "statistics": tool_results.get("commit_statistics", {})
+            },
+            "development_patterns": {
+                "patterns": tool_results.get("dev_patterns", {})
+            },
+            "dependencies": {
+                "dependency_files": tool_results.get("dependency_files", {})
+            },
+            "code_analysis": {}
+        }
+    
+    def _analyze_key_files(self, repo_url: str) -> Dict[str, Any]:
+        """Analyze key files in the repository"""
         key_files = ["main.py", "app.py", "index.js", "package.json", "requirements.txt", "setup.py"]
-        data["code_analysis"]["key_files"] = {}
+        key_files_data = {}
+        
         for file_name in key_files:
             try:
                 file_content = json.loads(self.tools.get_file_content(repo_url, file_name))
                 if file_content.get("success", False):
-                    data["code_analysis"]["key_files"][file_name] = file_content
+                    key_files_data[file_name] = file_content
             except:
                 continue
-        # Track tool utilization for this query
-        data["tools_used"] = self.tools.get_tools_used()
-        return data
+        
+        return key_files_data
     
     def ask_question(self, question: str, repo_url: str, user_id: str = "default", status_callback=None) -> Tuple[str, List[str]]:
         """Ask a comprehensive question about the repository using all available data"""

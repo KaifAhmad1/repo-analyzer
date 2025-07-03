@@ -42,35 +42,34 @@ from src.utils.repository_manager import (
 )
 
 def display_tools_used(tools_used):
-    """Helper function to display tools used grouped by server"""
+    """Display tools used grouped by server"""
     if not tools_used:
         return
     
     st.markdown("#### 🔧 Analysis Tools Used:")
+    
     # Group tools by server
     server_tools = {}
     for tool in tools_used:
         if '.' in tool:
             server, tool_name = tool.split('.', 1)
-            if server not in server_tools:
-                server_tools[server] = []
-            server_tools[server].append(tool_name)
+            server_tools.setdefault(server, []).append(tool_name)
         else:
-            if 'unknown' not in server_tools:
-                server_tools['unknown'] = []
-            server_tools['unknown'].append(tool)
+            server_tools.setdefault('unknown', []).append(tool)
     
     # Display grouped by server
+    server_icons = {
+        'file_content': '📄',
+        'repository_structure': '📁', 
+        'commit_history': '📝',
+        'code_search': '🔍',
+        'unknown': '❓'
+    }
+    
     for server, tools in server_tools.items():
-        server_icon = {
-            'file_content': '📄',
-            'repository_structure': '📁',
-            'commit_history': '📝',
-            'code_search': '🔍',
-            'unknown': '❓'
-        }.get(server, '🔧')
-        
-        st.markdown(f"**{server_icon} {server.replace('_', ' ').title()} Server:**")
+        icon = server_icons.get(server, '🔧')
+        server_name = server.replace('_', ' ').title()
+        st.markdown(f"**{icon} {server_name} Server:**")
         for tool in tools:
             st.markdown(f"  - {tool}")
         st.markdown("")

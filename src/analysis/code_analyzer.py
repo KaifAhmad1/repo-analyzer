@@ -250,7 +250,7 @@ class CodeAnalyzer:
     
     def _calculate_quality_score(self, analysis: Dict[str, Any]) -> Dict[str, Any]:
         """Calculate overall code quality score"""
-        score = 0
+        score = 50  # Start with neutral score
         recommendations = []
         
         try:
@@ -258,47 +258,61 @@ class CodeAnalyzer:
             complexity = analysis.get("complexity", {})
             patterns = analysis.get("patterns", {})
             
-            # Score based on metrics
-            if metrics.get("total_lines", 0) > 0:
-                comment_ratio = metrics.get("comment_lines", 0) / metrics.get("total_lines", 1)
-                if comment_ratio < 0.1:
-                    score -= 10
-                    recommendations.append("Low comment ratio - consider adding more documentation")
-                elif comment_ratio > 0.3:
-                    score += 10
-                    recommendations.append("Good documentation coverage")
+            # Score documentation
+            score += self._score_documentation(metrics, recommendations)
             
-            # Score based on complexity
-            overall_complexity = complexity.get("overall_complexity_score", 0)
-            if overall_complexity > 7:
-                score -= 15
-                recommendations.append("High code complexity - consider refactoring complex functions")
-            elif overall_complexity < 3:
-                score += 10
-                recommendations.append("Good code complexity management")
+            # Score complexity
+            score += self._score_complexity(complexity, recommendations)
             
-            # Score based on patterns
-            anti_patterns = patterns.get("anti_patterns", [])
-            if anti_patterns:
-                score -= len(anti_patterns) * 5
-                recommendations.append(f"Found {len(anti_patterns)} anti-patterns - consider refactoring")
-            
-            best_practices = patterns.get("best_practices", [])
-            if best_practices:
-                score += len(best_practices) * 2
-                recommendations.append(f"Good use of {len(best_practices)} best practices")
+            # Score patterns
+            score += self._score_patterns(patterns, recommendations)
             
             # Normalize score to 0-100
-            score = max(0, min(100, score + 50))  # Start at 50 and adjust
+            score = max(0, min(100, score))
             
         except Exception as e:
             score = 50
             recommendations.append(f"Error calculating quality score: {str(e)}")
         
-        return {
-            "score": score,
-            "recommendations": recommendations
-        }
+        return {"score": score, "recommendations": recommendations}
+    
+    def _score_documentation(self, metrics: Dict[str, Any], recommendations: List[str]) -> int:
+        """Score based on documentation quality"""
+        if metrics.get("total_lines", 0) > 0:
+            comment_ratio = metrics.get("comment_lines", 0) / metrics.get("total_lines", 1)
+            if comment_ratio < 0.1:
+                recommendations.append("Low comment ratio - consider adding more documentation")
+                return -10
+            elif comment_ratio > 0.3:
+                recommendations.append("Good documentation coverage")
+                return 10
+        return 0
+    
+    def _score_complexity(self, complexity: Dict[str, Any], recommendations: List[str]) -> int:
+        """Score based on code complexity"""
+        overall_complexity = complexity.get("overall_complexity_score", 0)
+        if overall_complexity > 7:
+            recommendations.append("High code complexity - consider refactoring complex functions")
+            return -15
+        elif overall_complexity < 3:
+            recommendations.append("Good code complexity management")
+            return 10
+        return 0
+    
+    def _score_patterns(self, patterns: Dict[str, Any], recommendations: List[str]) -> int:
+        """Score based on code patterns"""
+        score = 0
+        anti_patterns = patterns.get("anti_patterns", [])
+        if anti_patterns:
+            score -= len(anti_patterns) * 5
+            recommendations.append(f"Found {len(anti_patterns)} anti-patterns - consider refactoring")
+        
+        best_practices = patterns.get("best_practices", [])
+        if best_practices:
+            score += len(best_practices) * 2
+            recommendations.append(f"Good use of {len(best_practices)} best practices")
+        
+        return score
     
     def _generate_visualizations(self, analysis: Dict[str, Any]) -> Dict[str, Any]:
         """Generate interactive visualizations for code analysis"""
@@ -309,75 +323,87 @@ class CodeAnalyzer:
             complexity = analysis.get("complexity", {})
             patterns = analysis.get("patterns", {})
             
-            # 1. Code Metrics Pie Chart
-            if metrics.get("total_lines", 0) > 0:
-                fig_metrics = go.Figure(data=[go.Pie(
-                    labels=['Code Lines', 'Comment Lines', 'Blank Lines'],
-                    values=[
-                        metrics.get("code_lines", 0),
-                        metrics.get("comment_lines", 0),
-                        metrics.get("blank_lines", 0)
-                    ],
-                    hole=0.3
-                )])
-                fig_metrics.update_layout(title="Code Line Distribution")
-                visualizations["code_metrics_pie"] = fig_metrics.to_json()
-            
-            # 2. Complexity Distribution
-            if complexity.get("cyclomatic_complexity"):
-                complexity_values = list(complexity["cyclomatic_complexity"].values())
-                if complexity_values:
-                    fig_complexity = px.histogram(
-                        x=complexity_values,
-                        title="Cyclomatic Complexity Distribution",
-                        labels={'x': 'Complexity', 'y': 'Count'}
-                    )
-                    visualizations["complexity_distribution"] = fig_complexity.to_json()
-            
-            # 3. Quality Score Gauge
-            quality_score = analysis.get("quality_score", 50)
-            fig_gauge = go.Figure(go.Indicator(
-                mode="gauge+number+delta",
-                value=quality_score,
-                domain={'x': [0, 1], 'y': [0, 1]},
-                title={'text': "Code Quality Score"},
-                gauge={
-                    'axis': {'range': [None, 100]},
-                    'bar': {'color': "darkblue"},
-                    'steps': [
-                        {'range': [0, 30], 'color': "lightgray"},
-                        {'range': [30, 70], 'color': "yellow"},
-                        {'range': [70, 100], 'color': "lightgreen"}
-                    ],
-                    'threshold': {
-                        'line': {'color': "red", 'width': 4},
-                        'thickness': 0.75,
-                        'value': 90
-                    }
-                }
-            ))
-            visualizations["quality_gauge"] = fig_gauge.to_json()
-            
-            # 4. Pattern Analysis Bar Chart
-            pattern_counts = {
-                "Design Patterns": len(patterns.get("design_patterns", [])),
-                "Anti-Patterns": len(patterns.get("anti_patterns", [])),
-                "Best Practices": len(patterns.get("best_practices", [])),
-                "Code Smells": len(patterns.get("code_smells", []))
-            }
-            
-            fig_patterns = px.bar(
-                x=list(pattern_counts.keys()),
-                y=list(pattern_counts.values()),
-                title="Code Pattern Analysis",
-                labels={'x': 'Pattern Type', 'y': 'Count'}
-            )
-            visualizations["pattern_analysis"] = fig_patterns.to_json()
+            # Generate each visualization
+            visualizations.update(self._create_metrics_pie(metrics))
+            visualizations.update(self._create_complexity_chart(complexity))
+            visualizations.update(self._create_quality_gauge(analysis))
+            visualizations.update(self._create_pattern_chart(patterns))
             
         except Exception as e:
             visualizations["error"] = f"Failed to generate visualizations: {str(e)}"
         
         return visualizations
+    
+    def _create_metrics_pie(self, metrics: Dict[str, Any]) -> Dict[str, str]:
+        """Create code metrics pie chart"""
+        if metrics.get("total_lines", 0) > 0:
+            fig = go.Figure(data=[go.Pie(
+                labels=['Code Lines', 'Comment Lines', 'Blank Lines'],
+                values=[
+                    metrics.get("code_lines", 0),
+                    metrics.get("comment_lines", 0),
+                    metrics.get("blank_lines", 0)
+                ],
+                hole=0.3
+            )])
+            fig.update_layout(title="Code Line Distribution")
+            return {"code_metrics_pie": fig.to_json()}
+        return {}
+    
+    def _create_complexity_chart(self, complexity: Dict[str, Any]) -> Dict[str, str]:
+        """Create complexity distribution chart"""
+        if complexity.get("cyclomatic_complexity"):
+            complexity_values = list(complexity["cyclomatic_complexity"].values())
+            if complexity_values:
+                fig = px.histogram(
+                    x=complexity_values,
+                    title="Cyclomatic Complexity Distribution",
+                    labels={'x': 'Complexity', 'y': 'Count'}
+                )
+                return {"complexity_distribution": fig.to_json()}
+        return {}
+    
+    def _create_quality_gauge(self, analysis: Dict[str, Any]) -> Dict[str, str]:
+        """Create quality score gauge"""
+        quality_score = analysis.get("quality_score", 50)
+        fig = go.Figure(go.Indicator(
+            mode="gauge+number+delta",
+            value=quality_score,
+            domain={'x': [0, 1], 'y': [0, 1]},
+            title={'text': "Code Quality Score"},
+            gauge={
+                'axis': {'range': [None, 100]},
+                'bar': {'color': "darkblue"},
+                'steps': [
+                    {'range': [0, 30], 'color': "lightgray"},
+                    {'range': [30, 70], 'color': "yellow"},
+                    {'range': [70, 100], 'color': "lightgreen"}
+                ],
+                'threshold': {
+                    'line': {'color': "red", 'width': 4},
+                    'thickness': 0.75,
+                    'value': 90
+                }
+            }
+        ))
+        return {"quality_gauge": fig.to_json()}
+    
+    def _create_pattern_chart(self, patterns: Dict[str, Any]) -> Dict[str, str]:
+        """Create pattern analysis bar chart"""
+        pattern_counts = {
+            "Design Patterns": len(patterns.get("design_patterns", [])),
+            "Anti-Patterns": len(patterns.get("anti_patterns", [])),
+            "Best Practices": len(patterns.get("best_practices", [])),
+            "Code Smells": len(patterns.get("code_smells", []))
+        }
+        
+        fig = px.bar(
+            x=list(pattern_counts.keys()),
+            y=list(pattern_counts.values()),
+            title="Code Pattern Analysis",
+            labels={'x': 'Pattern Type', 'y': 'Count'}
+        )
+        return {"pattern_analysis": fig.to_json()}
     
     def _parse_metrics_string(self, metrics_str: str) -> Dict[str, Any]:
         """Parse metrics from string response"""

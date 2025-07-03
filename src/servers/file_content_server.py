@@ -51,6 +51,7 @@ class CodeAnalyzer:
             "structure": self._analyze_structure(tree)
         }
         
+        # Analyze each node type
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
                 func_info = self._analyze_function(node)
