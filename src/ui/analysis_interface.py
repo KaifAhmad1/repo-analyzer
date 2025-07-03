@@ -1,6 +1,6 @@
 """
-Comprehensive Analysis Interface for GitHub Repository Analyzer
-Provides systematic repository analysis with multiple analysis types and visualizations
+Enhanced Analysis Interface for GitHub Repository Analyzer
+Provides systematic repository analysis with ETA tracking, tool explanations, and MCP server monitoring
 """
 
 import streamlit as st
@@ -24,31 +24,155 @@ from ..analysis.analysis_engine import (
 )
 from ..utils.config import get_analysis_presets, get_analysis_settings
 from ..utils.repository_manager import get_repository_manager, get_analysis_history
+from ..utils.performance_monitor import get_performance_monitor, AnalysisType
+from ..servers.server_manager import get_servers_status
 
 def render_analysis_interface(repo_url: Optional[str] = None) -> None:
-    """Render the comprehensive analysis interface"""
+    """Render the enhanced analysis interface with ETA tracking and tool explanations"""
     
     if not repo_url:
         st.info("🎯 Please select a repository to start systematic analysis.")
         return
     
-    st.markdown("### 🔍 Systematic Repository Analysis")
-    st.markdown("Choose your analysis type and get comprehensive insights about the repository.")
+    # Get performance monitor and server status
+    performance_monitor = get_performance_monitor()
+    server_status = get_servers_status()
     
-    # Performance monitoring section
-    st.markdown("#### 📊 Performance Monitor")
-    col1, col2, col3 = st.columns(3)
+    st.markdown("### 🔍 Enhanced Repository Analysis")
+    st.markdown("Choose your analysis type and get comprehensive insights with real-time ETA tracking.")
+    
+    # Enhanced Performance monitoring section with ETA
+    st.markdown("#### ⏱️ Analysis ETA & Performance")
+    
+    # Get ETAs for all analysis types
+    etas = {}
+    for analysis_type in AnalysisType:
+        etas[analysis_type] = performance_monitor.get_analysis_eta(analysis_type)
+    
+    # Display ETA cards
+    col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.metric("⚡ Ultra Fast", "~30s", "Minimal tools")
+        eta_info = etas[AnalysisType.ULTRA_FAST]
+        st.markdown(f"""
+        <div style="text-align: center; padding: 15px; border: 2px solid #10b981; border-radius: 12px; background: linear-gradient(135deg, #1f2937, #111827); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <div style="font-size: 24px; margin-bottom: 8px;">⚡</div>
+            <div style="font-weight: bold; margin: 8px 0; color: #f9fafb; font-size: 14px;">Ultra Fast</div>
+            <div style="color: #10b981; font-weight: bold; font-size: 18px;">{eta_info['eta_formatted']}</div>
+            <div style="color: #9ca3af; font-size: 12px;">{eta_info['tool_count']} tools • {eta_info['complexity']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
     with col2:
-        st.metric("🚀 Fast", "~60s", "Optimized tools")
+        eta_info = etas[AnalysisType.QUICK_OVERVIEW]
+        st.markdown(f"""
+        <div style="text-align: center; padding: 15px; border: 2px solid #3b82f6; border-radius: 12px; background: linear-gradient(135deg, #1f2937, #111827); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <div style="font-size: 24px; margin-bottom: 8px;">🚀</div>
+            <div style="font-weight: bold; margin: 8px 0; color: #f9fafb; font-size: 14px;">Quick Overview</div>
+            <div style="color: #3b82f6; font-weight: bold; font-size: 18px;">{eta_info['eta_formatted']}</div>
+            <div style="color: #9ca3af; font-size: 12px;">{eta_info['tool_count']} tools • {eta_info['complexity']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
     with col3:
-        st.metric("🔍 Comprehensive", "~90s", "All tools + parallel")
+        eta_info = etas[AnalysisType.SMART_SUMMARY]
+        st.markdown(f"""
+        <div style="text-align: center; padding: 15px; border: 2px solid #f59e0b; border-radius: 12px; background: linear-gradient(135deg, #1f2937, #111827); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <div style="font-size: 24px; margin-bottom: 8px;">🧠</div>
+            <div style="font-weight: bold; margin: 8px 0; color: #f9fafb; font-size: 14px;">Smart Summary</div>
+            <div style="color: #f59e0b; font-weight: bold; font-size: 18px;">{eta_info['eta_formatted']}</div>
+            <div style="color: #9ca3af; font-size: 12px;">{eta_info['tool_count']} tools • {eta_info['complexity']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        eta_info = etas[AnalysisType.COMPREHENSIVE]
+        st.markdown(f"""
+        <div style="text-align: center; padding: 15px; border: 2px solid #ef4444; border-radius: 12px; background: linear-gradient(135deg, #1f2937, #111827); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <div style="font-size: 24px; margin-bottom: 8px;">🔍</div>
+            <div style="font-weight: bold; margin: 8px 0; color: #f9fafb; font-size: 14px;">Comprehensive</div>
+            <div style="color: #ef4444; font-weight: bold; font-size: 18px;">{eta_info['eta_formatted']}</div>
+            <div style="color: #9ca3af; font-size: 12px;">{eta_info['tool_count']} tools • {eta_info['complexity']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # MCP Server Status with Utilization
+    st.markdown("#### 🔧 MCP Server Status & Utilization")
+    server_cols = st.columns(len(server_status['servers']))
+    
+    for i, (server_name, server_info) in enumerate(server_status['servers'].items()):
+        with server_cols[i]:
+            server_icon = {
+                'file_content': '📄',
+                'repository_structure': '📁',
+                'commit_history': '📝',
+                'code_search': '🔍'
+            }.get(server_name, '🖥️')
+            
+            status_icon = "✅" if server_info['running'] else "❌"
+            status_color = "#10b981" if server_info['running'] else "#ef4444"
+            status_text = "Running" if server_info['running'] else "Offline"
+            
+            # Get server utilization from performance monitor
+            server_status_data = performance_monitor.get_server_status().get(server_name)
+            utilization = server_status_data.utilization if server_status_data else 0.0
+            
+            st.markdown(f"""
+            <div style="text-align: center; padding: 15px; border: 2px solid {status_color}; border-radius: 12px; background: linear-gradient(135deg, #1f2937, #111827); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                <div style="font-size: 32px; margin-bottom: 8px;">{server_icon}</div>
+                <div style="font-weight: bold; margin: 8px 0; color: #f9fafb; font-size: 16px;">{server_name.replace('_', ' ').title()}</div>
+                <div style="color: {status_color}; font-weight: bold; font-size: 14px; background-color: rgba(255, 255, 255, 0.1); padding: 4px 8px; border-radius: 6px; display: inline-block;">{status_icon} {status_text}</div>
+                <div style="color: #9ca3af; font-size: 12px; margin-top: 8px;">Utilization: {utilization:.1f}%</div>
+            </div>
+            """, unsafe_allow_html=True)
     
     # Get analysis presets and settings
     presets = get_analysis_presets()
     settings = get_analysis_settings()
+    
+    # Tool Explanations Section
+    with st.expander("🔧 Tool Explanations & What Each Tool Does", expanded=False):
+        st.markdown("#### 📋 Understanding the Analysis Tools")
+        st.markdown("Each analysis type uses different combinations of tools. Here's what each tool does:")
+        
+        # Get all tool explanations
+        tool_explanations = {}
+        for tool_name in performance_monitor.tools_info.keys():
+            tool_explanations[tool_name] = performance_monitor.get_tool_explanation(tool_name)
+        
+        # Group tools by server
+        server_tools = {}
+        for tool_name, tool_info in tool_explanations.items():
+            if isinstance(tool_info, dict) and 'server' in tool_info:
+                server = tool_info['server']
+                if server not in server_tools:
+                    server_tools[server] = []
+                server_tools[server].append((tool_name, tool_info))
+        
+        # Display tools grouped by server
+        for server_name, tools in server_tools.items():
+            server_icon = {
+                'file_content': '📄',
+                'repository_structure': '📁',
+                'commit_history': '📝',
+                'code_search': '🔍'
+            }.get(server_name, '🖥️')
+            
+            st.markdown(f"**{server_icon} {server_name.replace('_', ' ').title()} Server**")
+            
+            for tool_name, tool_info in tools:
+                if isinstance(tool_info, dict) and 'name' in tool_info:
+                    with st.expander(f"🔧 {tool_info['name']}", expanded=False):
+                        col1, col2 = st.columns([1, 2])
+                        with col1:
+                            st.markdown(f"**Duration:** {tool_info['typical_duration']}s")
+                            st.markdown(f"**Complexity:** {tool_info['complexity']}")
+                            st.markdown(f"**Server:** {tool_info['server']}")
+                        with col2:
+                            st.markdown(f"**What it does:** {tool_info['what_it_does']}")
+                            st.markdown(f"**When to use:** {tool_info['when_to_use']}")
+            
+            st.markdown("---")
     
     # Analysis Type Selection
     st.markdown("#### 📊 Analysis Types")
@@ -86,22 +210,84 @@ def render_analysis_interface(repo_url: Optional[str] = None) -> None:
         render_analysis_history_tab(repo_url)
 
 def render_quick_analysis_tab(repo_url: str) -> None:
-    """Render quick analysis tab"""
+    """Render quick analysis tab with ETA tracking"""
+    performance_monitor = get_performance_monitor()
+    eta_info = performance_monitor.get_analysis_eta(AnalysisType.QUICK_OVERVIEW)
+    
     st.markdown("#### ⚡ Quick Repository Overview")
     st.markdown("Get a fast overview of the repository with basic insights.")
     
+    # Display ETA and expected tools
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("⏱️ Estimated Time", eta_info['eta_formatted'])
+    with col2:
+        st.metric("🔧 Tools Used", eta_info['tool_count'])
+    with col3:
+        st.metric("📊 Complexity", eta_info['complexity'])
+    
+    # Show expected tools
+    with st.expander("🔧 Expected Tools for This Analysis", expanded=False):
+        for tool_name in eta_info['expected_tools']:
+            tool_info = performance_monitor.get_tool_explanation(tool_name)
+            if isinstance(tool_info, dict) and 'name' in tool_info:
+                st.markdown(f"• **{tool_info['name']}** ({tool_info['typical_duration']}s) - {tool_info['description']}")
+    
     if st.button("🚀 Start Quick Analysis", type="primary", use_container_width=True):
-        with st.spinner("⚡ Performing quick analysis..."):
-            def status_callback(msg):
-                st.text(msg)
+        # Start tracking analysis
+        performance_monitor.start_analysis(AnalysisType.QUICK_OVERVIEW, repo_url)
+        
+        # Create progress tracking
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        eta_text = st.empty()
+        
+        def enhanced_status_callback(msg, progress=None, current_tool=None):
+            if progress is not None:
+                progress_bar.progress(progress)
+                performance_monitor.update_progress(progress, current_tool)
             
-            result = quick_analysis(repo_url, status_callback)
-            display_quick_analysis_results(result)
+            status_text.text(msg)
+            
+            # Update ETA
+            current_status = performance_monitor.get_current_status()
+            if current_status['status'] == 'running':
+                eta_text.text(f"⏱️ ETA: {current_status['eta_formatted']} remaining")
+        
+        with st.spinner("⚡ Performing quick analysis..."):
+            try:
+                result = quick_analysis(repo_url, enhanced_status_callback)
+                progress_bar.progress(100)
+                status_text.text("✅ Quick analysis completed!")
+                eta_text.text("")
+                display_quick_analysis_results(result)
+            except Exception as e:
+                status_text.text(f"❌ Analysis failed: {str(e)}")
+                eta_text.text("")
 
 def render_comprehensive_analysis_tab(repo_url: str, presets: Dict[str, Any]) -> None:
-    """Render comprehensive analysis tab"""
+    """Render comprehensive analysis tab with ETA tracking"""
+    performance_monitor = get_performance_monitor()
+    eta_info = performance_monitor.get_analysis_eta(AnalysisType.COMPREHENSIVE)
+    
     st.markdown("#### 🔍 Comprehensive Repository Analysis")
     st.markdown("Get detailed insights with multiple analysis dimensions.")
+    
+    # Display ETA and expected tools
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("⏱️ Estimated Time", eta_info['eta_formatted'])
+    with col2:
+        st.metric("🔧 Tools Used", eta_info['tool_count'])
+    with col3:
+        st.metric("📊 Complexity", eta_info['complexity'])
+    
+    # Show expected tools
+    with st.expander("🔧 Expected Tools for This Analysis", expanded=False):
+        for tool_name in eta_info['expected_tools']:
+            tool_info = performance_monitor.get_tool_explanation(tool_name)
+            if isinstance(tool_info, dict) and 'name' in tool_info:
+                st.markdown(f"• **{tool_info['name']}** ({tool_info['typical_duration']}s) - {tool_info['description']}")
     
     # Preset selection
     preset_options = {preset["name"]: preset_id for preset_id, preset in presets.items()}
@@ -123,12 +309,36 @@ def render_comprehensive_analysis_tab(repo_url: str, presets: Dict[str, Any]) ->
     if st.button("🔍 Start Comprehensive Analysis", type="primary", use_container_width=True):
         preset_id = preset_options[selected_preset]
         
-        with st.spinner("🔍 Performing comprehensive analysis..."):
-            def status_callback(msg):
-                st.text(msg)
+        # Start tracking analysis
+        performance_monitor.start_analysis(AnalysisType.COMPREHENSIVE, repo_url)
+        
+        # Create progress tracking
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        eta_text = st.empty()
+        
+        def enhanced_status_callback(msg, progress=None, current_tool=None):
+            if progress is not None:
+                progress_bar.progress(progress)
+                performance_monitor.update_progress(progress, current_tool)
             
-            result = analyze_repository(repo_url, "comprehensive", preset_id, status_callback)
-            display_comprehensive_analysis_results(result)
+            status_text.text(msg)
+            
+            # Update ETA
+            current_status = performance_monitor.get_current_status()
+            if current_status['status'] == 'running':
+                eta_text.text(f"⏱️ ETA: {current_status['eta_formatted']} remaining")
+        
+        with st.spinner("🔍 Performing comprehensive analysis..."):
+            try:
+                result = analyze_repository(repo_url, "comprehensive", preset_id, enhanced_status_callback)
+                progress_bar.progress(100)
+                status_text.text("✅ Comprehensive analysis completed!")
+                eta_text.text("")
+                display_comprehensive_analysis_results(result)
+            except Exception as e:
+                status_text.text(f"❌ Analysis failed: {str(e)}")
+                eta_text.text("")
 
 def render_security_analysis_tab(repo_url: str) -> None:
     """Render security analysis tab"""

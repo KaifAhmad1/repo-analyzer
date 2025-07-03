@@ -270,13 +270,18 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# System Status Banner
+# Enhanced System Status Display with Performance Monitoring
+from src.utils.performance_monitor import get_performance_monitor
+
 server_status = get_servers_status()
+performance_monitor = get_performance_monitor()
+
+# System Status Banner
 if server_status['running_servers'] < server_status['total_servers']:
     st.warning(f"⚠️ {server_status['total_servers'] - server_status['running_servers']} MCP servers are offline. Some features may be limited.")
 
 # Enhanced System Status Display
-st.markdown("### 🔧 System Status")
+st.markdown("### 🔧 Enhanced System Status & Performance")
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
@@ -289,8 +294,8 @@ with col4:
     health_percentage = (server_status['running_servers'] / server_status['total_servers']) * 100
     st.metric("🏥 Health", f"{health_percentage:.0f}%")
 
-# Show individual server status
-st.markdown("#### 📊 MCP Server Status")
+# Show individual server status with utilization
+st.markdown("#### 📊 MCP Server Status & Utilization")
 server_cols = st.columns(len(server_status['servers']))
 for i, (server_name, server_info) in enumerate(server_status['servers'].items()):
     with server_cols[i]:
@@ -302,16 +307,49 @@ for i, (server_name, server_info) in enumerate(server_status['servers'].items())
         }.get(server_name, '🖥️')
         
         status_icon = "✅" if server_info['running'] else "❌"
-        status_color = "green" if server_info['running'] else "red"
+        status_color = "#10b981" if server_info['running'] else "#ef4444"
         status_text = "Running" if server_info['running'] else "Offline"
         
+        # Get server utilization from performance monitor
+        server_status_data = performance_monitor.get_server_status().get(server_name)
+        utilization = server_status_data.utilization if server_status_data else 0.0
+        
         st.markdown(f"""
-        <div style="text-align: center; padding: 15px; border: 2px solid {'#10b981' if server_info['running'] else '#ef4444'}; border-radius: 12px; background: linear-gradient(135deg, {'#1f2937' if server_info['running'] else '#374151'}, {'#111827' if server_info['running'] else '#1f2937'}); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <div style="text-align: center; padding: 15px; border: 2px solid {status_color}; border-radius: 12px; background: linear-gradient(135deg, #1f2937, #111827); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
             <div style="font-size: 32px; margin-bottom: 8px;">{server_icon}</div>
             <div style="font-weight: bold; margin: 8px 0; color: #f9fafb; font-size: 16px;">{server_name.replace('_', ' ').title()}</div>
-            <div style="color: {'#10b981' if server_info['running'] else '#ef4444'}; font-weight: bold; font-size: 14px; background-color: rgba(255, 255, 255, 0.1); padding: 4px 8px; border-radius: 6px; display: inline-block;">{status_icon} {status_text}</div>
+            <div style="color: {status_color}; font-weight: bold; font-size: 14px; background-color: rgba(255, 255, 255, 0.1); padding: 4px 8px; border-radius: 6px; display: inline-block;">{status_icon} {status_text}</div>
+            <div style="color: #9ca3af; font-size: 12px; margin-top: 8px;">Utilization: {utilization:.1f}%</div>
         </div>
         """, unsafe_allow_html=True)
+
+# Real-time Performance Monitoring
+st.markdown("### ⏱️ Real-time Performance Monitor")
+current_status = performance_monitor.get_current_status()
+
+if current_status['status'] == 'running':
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("🔄 Analysis Type", current_status['analysis_type'].replace('_', ' ').title())
+    with col2:
+        st.metric("📊 Progress", f"{current_status['progress']:.1f}%")
+    with col3:
+        st.metric("⏱️ Elapsed", current_status['elapsed_formatted'])
+    with col4:
+        st.metric("⏳ ETA", current_status['eta_formatted'])
+    
+    # Progress bar
+    st.progress(current_status['progress'] / 100)
+    
+    # Tools used
+    if current_status['tools_used']:
+        st.markdown("**🔧 Tools Used:**")
+        for tool in current_status['tools_used']:
+            tool_info = performance_monitor.get_tool_explanation(tool)
+            if isinstance(tool_info, dict) and 'name' in tool_info:
+                st.markdown(f"• {tool_info['name']} ({tool_info['typical_duration']}s)")
+else:
+    st.info("💡 No analysis currently running. Start an analysis to see real-time performance data.")
 
 st.markdown("---")
 
