@@ -103,6 +103,10 @@ class RepositoryVisualizer:
             # Parse tree structure
             tree_structure = self._parse_tree_structure(tree_data)
             
+            # Check if we have valid data
+            if not tree_structure or len(tree_structure) == 0:
+                return {"error": "No directory tree data available"}
+            
             # Create treemap visualization
             fig = px.treemap(
                 tree_structure,
@@ -130,6 +134,10 @@ class RepositoryVisualizer:
             
             # Parse file structure
             files = self._parse_file_structure(structure_data)
+            
+            # Check if we have valid data
+            if not files or len(files) == 0:
+                return {"error": "No file structure data available"}
             
             # Create sunburst chart
             fig = px.sunburst(
@@ -222,6 +230,10 @@ class RepositoryVisualizer:
             # Parse commit data
             commits = self._parse_commit_data(commits_data)
             
+            # Check if we have valid data
+            if not commits or len(commits) == 0:
+                return {"error": "No commit activity data available"}
+            
             # Create activity matrix
             activity_matrix = self._create_activity_matrix(commits)
             
@@ -252,6 +264,10 @@ class RepositoryVisualizer:
             
             # Parse and categorize files by language
             language_data = self._categorize_by_language(structure_data)
+            
+            # Check if we have valid data
+            if not language_data or len(language_data) == 0:
+                return {"error": "No language distribution data available"}
             
             # Create pie chart
             fig = px.pie(

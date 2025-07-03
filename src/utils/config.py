@@ -36,12 +36,64 @@ def ensure_directories():
 ensure_directories()
 
 def get_groq_api_key():
-    """Get Groq API key - hardcoded for company assignment"""
-    return "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"
+    """Get Groq API key from session state, environment, or fallback"""
+    # Try to get from Streamlit session state first
+    try:
+        import streamlit as st
+        if hasattr(st, 'session_state') and 'groq_api_key' in st.session_state:
+            session_key = st.session_state.groq_api_key
+            if session_key and session_key.strip():
+                return session_key.strip()
+    except:
+        pass  # Streamlit not available or session state not accessible
+    
+    # Try to load from environment
+    api_key = os.getenv("GROQ_API_KEY")
+    if api_key:
+        return api_key
+    
+    # Try to load from .env file if it exists
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+        api_key = os.getenv("GROQ_API_KEY")
+        if api_key:
+            return api_key
+    except ImportError:
+        pass  # python-dotenv not installed
+    
+    # Fallback to hardcoded key (for company assignment)
+    fallback_key = "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"
+    return fallback_key
 
 def get_github_token():
-    """Get GitHub token - not needed for public repos"""
-    return None
+    """Get GitHub token from session state, environment, or None"""
+    # Try to get from Streamlit session state first
+    try:
+        import streamlit as st
+        if hasattr(st, 'session_state') and 'github_token' in st.session_state:
+            session_token = st.session_state.github_token
+            if session_token and session_token.strip():
+                return session_token.strip()
+    except:
+        pass  # Streamlit not available or session state not accessible
+    
+    # Try to load from environment
+    token = os.getenv("GITHUB_TOKEN")
+    if token:
+        return token
+    
+    # Try to load from .env file if it exists
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+        token = os.getenv("GITHUB_TOKEN")
+        if token:
+            return token
+    except ImportError:
+        pass  # python-dotenv not installed
+    
+    return None  # No token configured
 
 def has_required_keys():
     """Check if required API keys are configured - always True for company assignment"""

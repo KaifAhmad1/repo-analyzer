@@ -166,8 +166,86 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # API Key Setup removed for company assignment
-    # Using hardcoded Groq API key
+    # API Key Setup Section
+    st.markdown("## 🔑 API Configuration")
+    
+    # Check if API key is already set in session state
+    if 'groq_api_key' not in st.session_state:
+        st.session_state.groq_api_key = ""
+    
+    # API Key Input
+    api_key = st.text_input(
+        "🔑 Groq API Key",
+        value=st.session_state.groq_api_key,
+        type="password",
+        placeholder="gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        help="Enter your Groq API key. Get one from https://console.groq.com/"
+    )
+    
+    # Update session state if API key changed
+    if api_key != st.session_state.groq_api_key:
+        st.session_state.groq_api_key = api_key
+        if api_key:
+            # Set environment variable
+            os.environ["GROQ_API_KEY"] = api_key
+            st.success("✅ API key set successfully!")
+        else:
+            # Clear environment variable
+            if "GROQ_API_KEY" in os.environ:
+                del os.environ["GROQ_API_KEY"]
+            st.warning("⚠️ API key cleared")
+    
+    # API Key Status
+    if st.session_state.groq_api_key:
+        st.success("🔑 API Key: Configured")
+        
+        # Test API key button
+        if st.button("🧪 Test API Key", use_container_width=True):
+            with st.spinner("Testing API key..."):
+                try:
+                    from agno.models.groq import Groq
+                    groq_model = Groq(id="llama-3.1-70b-versatile")
+                    response = groq_model.complete("Hello, this is a test.")
+                    if response and response.content:
+                        st.success("✅ API key is valid and working!")
+                    else:
+                        st.error("❌ API key test failed - no response received")
+                except Exception as e:
+                    st.error(f"❌ API key test failed: {str(e)}")
+    else:
+        st.warning("🔑 API Key: Not configured")
+        st.info("💡 Get your free API key from [Groq Console](https://console.groq.com/)")
+    
+    # GitHub Token Input (Optional)
+    if 'github_token' not in st.session_state:
+        st.session_state.github_token = ""
+    
+    github_token = st.text_input(
+        "🐙 GitHub Token (Optional)",
+        value=st.session_state.github_token,
+        type="password",
+        placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        help="Optional: For private repositories and higher rate limits. Get from https://github.com/settings/tokens"
+    )
+    
+    # Update GitHub token if changed
+    if github_token != st.session_state.github_token:
+        st.session_state.github_token = github_token
+        if github_token:
+            os.environ["GITHUB_TOKEN"] = github_token
+            st.success("✅ GitHub token set successfully!")
+        else:
+            if "GITHUB_TOKEN" in os.environ:
+                del os.environ["GITHUB_TOKEN"]
+            st.info("ℹ️ GitHub token cleared")
+    
+    # GitHub Token Status
+    if st.session_state.github_token:
+        st.success("🐙 GitHub Token: Configured")
+    else:
+        st.info("🐙 GitHub Token: Not configured (public repos only)")
+    
+    st.markdown("---")
     
     # Settings Section
     from src.ui.settings_sidebar import render_settings_sidebar

@@ -25,27 +25,30 @@ if not os.getenv("GROQ_API_KEY"):
     os.environ["GROQ_API_KEY"] = get_groq_api_key()
 
 class FastMCPTools:
-    """Enhanced tools wrapper for all FastMCP v2 servers with comprehensive data gathering and optimized performance"""
+    """Enhanced FastMCP tools with connection pooling and intelligent caching"""
     
     def __init__(self, max_workers: int = 8, timeout: int = 30):
+        self.max_workers = max_workers
+        self.timeout = timeout
+        self.cache = {}
+        self.cache_hits = 0
+        self.total_calls = 0
+        self.tools_used = []
+        self.servers_used = []
+        self._client_pool = {}
+        self._pool_lock = threading.Lock()
+        
+        # Define server scripts with proper paths
         self.servers = {
             "file_content": "src/servers/file_content_server.py",
             "repository_structure": "src/servers/repository_structure_server.py", 
             "commit_history": "src/servers/commit_history_server.py",
             "code_search": "src/servers/code_search_server.py"
         }
-        self.tools_used = []
-        self.servers_used = []
-        self.cache = {}
-        self.max_workers = max_workers
-        self.timeout = timeout
-        self._client_pool = {}
-        self._pool_lock = threading.Lock()
         
         # Performance tracking
+        self.start_time = time.time()
         self.call_times = {}
-        self.total_calls = 0
-        self.cache_hits = 0
     
     async def _call_server_tool(self, server_name: str, tool_name: str, **kwargs) -> Dict[str, Any]:
         """Call a tool from a specific FastMCP server with enhanced error handling and connection pooling"""
@@ -71,54 +74,50 @@ class FastMCPTools:
             # Use connection pooling for better performance
             with self._pool_lock:
                 if server_name not in self._client_pool:
-                    self._client_pool[server_name] = Client(script_path)
+                    try:
+                        self._client_pool[server_name] = Client(script_path)
+                    except Exception as client_error:
+                        return {"error": f"Failed to create client for {server_name}: {str(client_error)}", "success": False}
                 client = self._client_pool[server_name]
             
-            # Add timeout to prevent hanging
+            # Make the tool call with proper async context
             try:
-                result = await asyncio.wait_for(
-                    client.call_tool(tool_name, kwargs), 
-                    timeout=self.timeout
-                )
-                
-                if hasattr(result, 'content') and result.content:
-                    response = {
-                        "result": result.content[0].text if result.content else "",
-                        "success": True,
-                        "server": server_name,
-                        "tool": tool_name,
-                        "execution_time": time.time() - start_time
-                    }
-                else:
-                    response = {
-                        "result": "No content returned",
-                        "success": True,
-                        "server": server_name,
-                        "tool": tool_name,
-                        "execution_time": time.time() - start_time
-                    }
-                
-                self.cache[cache_key] = response
-                self.call_times[f"{server_name}.{tool_name}"] = time.time() - start_time
-                return response
-                
-            except asyncio.TimeoutError:
-                return {
-                    "error": f"Timeout after {self.timeout} seconds", 
-                    "success": False, 
-                    "server": server_name, 
-                    "tool": tool_name,
-                    "execution_time": time.time() - start_time
-                }
-                
+                async with client:
+                    result = await client.call_tool(tool_name, kwargs)
+                    
+                    # Handle the result properly
+                    if hasattr(result, 'content') and result.content:
+                        response = {
+                            "result": result.content[0].text if result.content else "",
+                            "success": True,
+                            "server": server_name,
+                            "tool": tool_name,
+                            "execution_time": time.time() - start_time
+                        }
+                    else:
+                        response = {
+                            "result": "No content returned",
+                            "success": True,
+                            "server": server_name,
+                            "tool": tool_name,
+                            "execution_time": time.time() - start_time
+                        }
+                    
+                    # Cache the result
+                    self.cache[cache_key] = response
+                    
+                    # Track performance
+                    execution_time = time.time() - start_time
+                    self.call_times[f"{server_name}.{tool_name}"] = execution_time
+                    
+                    return response
+                    
+            except Exception as tool_error:
+                return {"error": f"Tool call failed: {str(tool_error)}", "success": False, "server": server_name, "tool": tool_name, "execution_time": time.time() - start_time}
+            
         except Exception as e:
-            return {
-                "error": str(e), 
-                "success": False, 
-                "server": server_name, 
-                "tool": tool_name,
-                "execution_time": time.time() - start_time
-            }
+            error_result = {"error": str(e), "success": False, "server": server_name, "tool": tool_name, "execution_time": time.time() - start_time}
+            return error_result
     
     def _sync_call(self, server_name: str, tool_name: str, **kwargs) -> str:
         """Synchronous wrapper for async calls with timeout"""
@@ -344,25 +343,39 @@ class RepositoryAnalyzerAgent:
         
         # Initialize memory and storage with proper error handling
         try:
-            # Create Groq model without proxies parameter
+            # Create Groq model without any extra parameters
             groq_model = Groq(id=model_name)
             
-            self.memory = Memory(
-                model=groq_model,
-                db=SqliteMemoryDb(table_name="repo_analyzer_memories", db_file="tmp/agent.db"),
-                delete_memories=True,
-                clear_memories=True,
-            )
+            # Create memory with proper error handling
+            try:
+                self.memory = Memory(
+                    model=groq_model,
+                    db=SqliteMemoryDb(table_name="repo_analyzer_memories", db_file="tmp/agent.db"),
+                    delete_memories=True,
+                    clear_memories=True,
+                )
+            except Exception as mem_error:
+                print(f"Warning: Could not initialize memory: {mem_error}")
+                self.memory = None
             
-            self.storage = SqliteStorage(table_name="repo_analyzer_sessions", db_file="tmp/agent.db")
+            # Create storage with proper error handling
+            try:
+                self.storage = SqliteStorage(table_name="repo_analyzer_sessions", db_file="tmp/agent.db")
+            except Exception as storage_error:
+                print(f"Warning: Could not initialize storage: {storage_error}")
+                self.storage = None
             
             # Create the main agent with enhanced configuration
-            self.agent = Agent(
-                model=groq_model,
-                memory=self.memory,
-                storage=self.storage,
-                tools=[]  # No tools needed as we use our own FastMCP tools
-            )
+            try:
+                self.agent = Agent(
+                    model=groq_model,
+                    memory=self.memory,
+                    storage=self.storage,
+                    tools=[]  # No tools needed as we use our own FastMCP tools
+                )
+            except Exception as agent_error:
+                print(f"Warning: Could not initialize agent: {agent_error}")
+                self.agent = None
             
         except Exception as e:
             print(f"Warning: Could not initialize Agno agent components: {e}")
@@ -584,7 +597,21 @@ Always strive to provide the most accurate and helpful analysis possible with cl
                         status_callback(f"❌ {error_msg}")
                     return error_msg, []
             else:
-                response = self.agent.run(f"{system_prompt}\n\n{prompt}")
+                try:
+                    response = self.agent.run(f"{system_prompt}\n\n{prompt}")
+                    return response.content, comprehensive_data["tools_used"]
+                except Exception as agent_error:
+                    # Try fallback if agent fails
+                    try:
+                        from agno.models.groq import Groq
+                        groq_model = Groq(id=self.model_name)
+                        response = groq_model.complete(f"{system_prompt}\n\n{prompt}")
+                        return response.content, comprehensive_data["tools_used"]
+                    except Exception as fallback_error:
+                        error_msg = f"Error during analysis (agent and fallback failed): {str(fallback_error)}"
+                        if status_callback:
+                            status_callback(f"❌ {error_msg}")
+                        return error_msg, []
             
             if status_callback:
                 execution_time = comprehensive_data.get("execution_time", 0)
@@ -630,7 +657,21 @@ Always strive to provide the most accurate and helpful analysis possible with cl
                         status_callback(f"❌ {error_msg}")
                     return error_msg, []
             else:
-                response = self.agent.run(f"{system_prompt}\n\n{summary_prompt}")
+                try:
+                    response = self.agent.run(f"{system_prompt}\n\n{summary_prompt}")
+                    return response.content, comprehensive_data["tools_used"]
+                except Exception as agent_error:
+                    # Try fallback if agent fails
+                    try:
+                        from agno.models.groq import Groq
+                        groq_model = Groq(id=self.model_name)
+                        response = groq_model.complete(f"{system_prompt}\n\n{summary_prompt}")
+                        return response.content, comprehensive_data["tools_used"]
+                    except Exception as fallback_error:
+                        error_msg = f"Error generating summary (agent and fallback failed): {str(fallback_error)}"
+                        if status_callback:
+                            status_callback(f"❌ {error_msg}")
+                        return error_msg, []
             
             if status_callback:
                 status_callback("✅ Summary complete!")
@@ -675,7 +716,21 @@ Always strive to provide the most accurate and helpful analysis possible with cl
                         status_callback(f"❌ {error_msg}")
                     return error_msg, []
             else:
-                response = self.agent.run(f"{system_prompt}\n\n{pattern_prompt}")
+                try:
+                    response = self.agent.run(f"{system_prompt}\n\n{pattern_prompt}")
+                    return response.content, comprehensive_data["tools_used"]
+                except Exception as agent_error:
+                    # Try fallback if agent fails
+                    try:
+                        from agno.models.groq import Groq
+                        groq_model = Groq(id=self.model_name)
+                        response = groq_model.complete(f"{system_prompt}\n\n{pattern_prompt}")
+                        return response.content, comprehensive_data["tools_used"]
+                    except Exception as fallback_error:
+                        error_msg = f"Error analyzing patterns (agent and fallback failed): {str(fallback_error)}"
+                        if status_callback:
+                            status_callback(f"❌ {error_msg}")
+                        return error_msg, []
             
             if status_callback:
                 status_callback("✅ Pattern analysis complete!")
@@ -741,7 +796,21 @@ Always strive to provide the most accurate and helpful analysis possible with cl
                         status_callback(f"❌ {error_msg}")
                     return error_msg, []
             else:
-                response = self.agent.run(f"{system_prompt}\n\n{quick_prompt}")
+                try:
+                    response = self.agent.run(f"{system_prompt}\n\n{quick_prompt}")
+                    return response.content, self.tools.get_tools_used()
+                except Exception as agent_error:
+                    # Try fallback if agent fails
+                    try:
+                        from agno.models.groq import Groq
+                        groq_model = Groq(id=self.model_name)
+                        response = groq_model.complete(f"{system_prompt}\n\n{quick_prompt}")
+                        return response.content, self.tools.get_tools_used()
+                    except Exception as fallback_error:
+                        error_msg = f"Error in quick analysis (agent and fallback failed): {str(fallback_error)}"
+                        if status_callback:
+                            status_callback(f"❌ {error_msg}")
+                        return error_msg, []
             
             execution_time = time.time() - start_time
             if status_callback:
