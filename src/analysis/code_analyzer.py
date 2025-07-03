@@ -13,7 +13,7 @@ import plotly.express as px
 import pandas as pd
 from datetime import datetime
 
-from agent.ai_agent import FastMCPTools
+from ..agent.ai_agent import FastMCPTools
 
 class CodeAnalyzer:
     """Comprehensive code analyzer with quality metrics, complexity analysis, and pattern detection"""

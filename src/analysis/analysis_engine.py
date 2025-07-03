@@ -10,9 +10,9 @@ from typing import Dict, Any, List, Optional, Tuple, Callable
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from utils.config import get_analysis_settings, get_analysis_presets
-from utils.repository_manager import get_repository_manager, add_analysis_result
-from agent.ai_agent import FastMCPTools, RepositoryAnalyzerAgent
+from ..utils.config import get_analysis_settings, get_analysis_presets
+from ..utils.repository_manager import get_repository_manager, add_analysis_result
+from ..agent.ai_agent import FastMCPTools, RepositoryAnalyzerAgent
 from .code_analyzer import get_code_analyzer
 from .repository_visualizer import get_repository_visualizer
 

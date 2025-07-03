@@ -12,7 +12,7 @@ from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime
 import re
 
-from agent.ai_agent import FastMCPTools
+from ..agent.ai_agent import FastMCPTools
 
 class RepositoryVisualizer:
     """Interactive repository visualization generator"""
