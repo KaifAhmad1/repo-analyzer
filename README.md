@@ -1,6 +1,8 @@
-# 🚀 GitHub Repository Analyzer - Enhanced & Comprehensive
+# 🚀 GitHub Repository Analyzer - Company Assignment
 
 A powerful, systematic GitHub repository analyzer that provides **deep insights** through AI-powered analysis, Q&A capabilities, and multiple analysis types using **all available MCP servers** and **advanced LLMs**. This system ensures **comprehensive data gathering** from every repository for **accurate, detailed responses**.
+
+**Pre-configured for immediate use with public repositories - no API setup required.**
 
 ## 🎯 **Key Improvements & Features**
 
@@ -95,15 +97,8 @@ cd repo-analyzer
 
 ### 2. **Configuration**
 
-Create a `.env` file in the root directory:
-
-```env
-# Required: Get your API key from https://console.groq.com/
-GROQ_API_KEY=your_groq_api_key_here
-
-# Optional: GitHub token for higher rate limits
-GITHUB_TOKEN=your_github_token_here
-```
+This is a company assignment project with pre-configured API keys.
+No additional configuration is required.
 
 ### 3. **Start the Application**
 

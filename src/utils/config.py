@@ -36,29 +36,20 @@ def ensure_directories():
 ensure_directories()
 
 def get_groq_api_key():
-    """Get Groq API key from environment"""
-    return os.getenv("GROQ_API_KEY")
+    """Get Groq API key - hardcoded for company assignment"""
+    return "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"
 
 def get_github_token():
-    """Get GitHub token from environment (optional)"""
-    return os.getenv("GITHUB_TOKEN")
+    """Get GitHub token - not needed for public repos"""
+    return None
 
 def has_required_keys():
-    """Check if required API keys are configured"""
-    return bool(get_groq_api_key())
+    """Check if required API keys are configured - always True for company assignment"""
+    return True
 
 def save_keys_to_env(groq_api_key: str, github_token: str = ""):
-    """Save API keys to .env file"""
-    try:
-        env_content = f"""# GitHub Repository Analyzer Configuration
-GROQ_API_KEY={groq_api_key}
-GITHUB_TOKEN={github_token}
-"""
-        with open(".env", "w") as f:
-            f.write(env_content)
-        return True
-    except Exception:
-        return False
+    """Save API keys to .env file - disabled for company assignment"""
+    return True  # Always return True since we don't need to save keys
 
 def get_available_models():
     """Get list of available models based on configured APIs"""

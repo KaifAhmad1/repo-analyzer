@@ -27,8 +27,7 @@ from src.utils.config import (
     save_analysis_settings,
     get_analysis_presets,
     has_required_keys,
-    get_groq_api_key,
-    save_keys_to_env
+    get_groq_api_key
 )
 from src.utils.repository_manager import (
     get_repository_manager,
@@ -74,32 +73,7 @@ def display_tools_used(tools_used):
             st.markdown(f"  - {tool}")
         st.markdown("")
 
-def render_api_key_setup():
-    """Render API key setup interface"""
-    st.markdown("### 🔑 API Configuration")
-    st.markdown("Configure your Groq API key to enable AI-powered analysis.")
-    
-    with st.form("api_key_form"):
-        groq_api_key = st.text_input(
-            "Groq API Key",
-            type="password",
-            help="Get your API key from https://console.groq.com/"
-        )
-        
-        github_token = st.text_input(
-            "GitHub Token (Optional)",
-            type="password",
-            help="Optional: GitHub token for higher rate limits"
-        )
-        
-        submit_button = st.form_submit_button("💾 Save Configuration", type="primary")
-        
-        if submit_button and groq_api_key:
-            if save_keys_to_env(groq_api_key, github_token):
-                st.success("✅ API keys saved successfully!")
-                st.rerun()
-            else:
-                st.error("❌ Failed to save API keys")
+# API key setup function removed for company assignment
 
 def render_session_management():
     """Render session management interface"""
@@ -192,11 +166,8 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # API Key Setup (if not configured)
-    if not has_required_keys():
-        st.markdown("## 🔑 API Setup")
-        render_api_key_setup()
-        st.markdown("---")
+    # API Key Setup removed for company assignment
+    # Using hardcoded Groq API key
     
     # Settings Section
     from src.ui.settings_sidebar import render_settings_sidebar
