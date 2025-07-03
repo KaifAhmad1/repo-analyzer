@@ -415,8 +415,8 @@ def display_security_analysis_results(result: Dict[str, Any]) -> None:
         security_data = sections["security"]
         if isinstance(security_data, dict) and "risk_level" in security_data:
             risk_level = security_data["risk_level"]
-            risk_color = {"low": "green", "medium": "orange", "high": "red"}.get(risk_level, "gray")
-            st.metric("🔒 Security Risk Level", risk_level.upper(), delta_color=risk_color)
+            risk_color = {"low": "🟢", "medium": "🟡", "high": "🔴"}.get(risk_level, "⚪")
+            st.metric("🔒 Security Risk Level", f"{risk_color} {risk_level.upper()}")
     
     # Security Patterns
     if "security" in sections:
