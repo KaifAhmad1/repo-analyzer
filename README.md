@@ -1,358 +1,226 @@
-# 🚀 GitHub Repository Analyzer 
+# 🚀 GitHub Repository Analyzer
 
-A powerful, systematic GitHub repository analyzer that provides **deep insights** through AI-powered analysis, Q&A capabilities, and multiple analysis types using **all available MCP servers** and **advanced LLMs**. This system ensures **comprehensive data gathering** from every repository for **accurate, detailed responses**.
+A powerful AI-powered GitHub repository analyzer that provides deep insights through comprehensive analysis, interactive visualizations, and intelligent Q&A capabilities using multiple MCP servers and advanced LLMs.
 
 **Pre-configured for immediate use with public repositories - no API setup required.**
 
-## 🎯 **Key Improvements & Features**
+## 🎯 Key Features
 
-### 🔥 **NEW: Enhanced AI Agent with Full MCP Utilization**
-- **Guaranteed comprehensive data gathering** from all MCP servers for every Q&A and analysis
-- **Parallel tool execution** using ThreadPoolExecutor for faster data collection from all MCP servers simultaneously
-- **Advanced LLM integration** using Groq's latest models for superior reasoning
-- **Smart data synthesis** that combines information from file content, structure, commits, and code search
-- **Real-time progress tracking** with detailed status updates
-- **Tool utilization tracking** - every response includes a list of which MCP tools were used for transparency
+### 🤖 **AI-Powered Analysis**
+- **Comprehensive Data Gathering**: Automatically collects data from all MCP servers for every analysis
+- **Parallel Processing**: Multiple servers run simultaneously for faster results
+- **Smart Synthesis**: AI combines information from file content, structure, commits, and code search
+- **Real-time Progress**: Track analysis progress with detailed status updates
 
-### 🗺️ **NEW: Interactive Repository Visualizations**
-- **Directory Tree Maps**: Interactive treemap visualizations of repository structure
-- **Dependency Graphs**: Network graphs showing project dependencies and relationships
-- **Code Activity Heatmaps**: Visual representation of development activity over time
-- **Language Distribution Charts**: Pie charts showing programming language usage
-- **File Size Distribution**: Histograms of file sizes and complexity
+### 📊 **Advanced Visualizations**
+- **Interactive Repository Maps**: Treemap visualizations of repository structure
+- **Dependency Graphs**: Network graphs showing project relationships
+- **Code Activity Heatmaps**: Visual representation of development activity
+- **Quality Metrics**: Interactive gauges and charts for code quality assessment
 
-### 📊 **NEW: Advanced Code Analysis**
-- **Code Quality Metrics**: Comprehensive quality scoring with detailed recommendations
-- **Complexity Analysis**: Cyclomatic and cognitive complexity measurements
-- **Pattern Detection**: Automatic detection of design patterns, anti-patterns, and code smells
-- **Architecture Analysis**: Deep insights into code organization and structure
-- **Interactive Visualizations**: Quality score gauges, complexity distributions, and pattern analysis charts
-
-### 🧠 **NEW: Smart Summarization**
-- **Comprehensive Repository Summaries**: AI-powered summaries covering all aspects
-- **Architecture Insights**: Detailed analysis of project structure and design decisions
-- **Development Patterns**: Analysis of commit history and development workflow
-- **Dependency Analysis**: Complete dependency mapping and security assessment
-- **Recommendations**: Actionable insights for improvement
-
-### 💬 **Enhanced Q&A System**
-- **Deep Context Understanding**: Every question uses data from all MCP servers
-- **Parallel Data Gathering**: All MCP tools execute simultaneously for faster responses
-- **Comprehensive Answers**: Responses include code examples, patterns, and architectural insights
-- **Follow-up Support**: Context-aware follow-up questions and clarifications
-- **Evidence-Based Responses**: All answers include supporting evidence from the codebase
-- **Tool Transparency**: Every response shows which MCP tools were used for complete transparency
-
-## ✨ Features
-
-### 🔍 **Enhanced Analysis Types**
-- **Comprehensive Analysis**: Full repository analysis with multiple dimensions
+### 🔍 **Multiple Analysis Types**
 - **Quick Overview**: Fast repository summary and insights
+- **Comprehensive Analysis**: Full repository analysis with multiple dimensions
 - **Security Analysis**: Security-focused analysis and vulnerability detection
 - **Code Quality Analysis**: Advanced code quality, complexity, and pattern analysis
-- **Visualization Analysis**: Interactive repository maps and dependency graphs
 - **Smart Summarization**: AI-powered comprehensive repository summaries
-- **Custom Analysis**: Tailored analysis based on specific requirements
 
-### ⚡ **Performance Optimizations**
-- **Ultra Fast Mode**: 30-second analysis using minimal tools
-- **Fast Mode**: 60-second analysis with optimized tool selection
-- **Comprehensive Mode**: 90-second analysis with all tools using advanced parallelization
-- **Intelligent Tool Selection**: Automatically chooses the most relevant tools
-- **Advanced Parallel Processing**: Multiple MCP servers run simultaneously with optimized batching
-- **Phase-Based Execution**: Tools are executed in phases for optimal performance
-- **Timeout Protection**: Prevents hanging requests with automatic fallbacks
-- **Caching System**: Reduces redundant API calls for faster subsequent runs
-- **Connection Pooling**: Reuses connections for better performance
-
-### 💬 **AI-Powered Q&A**
+### 💬 **Intelligent Q&A System**
 - Ask specific questions about any repository
 - Get detailed answers with context from the codebase
 - Support for complex queries and follow-up questions
-- Real-time analysis using multiple MCP servers
+- Evidence-based responses with code examples
 
-### 🛠️ **Advanced Tools & Servers**
-- **File Content Server**: Retrieve and analyze file contents with code analysis
-- **Repository Structure Server**: Analyze directory trees and file organization
-- **Commit History Server**: Track changes and development patterns
-- **Code Search Server**: Search for specific code patterns, functions, and dependencies
-- **Enhanced AI Agent**: Comprehensive data synthesis using all MCP servers
-- **Code Analyzer**: Advanced code quality, complexity, and pattern analysis
-- **Repository Visualizer**: Interactive visualizations and dependency mapping
+## 🏗️ System Architecture
 
-### 📊 **Session Management & Persistence**
-- Save analysis sessions throughout your workflow
-- Export analysis results and session data
-- Track analysis history and progress
-- Cache results for faster subsequent runs
-
-### 🎯 **Enhanced User Interface**
-- Modern, responsive Streamlit interface with multiple analysis tabs
-- Real-time progress tracking with detailed status updates
-- Interactive visualizations (treemaps, network graphs, heatmaps, charts)
-- Easy-to-use repository selection and session management
-- Comprehensive results display with AI summaries and recommendations
+```mermaid
+graph TD
+    %% User Interface Layer
+    subgraph UI ["🎨 User Interface Layer"]
+        direction TB
+        STREAMLIT[🚀 Streamlit Web App]
+        REPO_SELECT[📁 Repository Selector]
+        CHAT_UI[💬 Q&A Chat Interface]
+        ANALYSIS_UI[📊 Analysis Interface]
+        SETTINGS_UI[⚙️ Settings Panel]
+    end
+    
+    %% Core Processing Layer
+    subgraph CORE ["🧠 Core Processing Layer"]
+        direction TB
+        AI_AGENT[🤖 AI Agent<br/>Smart Data Synthesis]
+        ANALYSIS_ENGINE[⚡ Analysis Engine<br/>Multi-Dimensional Analysis]
+        CODE_ANALYZER[🔍 Code Analyzer<br/>Quality & Complexity]
+        REPO_VIZ[🗺️ Repository Visualizer<br/>Interactive Charts]
+    end
+    
+    %% MCP Servers Layer
+    subgraph MCP ["🔧 MCP Servers Layer"]
+        direction TB
+        FILE_SERVER[📄 File Content Server<br/>Code & Documentation]
+        STRUCTURE_SERVER[📂 Repository Structure Server<br/>Directory Analysis]
+        COMMIT_SERVER[📝 Commit History Server<br/>Development Patterns]
+        SEARCH_SERVER[🔎 Code Search Server<br/>Pattern Detection]
+    end
+    
+    %% External APIs Layer
+    subgraph API ["🌐 External APIs Layer"]
+        direction TB
+        GITHUB_API[🐙 GitHub API<br/>Repository Data]
+        GROQ_API[🧠 Groq AI API<br/>LLM Processing]
+    end
+    
+    %% Data Management Layer
+    subgraph DATA ["💾 Data Management Layer"]
+        direction TB
+        REPO_MANAGER[📋 Repository Manager<br/>Session & Cache]
+        CONFIG_MGR[🔧 Configuration Manager<br/>Settings & Presets]
+        SESSION_CACHE[💿 Session Cache<br/>Performance Optimization]
+    end
+    
+    %% Main Data Flow
+    STREAMLIT --> AI_AGENT
+    STREAMLIT --> ANALYSIS_ENGINE
+    STREAMLIT --> CODE_ANALYZER
+    STREAMLIT --> REPO_VIZ
+    
+    REPO_SELECT --> REPO_MANAGER
+    CHAT_UI --> AI_AGENT
+    ANALYSIS_UI --> ANALYSIS_ENGINE
+    SETTINGS_UI --> CONFIG_MGR
+    
+    %% AI Agent Connections
+    AI_AGENT --> FILE_SERVER
+    AI_AGENT --> STRUCTURE_SERVER
+    AI_AGENT --> COMMIT_SERVER
+    AI_AGENT --> SEARCH_SERVER
+    AI_AGENT --> GROQ_API
+    
+    %% Analysis Engine Connections
+    ANALYSIS_ENGINE --> FILE_SERVER
+    ANALYSIS_ENGINE --> STRUCTURE_SERVER
+    ANALYSIS_ENGINE --> COMMIT_SERVER
+    ANALYSIS_ENGINE --> SEARCH_SERVER
+    ANALYSIS_ENGINE --> GROQ_API
+    
+    %% MCP Server to GitHub API
+    FILE_SERVER --> GITHUB_API
+    STRUCTURE_SERVER --> GITHUB_API
+    COMMIT_SERVER --> GITHUB_API
+    SEARCH_SERVER --> GITHUB_API
+    
+    %% Data Management Connections
+    REPO_MANAGER --> CONFIG_MGR
+    REPO_MANAGER --> SESSION_CACHE
+    AI_AGENT --> SESSION_CACHE
+    ANALYSIS_ENGINE --> SESSION_CACHE
+    
+    %% Styling with better colors and larger nodes
+    classDef uiLayer fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,color:#0d47a1
+    classDef coreLayer fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#4a148c
+    classDef mcpLayer fill:#e8f5e8,stroke:#388e3c,stroke-width:3px,color:#1b5e20
+    classDef apiLayer fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#e65100
+    classDef dataLayer fill:#fce4ec,stroke:#c2185b,stroke-width:3px,color:#880e4f
+    
+    class STREAMLIT,REPO_SELECT,CHAT_UI,ANALYSIS_UI,SETTINGS_UI uiLayer
+    class AI_AGENT,ANALYSIS_ENGINE,CODE_ANALYZER,REPO_VIZ coreLayer
+    class FILE_SERVER,STRUCTURE_SERVER,COMMIT_SERVER,SEARCH_SERVER mcpLayer
+    class GITHUB_API,GROQ_API apiLayer
+    class REPO_MANAGER,CONFIG_MGR,SESSION_CACHE dataLayer
+```
 
 ## 🚀 Quick Start
 
 ### 1. **Installation**
-
-   ```bash
+```bash
 # Clone the repository
 git clone <repository-url>
 cd repo-analyzer
 
 # Install dependencies
-   pip install -r requirements.txt
-   ```
+pip install -r requirements.txt
+```
 
-### 2. **Configuration**
-
-This is a company assignment project with pre-configured API keys.
-No additional configuration is required.
-
-### 3. **Start the Application**
-
-   ```bash
-# Option 1: Start the Streamlit app directly
+### 2. **Start the Application**
+```bash
+# Start the Streamlit app
 streamlit run app.py
+```
 
-# Option 2: Use the helper script (recommended)
-python run_app.py
-   ```
-
-### 4. **Start MCP Servers (Recommended)**
-
-For full functionality and enhanced analysis, start the MCP servers:
-
-#### **Simple Startup Script**
-
+### 3. **Start MCP Servers (Recommended)**
 ```bash
 # Start all MCP servers with one command
 python start_servers.py
 ```
 
-**Features:**
-- ✅ Starts all 4 MCP servers automatically
-- ✅ Cross-platform (Windows, macOS, Linux)
-- ✅ Simple one-command startup
-- ✅ Graceful shutdown with Ctrl+C
-- ✅ Shows server status and PIDs
-- ✅ UTF-8 encoded for compatibility
-
-#### **Alternative: Start Individual Servers**
-
-```bash
-# Start servers individually
-python src/servers/file_content_server.py
-python src/servers/repository_structure_server.py
-python src/servers/commit_history_server.py
-python src/servers/code_search_server.py
-```
-
-### 5. **Run Tests (Optional)**
-
-Verify all components are working correctly:
-
-   ```bash
-python test_enhanced_system.py
-```
-
 ## 📖 Usage Guide
 
-### **Step 1: Select a Repository**
+### **Step 1: Select Repository**
 1. Enter a GitHub repository URL in the sidebar
-2. Click "Analyze Repository" to set it as the current repository
-3. View basic repository information (stars, forks, description)
+2. Click "Analyze Repository" to set it as current
+3. View basic repository information
 
 ### **Step 2: Choose Analysis Type**
 
-#### **🔍 Enhanced Analysis Tab**
-- **Quick Overview**: Get a fast summary of the repository
+#### **🔍 Analysis Tab**
+- **Quick Overview**: Fast repository summary
 - **Comprehensive Analysis**: Full analysis with multiple dimensions
-  - Choose from presets: Quick, Standard, Deep, Security Focus
-  - Configure analysis options (file limits, depth, etc.)
-- **Security Analysis**: Focus on security aspects and vulnerabilities
-- **Code Quality**: Advanced code quality, complexity, and pattern analysis
-- **Visualizations**: Interactive repository maps and dependency graphs
-- **Smart Summary**: AI-powered comprehensive repository summaries
+- **Security Analysis**: Security-focused analysis
+- **Code Quality**: Advanced code quality and complexity analysis
+- **Visualizations**: Interactive repository maps and graphs
+- **Smart Summary**: AI-powered comprehensive summaries
 
 #### **💬 Q&A Chat Tab**
 - Ask specific questions about the repository
 - Use quick question buttons for common queries
-- Get detailed answers with context from the codebase
+- Get detailed answers with code examples
 
-#### **⚙️ Advanced Settings Tab**
+#### **⚙️ Settings Tab**
 - Configure analysis parameters
 - Set file size and count limits
 - Enable/disable caching
 - Choose analysis presets
 
 ### **Step 3: View Results**
-- **Real-time Progress**: Track analysis progress with detailed status updates
-- **Comprehensive Results**: View detailed analysis in organized sections
-- **Interactive Visualizations**: Explore repository structure with interactive charts and graphs
-- **AI Summaries**: Get AI-powered summaries of analysis results with recommendations
-- **Tool Utilization**: See exactly which MCP tools were called for each query/analysis
-- **Quality Metrics**: View code quality scores and improvement recommendations
-- **Performance**: Experience faster analysis with parallel tool execution
+- **Real-time Progress**: Track analysis with detailed status updates
+- **Interactive Visualizations**: Explore repository structure with charts
+- **AI Summaries**: Get AI-powered insights and recommendations
+- **Tool Transparency**: See which MCP tools were used for each query
 
-### **Step 4: Session Management**
-- **Export Results**: Download session data and analysis results
-- **View History**: Track previous analyses
-- **Clear Session**: Start fresh with a new session
+## 🛠️ Technical Components
 
-## 🔧 Analysis Types Explained
-
-### **Quick Overview**
-- Repository information and statistics
-- README content analysis
-- Basic file structure
-- AI-generated summary
-
-### **Comprehensive Analysis**
-- **Repository Information**: Stars, forks, language, topics, etc.
-- **File Structure**: Directory trees, file organization, project structure
-- **Code Metrics**: Lines of code, functions, classes, complexity
-- **Dependencies**: Package files, dependency analysis
-- **Commit History**: Recent commits, statistics, development patterns
-- **Security Analysis**: Security patterns, risk assessment
-- **AI Summary**: Comprehensive AI-generated analysis
-
-### **Security Analysis**
-- Security pattern detection
-- Dependency vulnerability checks
-- Code security patterns
-- Risk level assessment
-- Security recommendations
-
-### **Code Quality Analysis**
-- **Advanced Code Metrics**: Lines of code, functions, classes, complexity analysis
-- **Quality Scoring**: Comprehensive quality score with detailed recommendations
-- **Pattern Detection**: Design patterns, anti-patterns, code smells, and best practices
-- **Complexity Analysis**: Cyclomatic and cognitive complexity measurements
-- **Interactive Visualizations**: Quality gauges, complexity distributions, pattern charts
-- **Documentation Assessment**: Code documentation and README analysis
-- **Testing Analysis**: Test coverage and testing patterns
-
-## 🛠️ Technical Architecture
-
-### **Core Components**
-
+### **Core Architecture**
 ```
 repo-analyzer/
-├── start_servers.py      # 🚀 Simple MCP Server Starter
-├── app.py               # Main Streamlit application
-├── requirements.txt     # Python dependencies
-├── README.md           # Project documentation
+├── app.py                    # Main Streamlit application
+├── start_servers.py          # MCP server startup script
+├── requirements.txt          # Python dependencies
 └── src/
-    ├── agent/                 # AI agent implementation
-    │   └── ai_agent.py       # AI agent with MCP integration
-    ├── analysis/             # Analysis engine and tools
-    │   ├── analysis_engine.py # Analysis engine
-    │   ├── code_analyzer.py  # Code quality analysis
-    │   └── repository_visualizer.py # Visualization generator
-    ├── servers/              # FastMCP v2 servers
-    │   ├── file_content_server.py
-    │   ├── repository_structure_server.py
-    │   ├── commit_history_server.py
-    │   ├── code_search_server.py
-    │   └── server_manager.py
-    ├── ui/                   # User interface components
-    │   ├── repository_selector.py
-    │   ├── chat_interface.py
-    │   ├── analysis_interface.py
-    │   ├── settings_sidebar.py
-    │   └── modern_styles.css
-    └── utils/                # Utilities and configuration
-        ├── config.py         # Configuration management
-        └── repository_manager.py # Repository management
+    ├── agent/               # AI agent with MCP integration
+    ├── analysis/            # Analysis engine and tools
+    ├── servers/             # FastMCP v2 servers
+    ├── ui/                  # User interface components
+    └── utils/               # Utilities and configuration
 ```
 
-### **Key Features**
-- **Simple Setup**: One-command server startup
-- **Modular Design**: Each component has a single responsibility
-- **Easy Configuration**: Simple .env file for API keys
-- **Clean Code**: Simplified functions and classes for better maintainability
-
-### **Server Management**
-
-The project includes a simple server management system:
-
-- **`start_servers.py`**: Simple Python script for starting all MCP servers
-  - Cross-platform compatibility (Windows, macOS, Linux)
-  - Automatic server startup with status reporting
-  - Graceful shutdown with Ctrl+C
-  - Shows process IDs for monitoring
-  - UTF-8 encoded for maximum compatibility
-
 ### **MCP Servers**
+- **File Content Server**: Retrieve and analyze file contents
+- **Repository Structure Server**: Analyze directory trees and organization
+- **Commit History Server**: Track changes and development patterns
+- **Code Search Server**: Search for code patterns and dependencies
 
-1. **File Content Server** 📄
-   - Retrieve file contents
-   - Analyze file structure
-   - Get README content
-   - Code analysis and metrics
-
-2. **Repository Structure Server** 📁
-   - Directory tree analysis
-   - File structure analysis
-   - Project organization insights
-
-3. **Commit History Server** 📝
-   - Recent commit analysis
-   - Commit statistics
-   - Development pattern analysis
-
-4. **Code Search Server** 🔍
-   - Code pattern search
-   - Function and class discovery
-   - Dependency analysis
-   - Code metrics and complexity analysis
-
-### **Enhanced Components**
-
-5. **Enhanced AI Agent** 🤖
-   - Comprehensive data gathering from all MCP servers
-   - Advanced LLM integration with Groq models
-   - Smart data synthesis and reasoning
-   - Real-time progress tracking
-
-6. **Code Analyzer** 📊
-   - Code quality metrics and scoring
-   - Complexity analysis (cyclomatic, cognitive)
-   - Pattern detection (design patterns, anti-patterns)
-   - Interactive visualizations
-
-7. **Repository Visualizer** 🗺️
-   - Interactive directory tree maps
-   - Dependency network graphs
-   - Activity heatmaps
-   - Language distribution charts
-
-## ⚙️ Configuration
-
-### **Analysis Presets**
-
+### **Analysis Types**
 - **Quick**: Fast analysis with basic insights (20 files, 2 depth)
 - **Standard**: Comprehensive analysis with metrics (50 files, 3 depth)
 - **Deep**: In-depth analysis with all features (100 files, 5 depth)
 - **Security**: Security-focused analysis (75 files, 4 depth)
-
-### **Settings**
-
-- **Max File Size**: Maximum file size to analyze (default: 1MB)
-- **Max Files**: Maximum number of files per analysis (default: 100)
-- **Include Hidden Files**: Whether to analyze hidden files
-- **Enable Caching**: Cache results for faster subsequent runs
-- **Analysis Timeout**: Maximum time for analysis (default: 5 minutes)
 
 ## 🔑 API Requirements
 
 ### **Required**
 - **Groq API Key**: For AI-powered analysis and Q&A
   - Get from: https://console.groq.com/
-  - Supports models: llama-3.1-70b-versatile, llama-3.1-8b-instant, etc.
+  - Supports models: llama-3.1-70b-versatile, llama-3.1-8b-instant
 
 ### **Optional**
 - **GitHub Token**: For higher rate limits and private repository access
@@ -360,124 +228,56 @@ The project includes a simple server management system:
 
 ## 📊 Example Use Cases
 
-### **1. Repository Exploration**
+### **Repository Exploration**
 ```
 Question: "What is this repository about and what are its main features?"
 Analysis: Quick overview with AI summary
 ```
 
-### **2. Code Quality Assessment**
+### **Code Quality Assessment**
 ```
 Question: "How well is this codebase structured and what are the quality metrics?"
 Analysis: Code quality analysis with metrics and patterns
 ```
 
-### **3. Security Review**
+### **Security Review**
 ```
 Question: "Are there any security vulnerabilities in this codebase?"
 Analysis: Security analysis with pattern detection
 ```
 
-### **4. Dependency Analysis**
+### **Dependency Analysis**
 ```
 Question: "What dependencies does this project use and are there any security issues?"
 Analysis: Comprehensive analysis with dependency focus
 ```
 
-### **5. Development Patterns**
-```
-Question: "What are the recent development patterns and commit frequency?"
-Analysis: Commit history analysis with statistics
-```
-
 ## 🧪 Testing
 
-Run the comprehensive test suite to verify all enhanced components:
-
+Run the comprehensive test suite:
 ```bash
 python test_enhanced_system.py
 ```
 
-This will test:
-- **Module Imports**: All enhanced modules and components
-- **FastMCP Tools**: All MCP server integrations
-- **AI Agent**: Enhanced AI agent with comprehensive data gathering
-- **Code Analyzer**: Advanced code quality and complexity analysis
-- **Repository Visualizer**: Interactive visualization generation
-- **Analysis Engine**: Complete analysis engine with new features
-- **Configuration**: Settings and preset management
-- **Repository Manager**: Session and data management
-- **Component Integration**: All components working together
-- **Function Exports**: All public functions and APIs
-
 ## 🚀 Advanced Usage
 
-### **Enhanced Analysis**
+### **Programmatic Analysis**
 ```python
-from src.analysis.analysis_engine import (
-    analyze_repository, 
-    code_quality_analysis,
-    generate_visualizations,
-    smart_summarization
-)
+from src.analysis.analysis_engine import analyze_repository
+from src.agent.ai_agent import ask_repository_question
 
-# Comprehensive analysis with all features
+# Comprehensive analysis
 result = analyze_repository(
     repo_url="https://github.com/example/repo",
     analysis_type="comprehensive",
     preset="deep"
 )
 
-# Advanced code quality analysis
-quality_result = code_quality_analysis("https://github.com/example/repo")
-
-# Generate interactive visualizations
-viz_result = generate_visualizations("https://github.com/example/repo")
-
-# Smart summarization with AI insights
-summary_result = smart_summarization("https://github.com/example/repo")
-```
-
-### **Session Management**
-```python
-from src.utils.repository_manager import (
-    set_current_repository,
-    get_analysis_history,
-    export_session_data
-)
-
-# Set repository
-set_current_repository("https://github.com/example/repo")
-
-# Get analysis history
-history = get_analysis_history()
-
-# Export session data
-session_data = export_session_data()
-```
-
-### **Enhanced MCP Integration**
-```python
-from src.agent.ai_agent import (
-    FastMCPTools, 
-    RepositoryAnalyzerAgent,
-    ask_repository_question,
-    generate_repository_summary
-)
-
-# Use enhanced MCP tools directly
-tools = FastMCPTools()
-file_content = tools.get_file_content("https://github.com/example/repo", "README.md")
-
-# Use AI agent for comprehensive Q&A
-agent = RepositoryAnalyzerAgent()
-answer, tools_used = agent.ask_question(
-    "What are the main architectural patterns?", 
+# Ask specific questions
+answer, tools_used = ask_repository_question(
+    "What are the main architectural patterns?",
     "https://github.com/example/repo"
 )
-
-# Generate comprehensive summary
-summary, tools_used = generate_repository_summary("https://github.com/example/repo")
 ```
 
 ## 🤝 Contributing
@@ -491,81 +291,6 @@ summary, tools_used = generate_repository_summary("https://github.com/example/re
 ## 📝 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-- **Issues**: Report bugs and feature requests on GitHub
-- **Documentation**: Check the inline documentation and comments
-- **Testing**: Run the test suite to verify functionality
-
-## 🔮 Recent Enhancements & Future Plans
-
-### ✅ **Recently Implemented**
-- [x] **Enhanced AI Agent**: Comprehensive data gathering from all MCP servers
-- [x] **Interactive Visualizations**: Repository maps, dependency graphs, activity heatmaps
-- [x] **Advanced Code Analysis**: Quality metrics, complexity analysis, pattern detection
-- [x] **Smart Summarization**: AI-powered comprehensive repository summaries
-- [x] **Enhanced UI**: Multiple analysis tabs with real-time progress tracking
-- [x] **Comprehensive Testing**: Full test suite for all enhanced components
-
-### 🚀 **Future Enhancements**
-- [ ] Integration with more vulnerability databases
-- [ ] Support for more programming languages
-- [ ] Advanced code visualization with 3D representations
-- [ ] Team collaboration features and shared analysis sessions
-- [ ] Integration with CI/CD pipelines for automated analysis
-- [ ] Advanced caching and performance optimizations
-- [ ] Machine learning-based code quality predictions
-- [ ] Real-time collaboration and commenting features
-
-## 🎯 **How This System Ensures Full MCP Utilization**
-
-### **Guaranteed Comprehensive Data Gathering**
-Every Q&A, analysis, and summary request automatically triggers data collection from **all available MCP servers**:
-
-1. **File Content Server**: Retrieves README, key files, and code content
-2. **Repository Structure Server**: Analyzes directory trees and file organization
-3. **Commit History Server**: Gathers recent commits and development patterns
-4. **Code Search Server**: Searches for patterns, functions, and dependencies
-
-### **AI Agent Integration**
-The enhanced AI agent:
-- **Always calls all MCP servers** before generating responses
-- **Executes tool calls in parallel** using ThreadPoolExecutor for faster data collection
-- **Synthesizes data** from multiple sources for comprehensive answers
-- **Provides evidence-based responses** with supporting code examples
-- **Tracks tool utilization** for transparency and debugging
-- **Returns tool usage list** with every response for complete transparency
-
-### **Example: Q&A Process**
-When you ask "What are the main architectural patterns in this repo?":
-
-1. **Parallel Data Gathering Phase**:
-   - All MCP servers execute simultaneously:
-     - File Content Server → Analyzes main files and README
-     - Structure Server → Maps directory organization
-     - Commit Server → Identifies development patterns
-     - Code Search Server → Finds design patterns and architecture
-   - Results are collected as they complete for optimal performance
-
-2. **AI Synthesis Phase**:
-   - All data is combined and analyzed by the LLM
-   - AI generates comprehensive answer with examples
-   - Response includes evidence from multiple sources
-
-3. **Result Display**:
-   - Detailed answer with code examples
-   - Complete list of MCP tools used for transparency
-   - Supporting visualizations when relevant
-   - Performance metrics showing parallel execution benefits
-
-### **Quality Assurance**
-- **Comprehensive Testing**: Full test suite verifies all components
-- **Real-time Progress**: Users see exactly what data is being gathered
-- **Tool Transparency**: Every result shows which MCP servers were used
-- **Parallel Execution**: Optimized performance with concurrent tool calls
-- **Error Handling**: Graceful fallbacks if any server is unavailable
-- **Performance Monitoring**: Track execution time and tool utilization metrics
 
 ---
 
