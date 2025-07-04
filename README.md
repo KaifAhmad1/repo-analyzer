@@ -101,7 +101,7 @@ flowchart TD
 |----------------------|------------------------|----------------------------------------------|
 | **Frontend**         | Streamlit              | User interface (web app)                     |
 | **Core Logic**       | Python                 | Main programming language                    |
-| **AI/LLM**           | Groq API (LLM)         | Natural language understanding & generation  |
+| **AI/LLM**           | Groq API (LLM), Agno        | Natural language understanding & generation  |
 | **Microservices**    | Python (Flask/FastAPI) | MCP servers for modular data processing      |
 | **Data Source**      | GitHub API             | Repository data, files, commits, etc.        |
 | **Visualization**    | Streamlit, Mermaid     | Interactive charts, flowcharts               |
