@@ -167,7 +167,7 @@ graph TD
 
 ```mermaid
 flowchart TD
-    A[User Input<br/>(Streamlit Web App)] --> B[Request Handling<br/>(Python Core)]
+    A[User Input<br/>Streamlit Web App] --> B[Request Handling<br/>Python Core]
     B --> C[AI Agent & Analysis Engine]
     C --> D1[File Content Server]
     C --> D2[Repo Structure Server]
@@ -183,7 +183,7 @@ flowchart TD
     D3 --> G
     D4 --> G
     F --> G
-    G --> H[Response Generation<br/>(Streamlit Web App)]
+    G --> H[Response Generation<br/>Streamlit Web App]
 ```
 
 ---
@@ -352,14 +352,6 @@ answer, tools_used = ask_repository_question(
     "https://github.com/example/repo"
 )
 ```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
 
 ## 📝 License
 
