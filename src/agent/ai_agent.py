@@ -286,37 +286,122 @@ class FastMCPTools:
             "fastest_tool": min(self.call_times.items(), key=lambda x: x[1]) if self.call_times else None
         }
     
-    def optimize_tool_selection(self, question: str) -> List[str]:
-        """Intelligently select tools based on the question type"""
+    def optimize_tool_selection(self, question: str, analysis_type: str = "auto") -> List[str]:
+        """Intelligently select tools based on the question type and analysis mode"""
         question_lower = question.lower()
         
-        # Define tool categories and their keywords
-        tool_categories = {
-            "structure": ["structure", "organization", "files", "directories", "layout"],
-            "content": ["content", "code", "implementation", "function", "class"],
-            "history": ["history", "commits", "changes", "development", "timeline"],
-            "search": ["search", "find", "pattern", "dependency", "import"]
+        # Define analysis types and their optimal tool sets
+        analysis_tool_sets = {
+            "qa_chat": {
+                "description": "Quick Q&A with focused tools",
+                "essential": ["get_readme_content", "get_file_structure", "get_repository_overview"],
+                "optional": ["get_directory_tree", "get_recent_commits"],
+                "keywords": ["what", "how", "where", "when", "why", "show", "tell", "explain"]
+            },
+            "summarization": {
+                "description": "Comprehensive repository summary",
+                "essential": ["get_readme_content", "get_file_structure", "get_repository_overview", "get_directory_tree"],
+                "optional": ["get_recent_commits", "get_commit_statistics", "search_dependencies"],
+                "keywords": ["summarize", "overview", "summary", "describe", "explain what this does"]
+            },
+            "chart_generation": {
+                "description": "Data for charts and visualizations",
+                "essential": ["get_commit_statistics", "get_code_metrics", "get_recent_commits"],
+                "optional": ["get_development_patterns", "analyze_code_complexity"],
+                "keywords": ["chart", "graph", "visualize", "statistics", "metrics", "trends", "activity"]
+            },
+            "quick_analysis": {
+                "description": "Fast overview with minimal tools",
+                "essential": ["get_readme_content", "get_file_structure"],
+                "optional": ["get_repository_overview"],
+                "keywords": ["quick", "fast", "overview", "basic", "simple"]
+            },
+            "code_analysis": {
+                "description": "Deep code analysis and patterns",
+                "essential": ["get_code_metrics", "search_code", "search_dependencies"],
+                "optional": ["analyze_code_complexity", "get_code_patterns", "find_functions"],
+                "keywords": ["code", "function", "class", "pattern", "architecture", "complexity", "quality"]
+            },
+            "structure_analysis": {
+                "description": "Project structure and organization",
+                "essential": ["get_file_structure", "get_directory_tree", "analyze_project_structure"],
+                "optional": ["get_repository_overview"],
+                "keywords": ["structure", "organization", "layout", "files", "directories", "folders"]
+            },
+            "history_analysis": {
+                "description": "Development history and patterns",
+                "essential": ["get_recent_commits", "get_commit_statistics", "get_development_patterns"],
+                "optional": ["get_commit_details"],
+                "keywords": ["history", "commits", "changes", "timeline", "development", "activity", "recent"]
+            },
+            "dependency_analysis": {
+                "description": "Dependencies and requirements",
+                "essential": ["search_dependencies", "get_readme_content"],
+                "optional": ["get_file_structure"],
+                "keywords": ["dependencies", "requirements", "packages", "libraries", "imports", "setup"]
+            },
+            "search_analysis": {
+                "description": "Code search and discovery",
+                "essential": ["search_code", "find_functions", "search_files"],
+                "optional": ["get_code_patterns"],
+                "keywords": ["search", "find", "locate", "discover", "pattern", "function", "method"]
+            }
         }
         
-        selected_tools = []
+        # Auto-detect analysis type if not specified
+        if analysis_type == "auto":
+            analysis_type = self._detect_analysis_type(question_lower, analysis_tool_sets)
         
-        # Determine which categories are relevant
-        for category, keywords in tool_categories.items():
-            if any(keyword in question_lower for keyword in keywords):
-                if category == "structure":
-                    selected_tools.extend(["get_directory_tree", "get_file_structure", "analyze_project_structure"])
-                elif category == "content":
-                    selected_tools.extend(["get_readme_content", "get_code_metrics", "analyze_code_complexity"])
-                elif category == "history":
-                    selected_tools.extend(["get_recent_commits", "get_commit_statistics", "get_development_patterns"])
-                elif category == "search":
-                    selected_tools.extend(["search_dependencies", "get_code_patterns"])
+        # Get the tool set for the detected analysis type
+        if analysis_type in analysis_tool_sets:
+            tool_set = analysis_tool_sets[analysis_type]
+            selected_tools = tool_set["essential"].copy()
+            
+            # Add optional tools if they might be relevant
+            for optional_tool in tool_set["optional"]:
+                if self._is_tool_relevant(optional_tool, question_lower):
+                    selected_tools.append(optional_tool)
+            
+            return selected_tools
+        else:
+            # Fallback to essential tools
+            return ["get_readme_content", "get_file_structure", "get_repository_overview"]
+    
+    def _detect_analysis_type(self, question_lower: str, analysis_tool_sets: dict) -> str:
+        """Detect the most appropriate analysis type based on question keywords"""
+        best_match = "qa_chat"  # Default
+        best_score = 0
         
-        # Always include essential tools if none selected
-        if not selected_tools:
-            selected_tools = ["get_readme_content", "get_file_structure", "get_repository_overview"]
+        for analysis_type, config in analysis_tool_sets.items():
+            score = 0
+            for keyword in config["keywords"]:
+                if keyword in question_lower:
+                    score += 1
+            
+            # Weight by keyword relevance
+            if score > best_score:
+                best_score = score
+                best_match = analysis_type
         
-        return selected_tools
+        return best_match
+    
+    def _is_tool_relevant(self, tool_name: str, question_lower: str) -> bool:
+        """Check if a specific tool is relevant to the question"""
+        tool_keywords = {
+            "get_directory_tree": ["tree", "structure", "folders", "directories"],
+            "get_recent_commits": ["recent", "latest", "commits", "changes"],
+            "get_commit_statistics": ["statistics", "metrics", "activity", "trends"],
+            "search_dependencies": ["dependencies", "packages", "requirements"],
+            "analyze_code_complexity": ["complexity", "quality", "maintainability"],
+            "get_code_patterns": ["patterns", "architecture", "design"],
+            "find_functions": ["functions", "methods", "procedures"],
+            "get_development_patterns": ["development", "workflow", "process"]
+        }
+        
+        if tool_name in tool_keywords:
+            return any(keyword in question_lower for keyword in tool_keywords[tool_name])
+        
+        return False
     
     def get_performance_insights(self) -> str:
         """Get human-readable performance insights"""
@@ -433,13 +518,11 @@ Always strive to provide the most accurate and helpful analysis possible with cl
         
         start_time = time.time()
         
-        # Use all available tools for comprehensive analysis
+        # Use optimized set of tools for comprehensive analysis (reduced from 15 to 10)
         all_tools = [
             "get_readme_content", "get_file_structure", "get_repository_overview",
-            "get_directory_tree", "analyze_project_structure", "get_code_metrics",
-            "analyze_code_complexity", "get_code_patterns", "get_recent_commits",
-            "get_commit_statistics", "get_development_patterns", "search_dependencies",
-            "search_code", "find_functions", "analyze_file_content"
+            "get_directory_tree", "analyze_project_structure", "get_recent_commits",
+            "get_commit_statistics", "search_dependencies", "search_code", "get_code_metrics"
         ]
         
         # Create comprehensive tool calls with optimized limits
@@ -448,18 +531,13 @@ Always strive to provide the most accurate and helpful analysis possible with cl
             "get_readme_content": ("file_content", "get_readme_content", {"repo_url": repo_url}),
             "get_file_structure": ("repository_structure", "get_file_structure", {"repo_url": repo_url}),
             "get_repository_overview": ("repository_structure", "get_repository_overview", {"repo_url": repo_url}),
-            "get_directory_tree": ("repository_structure", "get_directory_tree", {"repo_url": repo_url, "max_depth": 4}),
+            "get_directory_tree": ("repository_structure", "get_directory_tree", {"repo_url": repo_url, "max_depth": 3}),
             "analyze_project_structure": ("repository_structure", "analyze_project_structure", {"repo_url": repo_url}),
             "get_code_metrics": ("code_search", "get_code_metrics", {"repo_url": repo_url}),
-            "analyze_code_complexity": ("code_search", "analyze_code_complexity", {"repo_url": repo_url}),
-            "get_code_patterns": ("code_search", "get_code_patterns", {"repo_url": repo_url}),
-            "get_recent_commits": ("commit_history", "get_recent_commits", {"repo_url": repo_url, "limit": 25}),
-            "get_commit_statistics": ("commit_history", "get_commit_statistics", {"repo_url": repo_url, "days": 60}),
-            "get_development_patterns": ("commit_history", "get_development_patterns", {"repo_url": repo_url}),
+            "get_recent_commits": ("commit_history", "get_recent_commits", {"repo_url": repo_url, "limit": 15}),
+            "get_commit_statistics": ("commit_history", "get_commit_statistics", {"repo_url": repo_url, "days": 30}),
             "search_dependencies": ("code_search", "search_dependencies", {"repo_url": repo_url}),
-            "search_code": ("code_search", "search_code", {"repo_url": repo_url, "query": "def ", "language": "python"}),
-            "find_functions": ("code_search", "find_functions", {"repo_url": repo_url, "function_name": "main", "language": "python"}),
-            "analyze_file_content": ("file_content", "analyze_file_content", {"repo_url": repo_url, "file_path": "README.md"})
+            "search_code": ("code_search", "search_code", {"repo_url": repo_url, "query": "def ", "language": "python"})
         }
         
         # Add all tools to batch
@@ -468,7 +546,7 @@ Always strive to provide the most accurate and helpful analysis possible with cl
                 tool_calls.append(tool_mapping[tool_name])
         
         if status_callback:
-            status_callback(f"🚀 Executing {len(tool_calls)} tools in parallel with optimized batching...")
+            status_callback(f"🚀 Executing {len(tool_calls)} optimized tools in parallel...")
         
         # Execute tools using optimized batch processing with increased workers
         tool_results = self.tools._batch_call_tools(tool_calls)
@@ -1040,6 +1118,545 @@ Please structure your response with:
 
 Keep it concise but informative, focusing on the most important aspects for a quick understanding."""
 
+    def ask_question_fast(self, question: str, repo_url: str, user_id: str = "default", status_callback=None) -> Tuple[str, List[str]]:
+        """Ask a question with optimized fast mode using minimal tools for quick responses"""
+        
+        if status_callback:
+            status_callback("⚡ Fast mode: Gathering essential data...")
+        
+        try:
+            import signal
+            import threading
+            import time
+            
+            # Set a shorter timeout for fast mode
+            timeout_seconds = 30  # 30 seconds timeout for fast mode
+            
+            # Create a timeout handler
+            def timeout_handler():
+                raise TimeoutError("Fast analysis timed out after 30 seconds")
+            
+            # Set up timeout
+            timer = threading.Timer(timeout_seconds, timeout_handler)
+            timer.start()
+            
+            try:
+                # Use only essential tools for fast mode
+                essential_tools = [
+                    ("file_content", "get_readme_content", {"repo_url": repo_url}),
+                    ("repository_structure", "get_file_structure", {"repo_url": repo_url}),
+                    ("repository_structure", "get_repository_overview", {"repo_url": repo_url})
+                ]
+                
+                if status_callback:
+                    status_callback("📁 Executing essential tools in parallel...")
+                
+                # Execute only essential tools
+                tool_results = self.tools._batch_call_tools(essential_tools)
+                
+                # Organize minimal data
+                data = {
+                    "readme": tool_results.get("file_content.get_readme_content", {}),
+                    "structure": tool_results.get("repository_structure.get_file_structure", {}),
+                    "overview": tool_results.get("repository_structure.get_repository_overview", {})
+                }
+                
+                if status_callback:
+                    status_callback("🧠 AI agent analyzing with fast mode...")
+                
+                # Create optimized prompt for fast mode
+                prompt = self._create_fast_prompt(question, data)
+                
+                # Get AI response with system prompt
+                system_prompt = self._get_system_prompt()
+                
+                if self.agent is None:
+                    # Fallback: use direct Groq API call with timeout
+                    try:
+                        from agno.models.groq import Groq
+                        groq_model = Groq(id=self.model_name)
+                        response = groq_model.complete(f"{system_prompt}\n\n{prompt}")
+                        timer.cancel()
+                        return response.content, self.tools.get_tools_used()
+                    except Exception as fallback_error:
+                        error_msg = f"Error during fast analysis (fallback failed): {str(fallback_error)}"
+                        if status_callback:
+                            status_callback(f"❌ {error_msg}")
+                        timer.cancel()
+                        return error_msg, []
+                else:
+                    try:
+                        response = self.agent.run(f"{system_prompt}\n\n{prompt}")
+                        timer.cancel()
+                        return response.content, self.tools.get_tools_used()
+                    except Exception as agent_error:
+                        # Try fallback if agent fails
+                        try:
+                            from agno.models.groq import Groq
+                            groq_model = Groq(id=self.model_name)
+                            response = groq_model.complete(f"{system_prompt}\n\n{prompt}")
+                            timer.cancel()
+                            return response.content, self.tools.get_tools_used()
+                        except Exception as fallback_error:
+                            error_msg = f"Error during fast analysis (agent and fallback failed): {str(fallback_error)}"
+                            if status_callback:
+                                status_callback(f"❌ {error_msg}")
+                            timer.cancel()
+                            return error_msg, []
+                
+            except TimeoutError:
+                timer.cancel()
+                error_msg = "Fast analysis timed out. Please try a simpler question or use Standard mode for comprehensive analysis."
+                if status_callback:
+                    status_callback(f"⏰ {error_msg}")
+                return error_msg, []
+            except Exception as e:
+                timer.cancel()
+                error_msg = f"Error during fast analysis: {str(e)}"
+                if status_callback:
+                    status_callback(f"❌ {error_msg}")
+                return error_msg, []
+                
+        except Exception as e:
+            error_msg = f"Error during fast analysis: {str(e)}"
+            if status_callback:
+                status_callback(f"❌ {error_msg}")
+            return error_msg, []
+
+    def _create_fast_prompt(self, question: str, data: Dict[str, Any]) -> str:
+        """Create optimized prompt for fast mode with minimal data"""
+        return f"""Based on the following essential repository data, please answer this question: "{question}"
+
+Repository Data:
+{json.dumps(data, indent=2)}
+
+Please provide a concise, accurate answer based on the available data. Structure your response with:
+
+## Answer
+[Your main answer to the question]
+
+## Key Points
+- [Essential findings from the codebase]
+- [Main purpose and functionality]
+
+## Technical Overview
+- [Basic structure and architecture]
+- [Key technologies and dependencies]
+
+Keep your response focused and concise. If you need more detailed analysis, suggest using Standard mode for comprehensive analysis."""
+
+    def ask_question_smart(self, question: str, repo_url: str, user_id: str = "default", status_callback=None, analysis_type: str = "auto") -> Tuple[str, List[str]]:
+        """Ask a question with intelligent tool selection based on analysis type"""
+        
+        if status_callback:
+            status_callback("🧠 Smart analysis: Detecting optimal tools...")
+        
+        try:
+            import signal
+            import threading
+            import time
+            
+            # Set timeout based on analysis type
+            timeout_seconds = 45 if analysis_type == "auto" else 60
+            
+            # Create a timeout handler
+            def timeout_handler():
+                raise TimeoutError(f"Smart analysis timed out after {timeout_seconds} seconds")
+            
+            # Set up timeout
+            timer = threading.Timer(timeout_seconds, timeout_handler)
+            timer.start()
+            
+            try:
+                # Use intelligent tool selection
+                selected_tools = self.tools.optimize_tool_selection(question, analysis_type)
+                
+                if status_callback:
+                    status_callback(f"🎯 Using {len(selected_tools)} optimized tools for {analysis_type} analysis...")
+                
+                # Create tool calls based on selected tools
+                tool_calls = []
+                tool_mapping = {
+                    "get_readme_content": ("file_content", "get_readme_content", {"repo_url": repo_url}),
+                    "get_file_structure": ("repository_structure", "get_file_structure", {"repo_url": repo_url}),
+                    "get_repository_overview": ("repository_structure", "get_repository_overview", {"repo_url": repo_url}),
+                    "get_directory_tree": ("repository_structure", "get_directory_tree", {"repo_url": repo_url, "max_depth": 3}),
+                    "analyze_project_structure": ("repository_structure", "analyze_project_structure", {"repo_url": repo_url}),
+                    "get_code_metrics": ("code_search", "get_code_metrics", {"repo_url": repo_url}),
+                    "get_recent_commits": ("commit_history", "get_recent_commits", {"repo_url": repo_url, "limit": 15}),
+                    "get_commit_statistics": ("commit_history", "get_commit_statistics", {"repo_url": repo_url, "days": 30}),
+                    "search_dependencies": ("code_search", "search_dependencies", {"repo_url": repo_url}),
+                    "search_code": ("code_search", "search_code", {"repo_url": repo_url, "query": "def ", "language": "python"}),
+                    "analyze_code_complexity": ("code_search", "analyze_code_complexity", {"repo_url": repo_url}),
+                    "get_code_patterns": ("code_search", "get_code_patterns", {"repo_url": repo_url}),
+                    "find_functions": ("code_search", "find_functions", {"repo_url": repo_url, "function_name": "main", "language": "python"}),
+                    "get_development_patterns": ("commit_history", "get_development_patterns", {"repo_url": repo_url}),
+                    "search_files": ("code_search", "search_files", {"repo_url": repo_url, "filename_pattern": "*.py"})
+                }
+                
+                # Add selected tools to batch
+                for tool_name in selected_tools:
+                    if tool_name in tool_mapping:
+                        tool_calls.append(tool_mapping[tool_name])
+                
+                if status_callback:
+                    status_callback(f"🚀 Executing {len(tool_calls)} smart-selected tools...")
+                
+                # Execute tools using optimized batch processing
+                tool_results = self.tools._batch_call_tools(tool_calls)
+                
+                # Organize results
+                data = self._organize_smart_results(tool_results, selected_tools)
+                
+                if status_callback:
+                    status_callback("🧠 AI agent analyzing with smart tool selection...")
+                
+                # Create smart prompt based on analysis type
+                prompt = self._create_smart_prompt(question, data, analysis_type)
+                
+                # Get AI response with system prompt
+                system_prompt = self._get_system_prompt()
+                
+                if self.agent is None:
+                    # Fallback: use direct Groq API call with timeout
+                    try:
+                        from agno.models.groq import Groq
+                        groq_model = Groq(id=self.model_name)
+                        response = groq_model.complete(f"{system_prompt}\n\n{prompt}")
+                        timer.cancel()
+                        return response.content, selected_tools
+                    except Exception as fallback_error:
+                        error_msg = f"Error during smart analysis (fallback failed): {str(fallback_error)}"
+                        if status_callback:
+                            status_callback(f"❌ {error_msg}")
+                        timer.cancel()
+                        return error_msg, []
+                else:
+                    try:
+                        response = self.agent.run(f"{system_prompt}\n\n{prompt}")
+                        timer.cancel()
+                        return response.content, selected_tools
+                    except Exception as agent_error:
+                        # Try fallback if agent fails
+                        try:
+                            from agno.models.groq import Groq
+                            groq_model = Groq(id=self.model_name)
+                            response = groq_model.complete(f"{system_prompt}\n\n{prompt}")
+                            timer.cancel()
+                            return response.content, selected_tools
+                        except Exception as fallback_error:
+                            error_msg = f"Error during smart analysis (agent and fallback failed): {str(fallback_error)}"
+                            if status_callback:
+                                status_callback(f"❌ {error_msg}")
+                            timer.cancel()
+                            return error_msg, []
+                
+            except TimeoutError:
+                timer.cancel()
+                error_msg = f"Smart analysis timed out. Try a simpler question or different analysis type."
+                if status_callback:
+                    status_callback(f"⏰ {error_msg}")
+                return error_msg, []
+            except Exception as e:
+                timer.cancel()
+                error_msg = f"Error during smart analysis: {str(e)}"
+                if status_callback:
+                    status_callback(f"❌ {error_msg}")
+                return error_msg, []
+                
+        except Exception as e:
+            error_msg = f"Error during smart analysis: {str(e)}"
+            if status_callback:
+                status_callback(f"❌ {error_msg}")
+            return error_msg, []
+
+    def generate_smart_summary(self, repo_url: str, user_id: str = "default", status_callback=None) -> Tuple[str, List[str]]:
+        """Generate repository summary using intelligent tool selection"""
+        
+        if status_callback:
+            status_callback("📊 Smart summary: Selecting optimal tools...")
+        
+        try:
+            # Use summarization-specific tools
+            selected_tools = self.tools.optimize_tool_selection("summarize this repository", "summarization")
+            
+            if status_callback:
+                status_callback(f"📋 Using {len(selected_tools)} tools for comprehensive summary...")
+            
+            # Create tool calls for summary
+            tool_calls = []
+            tool_mapping = {
+                "get_readme_content": ("file_content", "get_readme_content", {"repo_url": repo_url}),
+                "get_file_structure": ("repository_structure", "get_file_structure", {"repo_url": repo_url}),
+                "get_repository_overview": ("repository_structure", "get_repository_overview", {"repo_url": repo_url}),
+                "get_directory_tree": ("repository_structure", "get_directory_tree", {"repo_url": repo_url, "max_depth": 3}),
+                "get_recent_commits": ("commit_history", "get_recent_commits", {"repo_url": repo_url, "limit": 15}),
+                "get_commit_statistics": ("commit_history", "get_commit_statistics", {"repo_url": repo_url, "days": 30}),
+                "search_dependencies": ("code_search", "search_dependencies", {"repo_url": repo_url})
+            }
+            
+            # Add selected tools to batch
+            for tool_name in selected_tools:
+                if tool_name in tool_mapping:
+                    tool_calls.append(tool_mapping[tool_name])
+            
+            # Execute tools
+            tool_results = self.tools._batch_call_tools(tool_calls)
+            
+            # Organize results
+            data = self._organize_smart_results(tool_results, selected_tools)
+            
+            if status_callback:
+                status_callback("🤖 AI agent creating smart summary...")
+            
+            # Create summary prompt
+            summary_prompt = self._create_summary_prompt(data)
+            
+            # Get AI response
+            system_prompt = self._get_system_prompt()
+            
+            if self.agent is None:
+                # Fallback: use direct Groq API call
+                try:
+                    from agno.models.groq import Groq
+                    groq_model = Groq(id=self.model_name)
+                    response = groq_model.complete(f"{system_prompt}\n\n{summary_prompt}")
+                    return response.content, selected_tools
+                except Exception as fallback_error:
+                    error_msg = f"Error generating smart summary (fallback failed): {str(fallback_error)}"
+                    if status_callback:
+                        status_callback(f"❌ {error_msg}")
+                    return error_msg, []
+            else:
+                try:
+                    response = self.agent.run(f"{system_prompt}\n\n{summary_prompt}")
+                    return response.content, selected_tools
+                except Exception as agent_error:
+                    # Try fallback if agent fails
+                    try:
+                        from agno.models.groq import Groq
+                        groq_model = Groq(id=self.model_name)
+                        response = groq_model.complete(f"{system_prompt}\n\n{summary_prompt}")
+                        return response.content, selected_tools
+                    except Exception as fallback_error:
+                        error_msg = f"Error generating smart summary (agent and fallback failed): {str(fallback_error)}"
+                        if status_callback:
+                            status_callback(f"❌ {error_msg}")
+                        return error_msg, []
+            
+        except Exception as e:
+            error_msg = f"Error generating smart summary: {str(e)}"
+            if status_callback:
+                status_callback(f"❌ {error_msg}")
+            return error_msg, []
+
+    def generate_chart_data(self, repo_url: str, user_id: str = "default", status_callback=None) -> Tuple[str, List[str]]:
+        """Generate data suitable for charts and visualizations"""
+        
+        if status_callback:
+            status_callback("📈 Chart data: Gathering metrics and statistics...")
+        
+        try:
+            # Use chart-specific tools
+            selected_tools = self.tools.optimize_tool_selection("generate chart data", "chart_generation")
+            
+            if status_callback:
+                status_callback(f"📊 Using {len(selected_tools)} tools for chart data...")
+            
+            # Create tool calls for chart data
+            tool_calls = []
+            tool_mapping = {
+                "get_commit_statistics": ("commit_history", "get_commit_statistics", {"repo_url": repo_url, "days": 90}),
+                "get_code_metrics": ("code_search", "get_code_metrics", {"repo_url": repo_url}),
+                "get_recent_commits": ("commit_history", "get_recent_commits", {"repo_url": repo_url, "limit": 50}),
+                "get_development_patterns": ("commit_history", "get_development_patterns", {"repo_url": repo_url}),
+                "analyze_code_complexity": ("code_search", "analyze_code_complexity", {"repo_url": repo_url})
+            }
+            
+            # Add selected tools to batch
+            for tool_name in selected_tools:
+                if tool_name in tool_mapping:
+                    tool_calls.append(tool_mapping[tool_name])
+            
+            # Execute tools
+            tool_results = self.tools._batch_call_tools(tool_calls)
+            
+            # Organize results
+            data = self._organize_smart_results(tool_results, selected_tools)
+            
+            if status_callback:
+                status_callback("🤖 AI agent creating chart data...")
+            
+            # Create chart data prompt
+            chart_prompt = self._create_chart_data_prompt(data)
+            
+            # Get AI response
+            system_prompt = self._get_system_prompt()
+            
+            if self.agent is None:
+                # Fallback: use direct Groq API call
+                try:
+                    from agno.models.groq import Groq
+                    groq_model = Groq(id=self.model_name)
+                    response = groq_model.complete(f"{system_prompt}\n\n{chart_prompt}")
+                    return response.content, selected_tools
+                except Exception as fallback_error:
+                    error_msg = f"Error generating chart data (fallback failed): {str(fallback_error)}"
+                    if status_callback:
+                        status_callback(f"❌ {error_msg}")
+                    return error_msg, []
+            else:
+                try:
+                    response = self.agent.run(f"{system_prompt}\n\n{chart_prompt}")
+                    return response.content, selected_tools
+                except Exception as agent_error:
+                    # Try fallback if agent fails
+                    try:
+                        from agno.models.groq import Groq
+                        groq_model = Groq(id=self.model_name)
+                        response = groq_model.complete(f"{system_prompt}\n\n{chart_prompt}")
+                        return response.content, selected_tools
+                    except Exception as fallback_error:
+                        error_msg = f"Error generating chart data (agent and fallback failed): {str(fallback_error)}"
+                        if status_callback:
+                            status_callback(f"❌ {error_msg}")
+                        return error_msg, []
+            
+        except Exception as e:
+            error_msg = f"Error generating chart data: {str(e)}"
+            if status_callback:
+                status_callback(f"❌ {error_msg}")
+            return error_msg, []
+
+    def _organize_smart_results(self, tool_results: Dict[str, Any], selected_tools: List[str]) -> Dict[str, Any]:
+        """Organize smart tool results into structured data"""
+        data = {
+            "file_structure": {},
+            "repository_info": {},
+            "code_metrics": {},
+            "commit_history": {},
+            "dependencies": {},
+            "code_analysis": {},
+            "selected_tools": selected_tools,
+            "tool_count": len(selected_tools)
+        }
+        
+        # Map tool results to data structure
+        tool_mapping = {
+            "get_readme_content": ("repository_info", "readme"),
+            "get_file_structure": ("file_structure", "file_structure"),
+            "get_repository_overview": ("repository_info", "overview"),
+            "get_directory_tree": ("file_structure", "directory_tree"),
+            "analyze_project_structure": ("file_structure", "project_analysis"),
+            "get_code_metrics": ("code_metrics", "metrics"),
+            "get_recent_commits": ("commit_history", "recent_commits"),
+            "get_commit_statistics": ("commit_history", "statistics"),
+            "search_dependencies": ("dependencies", "dependency_files"),
+            "search_code": ("code_metrics", "code_search"),
+            "analyze_code_complexity": ("code_metrics", "complexity"),
+            "get_code_patterns": ("code_metrics", "patterns"),
+            "find_functions": ("code_metrics", "functions"),
+            "get_development_patterns": ("commit_history", "patterns"),
+            "search_files": ("code_metrics", "file_search")
+        }
+        
+        for tool_name in selected_tools:
+            if tool_name in tool_mapping:
+                category, key = tool_mapping[tool_name]
+                result_key = f"{self._get_server_name(tool_name)}.{tool_name}"
+                if result_key in tool_results:
+                    data[category][key] = tool_results[result_key]
+        
+        return data
+    
+    def _get_server_name(self, tool_name: str) -> str:
+        """Get the server name for a given tool"""
+        server_mapping = {
+            "get_readme_content": "file_content",
+            "analyze_file_content": "file_content",
+            "get_file_content": "file_content",
+            "get_file_structure": "repository_structure",
+            "get_repository_overview": "repository_structure",
+            "get_directory_tree": "repository_structure",
+            "analyze_project_structure": "repository_structure",
+            "get_recent_commits": "commit_history",
+            "get_commit_statistics": "commit_history",
+            "get_development_patterns": "commit_history",
+            "get_commit_details": "commit_history",
+            "search_code": "code_search",
+            "search_files": "code_search",
+            "find_functions": "code_search",
+            "get_code_metrics": "code_search",
+            "search_dependencies": "code_search",
+            "analyze_code_complexity": "code_search",
+            "get_code_patterns": "code_search"
+        }
+        return server_mapping.get(tool_name, "unknown")
+    
+    def _create_smart_prompt(self, question: str, data: Dict[str, Any], analysis_type: str) -> str:
+        """Create smart prompt based on analysis type"""
+        analysis_descriptions = {
+            "qa_chat": "Q&A analysis with focused tools",
+            "summarization": "Comprehensive repository summary",
+            "chart_generation": "Data for charts and visualizations",
+            "quick_analysis": "Fast overview with minimal tools",
+            "code_analysis": "Deep code analysis and patterns",
+            "structure_analysis": "Project structure and organization",
+            "history_analysis": "Development history and patterns",
+            "dependency_analysis": "Dependencies and requirements",
+            "search_analysis": "Code search and discovery"
+        }
+        
+        description = analysis_descriptions.get(analysis_type, "General analysis")
+        
+        return f"""Based on the following repository data gathered using {description} ({data['tool_count']} optimized tools), please answer this question: "{question}"
+
+Repository Data:
+{json.dumps(data, indent=2)}
+
+Please provide a focused, accurate answer based on the available data. Structure your response appropriately for {analysis_type} analysis.
+
+## Answer
+[Your main answer to the question]
+
+## Key Insights
+- [Relevant findings from the selected tools]
+- [Important patterns or observations]
+
+## Technical Details
+- [Specific technical information relevant to the question]
+- [Code examples or data points when applicable]
+
+## Analysis Type: {analysis_type}
+This analysis used {data['tool_count']} optimized tools: {', '.join(data['selected_tools'])}"""
+    
+    def _create_chart_data_prompt(self, data: Dict[str, Any]) -> str:
+        """Create prompt for generating chart data"""
+        return f"""Based on the following repository data, create structured data suitable for charts and visualizations:
+
+Repository Data:
+{json.dumps(data, indent=2)}
+
+Please provide:
+
+## 📊 Chart-Ready Data
+- **Commit Activity**: Time series data for commit frequency
+- **Code Metrics**: Language distribution, file counts, complexity metrics
+- **Development Patterns**: Activity trends, contributor patterns
+- **Dependencies**: Package usage and version information
+
+## 📈 Visualization Suggestions
+- Recommended chart types for each dataset
+- Key insights that can be visualized
+- Time periods and granularity suggestions
+
+## 🔍 Data Insights
+- Notable trends and patterns
+- Anomalies or interesting data points
+- Recommendations for further analysis
+
+Format the data in a way that can be easily converted to charts and graphs."""
+
 # Global agent instance
 _analyzer_agent = None
 
@@ -1050,10 +1667,14 @@ def create_analyzer_agent(model_name: str = "llama-3.1-70b-versatile") -> Reposi
         _analyzer_agent = RepositoryAnalyzerAgent(model_name)
     return _analyzer_agent
 
-def ask_repository_question(question: str, repo_url: str, model_name: str = "llama-3.1-70b-versatile", user_id: str = "default", status_callback=None) -> Tuple[str, List[str]]:
-    """Ask a question about a repository using comprehensive analysis"""
+def ask_repository_question(question: str, repo_url: str, model_name: str = "llama-3.1-70b-versatile", user_id: str = "default", status_callback=None, speed_mode: str = "standard") -> Tuple[str, List[str]]:
+    """Ask a question about a repository using the AI agent with speed mode support"""
     agent = create_analyzer_agent(model_name)
-    return agent.ask_question(question, repo_url, user_id, status_callback)
+    
+    if speed_mode == "fast":
+        return agent.ask_question_fast(question, repo_url, user_id, status_callback)
+    else:
+        return agent.ask_question(question, repo_url, user_id, status_callback)
 
 def generate_repository_summary(repo_url: str, model_name: str = "llama-3.1-70b-versatile", user_id: str = "default", status_callback=None) -> Tuple[str, List[str]]:
     """Generate comprehensive repository summary"""
@@ -1113,4 +1734,19 @@ def get_recent_activity(repository_url: str) -> str:
         activity = tools.get_recent_commits(repository_url, limit=20)
         return activity
     except Exception as e:
-        return f"Error getting recent activity: {str(e)}" 
+        return f"Error getting recent activity: {str(e)}"
+
+def ask_repository_question_smart(question: str, repo_url: str, model_name: str = "llama-3.1-70b-versatile", user_id: str = "default", status_callback=None, analysis_type: str = "auto") -> Tuple[str, List[str]]:
+    """Ask a question about a repository using intelligent tool selection"""
+    agent = create_analyzer_agent(model_name)
+    return agent.ask_question_smart(question, repo_url, user_id, status_callback, analysis_type)
+
+def generate_smart_repository_summary(repo_url: str, model_name: str = "llama-3.1-70b-versatile", user_id: str = "default", status_callback=None) -> Tuple[str, List[str]]:
+    """Generate repository summary using intelligent tool selection"""
+    agent = create_analyzer_agent(model_name)
+    return agent.generate_smart_summary(repo_url, user_id, status_callback)
+
+def generate_repository_chart_data(repo_url: str, model_name: str = "llama-3.1-70b-versatile", user_id: str = "default", status_callback=None) -> Tuple[str, List[str]]:
+    """Generate chart data for repository visualizations"""
+    agent = create_analyzer_agent(model_name)
+    return agent.generate_chart_data(repo_url, user_id, status_callback)

@@ -40,6 +40,16 @@ def render_chat_interface(repo_url: Optional[str] = None) -> None:
 
     st.markdown("### 💬 Repository Q&A Chat")
     st.markdown("Ask questions about this repository. The AI agent will analyze it for you with enhanced tools.")
+    
+    # Performance tip
+    with st.expander("💡 Performance Tip", expanded=False):
+        st.markdown("""
+        **For faster responses:**
+        - Use **Fast Mode** for simple questions (15-30s)
+        - Use **Standard Mode** for detailed analysis (30-60s)
+        - Try the **Quick Questions** buttons for instant insights
+        - Keep questions focused and specific
+        """)
 
     # --- Chat History State ---
     if "chat_history" not in st.session_state:
@@ -52,10 +62,36 @@ def render_chat_interface(repo_url: Optional[str] = None) -> None:
     st.markdown("#### ⚡ Analysis Speed")
     speed_option = st.radio(
         "Choose response speed:",
-        ["⚡ Fast Mode (30s)", "🔍 Standard Mode (60s)"],
+        ["⚡ Fast Mode (30s)", "�� Standard Mode (60s)", "🧠 Smart Mode (Auto)"],
         index=0,
-        help="Fast Mode uses optimized tools for quicker responses, Standard Mode uses comprehensive analysis"
+        help="Fast Mode uses minimal tools, Standard Mode uses comprehensive analysis, Smart Mode automatically selects optimal tools"
     )
+    
+    # Show current mode status
+    if "Fast Mode" in speed_option:
+        st.success("✅ Fast Mode Active - Quick responses with essential data only")
+    elif "Smart Mode" in speed_option:
+        st.info("🧠 Smart Mode Active - Intelligent tool selection based on question type")
+    else:
+        st.info("🔍 Standard Mode Active - Comprehensive analysis with detailed insights")
+    
+    # Analysis Type Selection for Smart Mode
+    if "Smart Mode" in speed_option:
+        st.markdown("#### 🎯 Smart Analysis Type")
+        analysis_type = st.selectbox(
+            "Choose analysis type (or let AI auto-detect):",
+            ["auto", "qa_chat", "summarization", "chart_generation", "code_analysis", "structure_analysis", "history_analysis"],
+            format_func=lambda x: {
+                "auto": "🤖 Auto-detect (Recommended)",
+                "qa_chat": "💬 Q&A Chat",
+                "summarization": "📊 Summary",
+                "chart_generation": "📈 Chart Data",
+                "code_analysis": "🔍 Code Analysis",
+                "structure_analysis": "🏗️ Structure Analysis",
+                "history_analysis": "📝 History Analysis"
+            }[x],
+            help="Smart Mode will automatically select the best tools based on your question and chosen analysis type"
+        )
 
     # --- Quick Questions with enhanced layout ---
     st.markdown("#### 🚀 Quick Questions")
@@ -83,12 +119,14 @@ def render_chat_interface(repo_url: Optional[str] = None) -> None:
         )
         
         # Button row with enhanced styling
-        col1, col2, col3 = st.columns([2, 1, 1])
+        col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
         with col1:
             submit_button = st.form_submit_button("🤖 Ask AI Agent", type="primary", use_container_width=True)
         with col2:
             summarize_button = st.form_submit_button("📊 Summarize", use_container_width=True)
         with col3:
+            chart_button = st.form_submit_button("📈 Chart Data", use_container_width=True)
+        with col4:
             clear_button = st.form_submit_button("🗑️ Clear", use_container_width=True)
     
     # Handle form submissions
@@ -105,6 +143,13 @@ def render_chat_interface(repo_url: Optional[str] = None) -> None:
         st.rerun()
     elif summarize_button and not question.strip():
         st.warning("⚠️ Please enter a question for summarization.")
+    
+    if chart_button and question.strip():
+        process_question(question, repo_url, "chart", speed_option)
+        st.session_state.question_input = ""
+        st.rerun()
+    elif chart_button and not question.strip():
+        st.warning("⚠️ Please enter a question for chart data generation.")
     
     if clear_button:
         st.session_state.chat_history = []
@@ -168,7 +213,28 @@ def process_question(question: str, repo_url: str, mode: str = "chat", speed_mod
                 status_text.text(f"🛠️ {msg}")
             
             with st.spinner("🤖 AI is thinking..."):
-                response, tools_used = ask_repository_question(question, repo_url, status_callback=status_callback)
+                # Determine speed mode from the UI selection
+                if "Fast Mode" in speed_mode:
+                    speed_mode = "fast"
+                    if mode == "chart":
+                        from src.agent.ai_agent import generate_repository_chart_data
+                        response, tools_used = generate_repository_chart_data(repo_url, status_callback=status_callback)
+                    else:
+                        response, tools_used = ask_repository_question(question, repo_url, status_callback=status_callback, speed_mode=speed_mode)
+                elif "Smart Mode" in speed_mode:
+                    # Use smart analysis with selected analysis type
+                    from src.agent.ai_agent import ask_repository_question_smart, generate_repository_chart_data
+                    if mode == "chart":
+                        response, tools_used = generate_repository_chart_data(repo_url, status_callback=status_callback)
+                    else:
+                        response, tools_used = ask_repository_question_smart(question, repo_url, status_callback=status_callback, analysis_type=analysis_type)
+                else:
+                    speed_mode = "standard"
+                    if mode == "chart":
+                        from src.agent.ai_agent import generate_repository_chart_data
+                        response, tools_used = generate_repository_chart_data(repo_url, status_callback=status_callback)
+                    else:
+                        response, tools_used = ask_repository_question(question, repo_url, status_callback=status_callback, speed_mode=speed_mode)
             
             # Stage 6: Completion
             status_text.text("✅ Response ready!")
