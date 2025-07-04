@@ -1,4 +1,4 @@
-# 🚀 GitHub Repository Analyzer - Company Assignment
+# 🚀 GitHub Repository Analyzer 
 
 A powerful, systematic GitHub repository analyzer that provides **deep insights** through AI-powered analysis, Q&A capabilities, and multiple analysis types using **all available MCP servers** and **advanced LLMs**. This system ensures **comprehensive data gathering** from every repository for **accurate, detailed responses**.
 
