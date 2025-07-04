@@ -162,7 +162,9 @@ def render_analysis_interface(repo_url: Optional[str] = None) -> None:
             
             for tool_name, tool_info in tools:
                 if isinstance(tool_info, dict) and 'name' in tool_info:
-                    with st.expander(f"🔧 {tool_info['name']}", expanded=False):
+                    # Use a container instead of expander to avoid nesting
+                    with st.container():
+                        st.markdown(f"**🔧 {tool_info['name']}**")
                         col1, col2 = st.columns([1, 2])
                         with col1:
                             st.markdown(f"**Duration:** {tool_info['typical_duration']}s")
@@ -171,6 +173,7 @@ def render_analysis_interface(repo_url: Optional[str] = None) -> None:
                         with col2:
                             st.markdown(f"**What it does:** {tool_info['what_it_does']}")
                             st.markdown(f"**When to use:** {tool_info['when_to_use']}")
+                        st.markdown("---")
             
             st.markdown("---")
     
