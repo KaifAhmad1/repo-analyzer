@@ -1,6 +1,6 @@
 # 🚀 GitHub Repository Analyzer
 
-A powerful AI-powered GitHub repository analyzer that provides deep insights through comprehensive analysis, interactive visualizations, and intelligent Q&A capabilities using multiple MCP servers and advanced LLMs.
+> A powerful AI-powered GitHub repository analyzer that provides deep insights through comprehensive analysis, interactive visualizations, and intelligent Q&A capabilities using multiple MCP servers and advanced LLMs.
 
 **Pre-configured for immediate use with public repositories - no API setup required.**
 
@@ -239,26 +239,6 @@ Run the comprehensive test suite:
 python test_enhanced_system.py
 ```
 
-## 🚀 Advanced Usage
-
-### **Programmatic Analysis**
-```python
-from src.analysis.analysis_engine import analyze_repository
-from src.agent.ai_agent import ask_repository_question
-
-# Comprehensive analysis
-result = analyze_repository(
-    repo_url="https://github.com/example/repo",
-    analysis_type="comprehensive",
-    preset="deep"
-)
-
-# Ask specific questions
-answer, tools_used = ask_repository_question(
-    "What are the main architectural patterns?",
-    "https://github.com/example/repo"
-)
-```
 
 ## 📝 License
 
