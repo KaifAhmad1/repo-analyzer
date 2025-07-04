@@ -114,7 +114,7 @@ flowchart TD
 ### 1. **Installation**
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/KaifAhmad1/repo-analyzer
 cd repo-analyzer
 
 # Install dependencies
