@@ -129,6 +129,79 @@ graph TD
     class REPO_MANAGER,CONFIG_MGR,SESSION_CACHE dataLayer
 ```
 
+## 🏗️ How the System Works (Simple Overview)
+
+### 1. User Input
+- The user interacts with a **web interface** (Streamlit app).
+- They can enter a GitHub repository URL, ask questions, or choose analysis types.
+
+### 2. Request Handling
+- The Streamlit app receives the input and sends it to the **AI Agent** and **Analysis Engine**.
+
+### 3. Core Processing
+- The **AI Agent** coordinates the analysis.
+- The **Analysis Engine** decides which data is needed (file content, structure, commit history, code search).
+
+### 4. MCP Servers (Microservices)
+- The system uses four main servers:
+  - **File Content Server:** Gets file contents (README, code files).
+  - **Repository Structure Server:** Maps the folder and file structure.
+  - **Commit History Server:** Analyzes commit logs and development history.
+  - **Code Search Server:** Finds code patterns, functions, and dependencies.
+
+### 5. External APIs
+- The servers fetch data from:
+  - **GitHub API:** For repository data, files, commits, etc.
+  - **Groq AI API:** For advanced language model (LLM) processing and smart answers.
+
+### 6. Data Synthesis
+- The AI Agent combines all the data from the servers.
+- It uses the Groq LLM to generate summaries, answer questions, and provide insights.
+
+### 7. Response Generation
+- The system sends the results (analysis, answers, visualizations) back to the user via the Streamlit web interface.
+
+---
+
+## 🔽 System Flowchart (Simple, Top-to-Bottom)
+
+```mermaid
+flowchart TD
+    A[User Input<br/>(Streamlit Web App)] --> B[Request Handling<br/>(Python Core)]
+    B --> C[AI Agent & Analysis Engine]
+    C --> D1[File Content Server]
+    C --> D2[Repo Structure Server]
+    C --> D3[Commit History Server]
+    C --> D4[Code Search Server]
+    D1 --> E[GitHub API]
+    D2 --> E
+    D3 --> E
+    D4 --> E
+    C --> F[Groq LLM API]
+    D1 --> G[Data Synthesis]
+    D2 --> G
+    D3 --> G
+    D4 --> G
+    F --> G
+    G --> H[Response Generation<br/>(Streamlit Web App)]
+```
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer                | Technology/Tool         | Purpose                                      |
+|----------------------|------------------------|----------------------------------------------|
+| **Frontend**         | Streamlit              | User interface (web app)                     |
+| **Core Logic**       | Python                 | Main programming language                    |
+| **AI/LLM**           | Groq API (LLM)         | Natural language understanding & generation  |
+| **Microservices**    | Python (Flask/FastAPI) | MCP servers for modular data processing      |
+| **Data Source**      | GitHub API             | Repository data, files, commits, etc.        |
+| **Visualization**    | Streamlit, Mermaid     | Interactive charts, flowcharts               |
+| **Session/Config**   | Python modules         | Session management, configuration            |
+
+---
+
 ## 🚀 Quick Start
 
 ### 1. **Installation**
