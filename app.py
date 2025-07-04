@@ -323,33 +323,16 @@ for i, (server_name, server_info) in enumerate(server_status['servers'].items())
         </div>
         """, unsafe_allow_html=True)
 
-# Real-time Performance Monitoring
-st.markdown("### ⏱️ Real-time Performance Monitor")
-current_status = performance_monitor.get_current_status()
+# Real-time Progress Monitoring
+st.markdown("### 📊 Real-time Progress Monitor")
+progress_data = performance_monitor.get_progress_data()
 
-if current_status['status'] == 'running':
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric("🔄 Analysis Type", current_status['analysis_type'].replace('_', ' ').title())
-    with col2:
-        st.metric("📊 Progress", f"{current_status['progress']:.1f}%")
-    with col3:
-        st.metric("⏱️ Elapsed", current_status['elapsed_formatted'])
-    with col4:
-        st.metric("⏳ ETA", current_status['eta_formatted'])
-    
-    # Progress bar
-    st.progress(current_status['progress'] / 100)
-    
-    # Tools used
-    if current_status['tools_used']:
-        st.markdown("**🔧 Tools Used:**")
-        for tool in current_status['tools_used']:
-            tool_info = performance_monitor.get_tool_explanation(tool)
-            if isinstance(tool_info, dict) and 'name' in tool_info:
-                st.markdown(f"• {tool_info['name']} ({tool_info['typical_duration']}s)")
+if progress_data and progress_data.get("overall_progress", 0) > 0:
+    # Import the progress display function
+    from src.ui.analysis_interface import render_enhanced_progress_display
+    render_enhanced_progress_display(progress_data)
 else:
-    st.info("💡 No analysis currently running. Start an analysis to see real-time performance data.")
+    st.info("💡 No analysis currently running. Start an analysis to see real-time progress data.")
 
 st.markdown("---")
 

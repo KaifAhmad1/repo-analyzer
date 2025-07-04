@@ -1,6 +1,6 @@
 """
 Enhanced Analysis Interface for GitHub Repository Analyzer
-Provides systematic repository analysis with ETA tracking, tool explanations, and MCP server monitoring
+Provides systematic repository analysis with progress tracking, tool explanations, and MCP server monitoring
 """
 
 import streamlit as st
@@ -24,7 +24,7 @@ from ..analysis.analysis_engine import (
 )
 from ..utils.config import get_analysis_presets, get_analysis_settings
 from ..utils.repository_manager import get_repository_manager, get_analysis_history
-from ..utils.performance_monitor import get_performance_monitor, AnalysisType
+from ..utils.performance_monitor import get_performance_monitor, AnalysisType, AnalysisStage
 from ..servers.server_manager import get_servers_status
 
 def render_analysis_interface(repo_url: Optional[str] = None) -> None:
@@ -39,60 +39,60 @@ def render_analysis_interface(repo_url: Optional[str] = None) -> None:
     server_status = get_servers_status()
     
     st.markdown("### 🔍 Enhanced Repository Analysis")
-    st.markdown("Choose your analysis type and get comprehensive insights with real-time ETA tracking.")
+    st.markdown("Choose your analysis type and get comprehensive insights with real-time progress tracking.")
     
-    # Enhanced Performance monitoring section with ETA
-    st.markdown("#### ⏱️ Analysis ETA & Performance")
+    # Enhanced Progress monitoring section
+    st.markdown("#### 📊 Analysis Progress & Stages")
     
-    # Get ETAs for all analysis types
-    etas = {}
+    # Get analysis information for all types
+    analysis_info = {}
     for analysis_type in AnalysisType:
-        etas[analysis_type] = performance_monitor.get_analysis_eta(analysis_type)
+        analysis_info[analysis_type] = performance_monitor.get_analysis_eta(analysis_type)
     
-    # Display ETA cards
+    # Display Analysis Type cards with tool counts and complexity
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        eta_info = etas[AnalysisType.ULTRA_FAST]
+        info = analysis_info[AnalysisType.ULTRA_FAST]
         st.markdown(f"""
         <div style="text-align: center; padding: 15px; border: 2px solid #10b981; border-radius: 12px; background: linear-gradient(135deg, #1f2937, #111827); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
             <div style="font-size: 24px; margin-bottom: 8px;">⚡</div>
             <div style="font-weight: bold; margin: 8px 0; color: #f9fafb; font-size: 14px;">Ultra Fast</div>
-            <div style="color: #10b981; font-weight: bold; font-size: 18px;">{eta_info['eta_formatted']}</div>
-            <div style="color: #9ca3af; font-size: 12px;">{eta_info['tool_count']} tools • {eta_info['complexity']}</div>
+            <div style="color: #10b981; font-weight: bold; font-size: 18px;">{info['tool_count']} tools</div>
+            <div style="color: #9ca3af; font-size: 12px;">{info['complexity']} complexity</div>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
-        eta_info = etas[AnalysisType.QUICK_OVERVIEW]
+        info = analysis_info[AnalysisType.QUICK_OVERVIEW]
         st.markdown(f"""
         <div style="text-align: center; padding: 15px; border: 2px solid #3b82f6; border-radius: 12px; background: linear-gradient(135deg, #1f2937, #111827); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
             <div style="font-size: 24px; margin-bottom: 8px;">🚀</div>
             <div style="font-weight: bold; margin: 8px 0; color: #f9fafb; font-size: 14px;">Quick Overview</div>
-            <div style="color: #3b82f6; font-weight: bold; font-size: 18px;">{eta_info['eta_formatted']}</div>
-            <div style="color: #9ca3af; font-size: 12px;">{eta_info['tool_count']} tools • {eta_info['complexity']}</div>
+            <div style="color: #3b82f6; font-weight: bold; font-size: 18px;">{info['tool_count']} tools</div>
+            <div style="color: #9ca3af; font-size: 12px;">{info['complexity']} complexity</div>
         </div>
         """, unsafe_allow_html=True)
     
     with col3:
-        eta_info = etas[AnalysisType.SMART_SUMMARY]
+        info = analysis_info[AnalysisType.SMART_SUMMARY]
         st.markdown(f"""
         <div style="text-align: center; padding: 15px; border: 2px solid #f59e0b; border-radius: 12px; background: linear-gradient(135deg, #1f2937, #111827); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
             <div style="font-size: 24px; margin-bottom: 8px;">🧠</div>
             <div style="font-weight: bold; margin: 8px 0; color: #f9fafb; font-size: 14px;">Smart Summary</div>
-            <div style="color: #f59e0b; font-weight: bold; font-size: 18px;">{eta_info['eta_formatted']}</div>
-            <div style="color: #9ca3af; font-size: 12px;">{eta_info['tool_count']} tools • {eta_info['complexity']}</div>
+            <div style="color: #f59e0b; font-weight: bold; font-size: 18px;">{info['tool_count']} tools</div>
+            <div style="color: #9ca3af; font-size: 12px;">{info['complexity']} complexity</div>
         </div>
         """, unsafe_allow_html=True)
     
     with col4:
-        eta_info = etas[AnalysisType.COMPREHENSIVE]
+        info = analysis_info[AnalysisType.COMPREHENSIVE]
         st.markdown(f"""
         <div style="text-align: center; padding: 15px; border: 2px solid #ef4444; border-radius: 12px; background: linear-gradient(135deg, #1f2937, #111827); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
             <div style="font-size: 24px; margin-bottom: 8px;">🔍</div>
             <div style="font-weight: bold; margin: 8px 0; color: #f9fafb; font-size: 14px;">Comprehensive</div>
-            <div style="color: #ef4444; font-weight: bold; font-size: 18px;">{eta_info['eta_formatted']}</div>
-            <div style="color: #9ca3af; font-size: 12px;">{eta_info['tool_count']} tools • {eta_info['complexity']}</div>
+            <div style="color: #ef4444; font-weight: bold; font-size: 18px;">{info['tool_count']} tools</div>
+            <div style="color: #9ca3af; font-size: 12px;">{info['complexity']} complexity</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -220,14 +220,14 @@ def render_quick_analysis_tab(repo_url: str) -> None:
     st.markdown("#### ⚡ Quick Repository Overview")
     st.markdown("Get a fast overview of the repository with basic insights.")
     
-    # Display ETA and expected tools
+    # Display analysis information
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("⏱️ Estimated Time", eta_info['eta_formatted'])
-    with col2:
         st.metric("🔧 Tools Used", eta_info['tool_count'])
-    with col3:
+    with col2:
         st.metric("📊 Complexity", eta_info['complexity'])
+    with col3:
+        st.metric("⚡ Speed", "Fast")
     
     # Show expected tools
     with st.expander("🔧 Expected Tools for This Analysis", expanded=False):
@@ -240,33 +240,60 @@ def render_quick_analysis_tab(repo_url: str) -> None:
         # Start tracking analysis
         performance_monitor.start_analysis(AnalysisType.QUICK_OVERVIEW, repo_url)
         
-        # Create progress tracking
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-        eta_text = st.empty()
+        # Create progress display container
+        progress_container = st.container()
         
         def enhanced_status_callback(msg, progress=None, current_tool=None):
+            # Update progress data
             if progress is not None:
-                progress_bar.progress(progress)
-                performance_monitor.update_progress(progress, current_tool)
+                # Map progress to stages for quick analysis
+                if progress <= 20:
+                    performance_monitor.start_stage(AnalysisStage.INITIALIZATION)
+                    performance_monitor.update_stage_progress(AnalysisStage.INITIALIZATION, progress * 5, current_tool)
+                elif progress <= 50:
+                    performance_monitor.start_stage(AnalysisStage.DATA_GATHERING)
+                    stage_progress = (progress - 20) / 30 * 100
+                    performance_monitor.update_stage_progress(AnalysisStage.DATA_GATHERING, stage_progress, current_tool)
+                elif progress <= 80:
+                    performance_monitor.start_stage(AnalysisStage.CODE_ANALYSIS)
+                    stage_progress = (progress - 50) / 30 * 100
+                    performance_monitor.update_stage_progress(AnalysisStage.CODE_ANALYSIS, stage_progress, current_tool)
+                else:
+                    performance_monitor.start_stage(AnalysisStage.AI_SUMMARY)
+                    stage_progress = (progress - 80) / 20 * 100
+                    performance_monitor.update_stage_progress(AnalysisStage.AI_SUMMARY, stage_progress, current_tool)
+                
+                # Update progress display
+                with progress_container:
+                    progress_data = performance_monitor.get_progress_data()
+                    render_enhanced_progress_display(progress_data)
             
-            status_text.text(msg)
-            
-            # Update ETA
-            current_status = performance_monitor.get_current_status()
-            if current_status['status'] == 'running':
-                eta_text.text(f"⏱️ ETA: {current_status['eta_formatted']} remaining")
+            # Complete tools as they finish
+            if current_tool:
+                # Map tools to stages
+                if "readme" in current_tool.lower() or "file" in current_tool.lower():
+                    performance_monitor.complete_tool(AnalysisStage.DATA_GATHERING, current_tool)
+                elif "code" in current_tool.lower() or "metrics" in current_tool.lower():
+                    performance_monitor.complete_tool(AnalysisStage.CODE_ANALYSIS, current_tool)
+                elif "summary" in current_tool.lower() or "ai" in current_tool.lower():
+                    performance_monitor.complete_tool(AnalysisStage.AI_SUMMARY, current_tool)
         
         with st.spinner("⚡ Performing quick analysis..."):
             try:
                 result = quick_analysis(repo_url, enhanced_status_callback)
-                progress_bar.progress(100)
-                status_text.text("✅ Quick analysis completed!")
-                eta_text.text("")
+                
+                # Complete final stage
+                performance_monitor.start_stage(AnalysisStage.FINALIZATION)
+                performance_monitor.update_stage_progress(AnalysisStage.FINALIZATION, 100)
+                
+                # Show final progress
+                with progress_container:
+                    progress_data = performance_monitor.get_progress_data()
+                    render_enhanced_progress_display(progress_data)
+                
                 display_quick_analysis_results(result)
             except Exception as e:
-                status_text.text(f"❌ Analysis failed: {str(e)}")
-                eta_text.text("")
+                st.error(f"❌ Analysis failed: {str(e)}")
 
 def render_comprehensive_analysis_tab(repo_url: str, presets: Dict[str, Any]) -> None:
     """Render comprehensive analysis tab with ETA tracking"""
@@ -276,14 +303,14 @@ def render_comprehensive_analysis_tab(repo_url: str, presets: Dict[str, Any]) ->
     st.markdown("#### 🔍 Comprehensive Repository Analysis")
     st.markdown("Get detailed insights with multiple analysis dimensions.")
     
-    # Display ETA and expected tools
+    # Display analysis information
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("⏱️ Estimated Time", eta_info['eta_formatted'])
-    with col2:
         st.metric("🔧 Tools Used", eta_info['tool_count'])
-    with col3:
+    with col2:
         st.metric("📊 Complexity", eta_info['complexity'])
+    with col3:
+        st.metric("🔍 Depth", "Comprehensive")
     
     # Show expected tools
     with st.expander("🔧 Expected Tools for This Analysis", expanded=False):
@@ -315,33 +342,72 @@ def render_comprehensive_analysis_tab(repo_url: str, presets: Dict[str, Any]) ->
         # Start tracking analysis
         performance_monitor.start_analysis(AnalysisType.COMPREHENSIVE, repo_url)
         
-        # Create progress tracking
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-        eta_text = st.empty()
+        # Create progress display container
+        progress_container = st.container()
         
         def enhanced_status_callback(msg, progress=None, current_tool=None):
+            # Update progress data
             if progress is not None:
-                progress_bar.progress(progress)
-                performance_monitor.update_progress(progress, current_tool)
+                # Map progress to stages for comprehensive analysis
+                if progress <= 10:
+                    performance_monitor.start_stage(AnalysisStage.INITIALIZATION)
+                    performance_monitor.update_stage_progress(AnalysisStage.INITIALIZATION, progress * 10, current_tool)
+                elif progress <= 35:
+                    performance_monitor.start_stage(AnalysisStage.DATA_GATHERING)
+                    stage_progress = (progress - 10) / 25 * 100
+                    performance_monitor.update_stage_progress(AnalysisStage.DATA_GATHERING, stage_progress, current_tool)
+                elif progress <= 65:
+                    performance_monitor.start_stage(AnalysisStage.CODE_ANALYSIS)
+                    stage_progress = (progress - 35) / 30 * 100
+                    performance_monitor.update_stage_progress(AnalysisStage.CODE_ANALYSIS, stage_progress, current_tool)
+                elif progress <= 80:
+                    performance_monitor.start_stage(AnalysisStage.SECURITY_SCAN)
+                    stage_progress = (progress - 65) / 15 * 100
+                    performance_monitor.update_stage_progress(AnalysisStage.SECURITY_SCAN, stage_progress, current_tool)
+                elif progress <= 90:
+                    performance_monitor.start_stage(AnalysisStage.QUALITY_ASSESSMENT)
+                    stage_progress = (progress - 80) / 10 * 100
+                    performance_monitor.update_stage_progress(AnalysisStage.QUALITY_ASSESSMENT, stage_progress, current_tool)
+                else:
+                    performance_monitor.start_stage(AnalysisStage.AI_SUMMARY)
+                    stage_progress = (progress - 90) / 10 * 100
+                    performance_monitor.update_stage_progress(AnalysisStage.AI_SUMMARY, stage_progress, current_tool)
+                
+                # Update progress display
+                with progress_container:
+                    progress_data = performance_monitor.get_progress_data()
+                    render_enhanced_progress_display(progress_data)
             
-            status_text.text(msg)
-            
-            # Update ETA
-            current_status = performance_monitor.get_current_status()
-            if current_status['status'] == 'running':
-                eta_text.text(f"⏱️ ETA: {current_status['eta_formatted']} remaining")
+            # Complete tools as they finish
+            if current_tool:
+                # Map tools to stages
+                if "readme" in current_tool.lower() or "file" in current_tool.lower() or "directory" in current_tool.lower():
+                    performance_monitor.complete_tool(AnalysisStage.DATA_GATHERING, current_tool)
+                elif "code" in current_tool.lower() or "metrics" in current_tool.lower() or "complexity" in current_tool.lower():
+                    performance_monitor.complete_tool(AnalysisStage.CODE_ANALYSIS, current_tool)
+                elif "security" in current_tool.lower() or "vulnerability" in current_tool.lower() or "dependency" in current_tool.lower():
+                    performance_monitor.complete_tool(AnalysisStage.SECURITY_SCAN, current_tool)
+                elif "quality" in current_tool.lower() or "documentation" in current_tool.lower() or "testing" in current_tool.lower():
+                    performance_monitor.complete_tool(AnalysisStage.QUALITY_ASSESSMENT, current_tool)
+                elif "summary" in current_tool.lower() or "ai" in current_tool.lower():
+                    performance_monitor.complete_tool(AnalysisStage.AI_SUMMARY, current_tool)
         
         with st.spinner("🔍 Performing comprehensive analysis..."):
             try:
                 result = analyze_repository(repo_url, "comprehensive", preset_id, enhanced_status_callback)
-                progress_bar.progress(100)
-                status_text.text("✅ Comprehensive analysis completed!")
-                eta_text.text("")
+                
+                # Complete final stage
+                performance_monitor.start_stage(AnalysisStage.FINALIZATION)
+                performance_monitor.update_stage_progress(AnalysisStage.FINALIZATION, 100)
+                
+                # Show final progress
+                with progress_container:
+                    progress_data = performance_monitor.get_progress_data()
+                    render_enhanced_progress_display(progress_data)
+                
                 display_comprehensive_analysis_results(result)
             except Exception as e:
-                status_text.text(f"❌ Analysis failed: {str(e)}")
-                eta_text.text("")
+                st.error(f"❌ Analysis failed: {str(e)}")
 
 def render_security_analysis_tab(repo_url: str) -> None:
     """Render security analysis tab"""
@@ -446,55 +512,77 @@ def render_smart_summary_tab(repo_url: str) -> None:
         button_text = "🔍 Generate Comprehensive Summary"
     
     if st.button(button_text, type="primary", use_container_width=True):
-        # Create progress container
+        # Determine analysis type based on speed option
+        if speed_option == "⚡ Ultra Fast (30s)":
+            analysis_type = AnalysisType.ULTRA_FAST
+        elif speed_option == "🚀 Fast (60s)":
+            analysis_type = AnalysisType.SMART_SUMMARY
+        else:
+            analysis_type = AnalysisType.COMPREHENSIVE
+        
+        # Start tracking analysis
+        performance_monitor.start_analysis(analysis_type, repo_url)
+        
+        # Create progress display container
         progress_container = st.container()
-        with progress_container:
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-            tools_used_text = st.empty()
-            
-            def status_callback(msg):
-                status_text.text(msg)
-                # Update progress based on message
-                if "Starting" in msg:
-                    progress_bar.progress(10)
-                elif "Gathering" in msg:
-                    progress_bar.progress(30)
-                elif "Generating" in msg:
-                    progress_bar.progress(70)
-                elif "completed" in msg.lower():
-                    progress_bar.progress(100)
+        
+        def enhanced_status_callback(msg, progress=None, current_tool=None):
+            # Update progress data
+            if progress is not None:
+                # Map progress to stages for smart summary
+                if progress <= 15:
+                    performance_monitor.start_stage(AnalysisStage.INITIALIZATION)
+                    performance_monitor.update_stage_progress(AnalysisStage.INITIALIZATION, progress / 15 * 100, current_tool)
+                elif progress <= 45:
+                    performance_monitor.start_stage(AnalysisStage.DATA_GATHERING)
+                    stage_progress = (progress - 15) / 30 * 100
+                    performance_monitor.update_stage_progress(AnalysisStage.DATA_GATHERING, stage_progress, current_tool)
+                elif progress <= 75:
+                    performance_monitor.start_stage(AnalysisStage.CODE_ANALYSIS)
+                    stage_progress = (progress - 45) / 30 * 100
+                    performance_monitor.update_stage_progress(AnalysisStage.CODE_ANALYSIS, stage_progress, current_tool)
                 else:
-                    progress_bar.progress(50)
+                    performance_monitor.start_stage(AnalysisStage.AI_SUMMARY)
+                    stage_progress = (progress - 75) / 25 * 100
+                    performance_monitor.update_stage_progress(AnalysisStage.AI_SUMMARY, stage_progress, current_tool)
+                
+                # Update progress display
+                with progress_container:
+                    progress_data = performance_monitor.get_progress_data()
+                    render_enhanced_progress_display(progress_data)
             
-            def tools_callback(tools):
-                if tools:
-                    tools_used_text.markdown(f"**🔧 Tools Used:** {', '.join(tools[:3])}{'...' if len(tools) > 3 else ''}")
+            # Complete tools as they finish
+            if current_tool:
+                # Map tools to stages
+                if "readme" in current_tool.lower() or "file" in current_tool.lower() or "directory" in current_tool.lower():
+                    performance_monitor.complete_tool(AnalysisStage.DATA_GATHERING, current_tool)
+                elif "code" in current_tool.lower() or "metrics" in current_tool.lower() or "complexity" in current_tool.lower():
+                    performance_monitor.complete_tool(AnalysisStage.CODE_ANALYSIS, current_tool)
+                elif "summary" in current_tool.lower() or "ai" in current_tool.lower():
+                    performance_monitor.complete_tool(AnalysisStage.AI_SUMMARY, current_tool)
+        
+        try:
+            # Use different analysis methods based on speed option
+            if speed_option == "⚡ Ultra Fast (30s)":
+                result = ultra_fast_summarization(repo_url, enhanced_status_callback)
+            elif speed_option == "🚀 Fast (60s)":
+                result = smart_summarization(repo_url, enhanced_status_callback)
+            else:
+                result = comprehensive_smart_summarization(repo_url, enhanced_status_callback)
             
-            try:
-                # Use different analysis methods based on speed option
-                if speed_option == "⚡ Ultra Fast (30s)":
-                    result = ultra_fast_summarization(repo_url, status_callback)
-                elif speed_option == "🚀 Fast (60s)":
-                    result = smart_summarization(repo_url, status_callback)
-                else:
-                    result = comprehensive_smart_summarization(repo_url, status_callback)
-                
-                # Show tools used
-                if "tools_used" in result and result["tools_used"]:
-                    tools_callback(result["tools_used"])
-                
-                # Clear progress indicators
-                progress_bar.empty()
-                status_text.empty()
-                
-                display_smart_summary_results(result)
-                
-            except Exception as e:
-                progress_bar.empty()
-                status_text.empty()
-                tools_used_text.empty()
-                st.error(f"❌ Analysis failed: {str(e)}")
+            # Complete final stage
+            performance_monitor.start_stage(AnalysisStage.FINALIZATION)
+            performance_monitor.update_stage_progress(AnalysisStage.FINALIZATION, 100)
+            
+            # Show final progress
+            with progress_container:
+                progress_data = performance_monitor.get_progress_data()
+                render_enhanced_progress_display(progress_data)
+            
+            display_smart_summary_results(result)
+            
+        except Exception as e:
+            st.error(f"❌ Analysis failed: {str(e)}")
 
 def render_analysis_history_tab(repo_url: str) -> None:
     """Render analysis history tab"""
@@ -1173,4 +1261,93 @@ def display_smart_summary_results(result: Dict[str, Any]) -> None:
             for pattern_type, pattern_data in patterns["code_patterns"].items():
                 st.write(f"**{pattern_type.title()}:**")
                 if isinstance(pattern_data, dict) and "result" in pattern_data:
-                    st.code(pattern_data["result"][:300] + "..." if len(str(pattern_data["result"])) > 300 else pattern_data["result"]) 
+                    st.code(pattern_data["result"][:300] + "..." if len(str(pattern_data["result"])) > 300 else pattern_data["result"])
+
+def render_enhanced_progress_display(progress_data: Dict[str, Any]) -> None:
+    """Render enhanced progress display with stage-based progress bars"""
+    
+    if not progress_data or progress_data.get("overall_progress", 0) == 0:
+        return
+    
+    # Overall progress section
+    st.markdown("#### 📊 Analysis Progress")
+    
+    # Overall progress bar
+    overall_progress = progress_data.get("overall_progress", 0)
+    current_stage_name = progress_data.get("current_stage_name", "Initializing...")
+    elapsed_time = progress_data.get("elapsed_formatted", "0s")
+    
+    # Create a container for the overall progress
+    overall_container = st.container()
+    with overall_container:
+        col1, col2, col3 = st.columns([2, 1, 1])
+        with col1:
+            st.progress(overall_progress / 100.0)
+        with col2:
+            st.metric("Overall Progress", f"{overall_progress:.1f}%")
+        with col3:
+            st.metric("Elapsed Time", elapsed_time)
+    
+    # Current stage info
+    if current_stage_name:
+        st.info(f"🔄 Currently: {current_stage_name}")
+    
+    # Individual stage progress
+    st.markdown("#### 🔧 Analysis Stages")
+    
+    stages = progress_data.get("stages", {})
+    if stages:
+        # Create a container for stage progress bars
+        stage_container = st.container()
+        with stage_container:
+            for stage_key, stage_data in stages.items():
+                stage_name = stage_data.get("name", stage_key)
+                stage_progress = stage_data.get("progress", 0)
+                stage_status = stage_data.get("status", "pending")
+                current_tool = stage_data.get("current_tool")
+                tools_completed = stage_data.get("tools_completed", [])
+                total_tools = stage_data.get("total_tools", 0)
+                
+                # Determine stage color based on status
+                if stage_status == "completed":
+                    color = "green"
+                    icon = "✅"
+                elif stage_status == "running":
+                    color = "blue"
+                    icon = "🔄"
+                else:
+                    color = "gray"
+                    icon = "⏳"
+                
+                # Stage header
+                st.markdown(f"**{icon} {stage_name}**")
+                
+                # Progress bar with color
+                if stage_status == "completed":
+                    st.progress(1.0)
+                else:
+                    st.progress(stage_progress / 100.0)
+                
+                # Stage details
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Progress", f"{stage_progress:.1f}%")
+                with col2:
+                    if total_tools > 0:
+                        completed_count = len(tools_completed)
+                        st.metric("Tools", f"{completed_count}/{total_tools}")
+                    else:
+                        st.metric("Status", stage_status.title())
+                with col3:
+                    if current_tool and stage_status == "running":
+                        st.metric("Current Tool", current_tool.replace("_", " ").title())
+                    else:
+                        st.metric("Status", stage_status.title())
+                
+                # Show completed tools if any
+                if tools_completed:
+                    with st.expander(f"Completed tools ({len(tools_completed)})", expanded=False):
+                        for tool in tools_completed:
+                            st.markdown(f"• {tool.replace('_', ' ').title()}")
+                
+                st.markdown("---") 
